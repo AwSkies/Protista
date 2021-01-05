@@ -10,43 +10,50 @@ public class Board : MonoBehaviour
     public GameObject blackPiecePrefab;
     
     // Hexes between each player's side
-    public static int rows;
+    public int rows;
     // The way/distance hexes are tiled from left to right
     public Vector3 rowXSpace;
     // The vertical offset when hexes are tiled from left to right
     public Vector3 rowZSpace;
     // Hexes to the right and left of player
-    public static int columns;
+    public int columns;
     // The way/distance hexes are tiled from top to bottom
     public Vector3 columnSpace;
 
-    private Dictionary<string, GameObject>[][] hexDex = new Dictionary<string, GameObject>[columns][rows];
+    private Dictionary<string, GameObject>[,] hexDex;
     private bool clickedLastFrame = false;
     // Start is called before the first frame update
     void Start()
     {
-        // Set up board
+        // Set up board --------------------------------------
+        // Initialize hexDex as 2D array with size of rows and columns specified
+        hexDex = new Dictionary<string, GameObject>[rows, columns];
         // lastPosition = the last place we spawned in a hex, we'll then add some vectors to it to get our new position and spawn a new hex there
         Vector3 lastPosition = new Vector3(0f, 0f, 0f);
-        for (int i = 0; i < hexDex.Length; i++)
+        for (int i = 0; i < hexDex.GetLength(0); i++)
         {
             bool lastWentDown = false;
-            for (int hexX = 0; hexX < hexDex[i].Length; hexX++)
+            bool firstHexInRow = true;
+            for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
             {
-                // Vector math including whether to tile up or down
-                lastPosition += rowXSpace;
-                if (lastWentDown) {
-                    lastPosition += rowZSpace;
-                } 
-                else 
-                { 
-                    lastPosition -= rowZSpace; 
-                    lastWentDown = true; 
+                if (!firstHexInRow) 
+                {
+                    // Vector math including whether to tile up or down
+                    lastPosition += rowXSpace;
+                    if (lastWentDown) {
+                        lastPosition += rowZSpace;
+                    } 
+                    else 
+                    { 
+                        lastPosition -= rowZSpace;
+                        lastWentDown = true; 
+                    }
                 }
-                // Spawn in hex and put that in the arry
-                hexDex[i][hexX].Add("hex", Instantiate(hexPrefab, lastPosition, Quaternion.identity));
+                // Spawn in hex and put that in the array
+                hexDex[i, hexX].Add("hex", Instantiate(hexPrefab, lastPosition, Quaternion.identity));
+                firstHexInRow = false;
             }
-            // Resets the x position of the first hex in the row to 0 and then adds the columnspace
+            // Resets the x position of the first hex in the row to 0 and then adds the column space
             lastPosition.Set(0f, lastPosition.y, lastPosition.z);
             lastPosition += columnSpace;
         }
@@ -77,7 +84,9 @@ public class Board : MonoBehaviour
                 }
             }
             clickedLastFrame = true;
-        } else {
+        } 
+        else 
+        {
             clickedLastFrame = false;
         }
     }
