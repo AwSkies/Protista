@@ -3,12 +3,54 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Board : MonoBehaviour
-{
+{   
+    public GameObject hexPrefab;
+    public GameObject objHexPrefab;
+    public GameObject whitePiecePrefab;
+    public GameObject blackPiecePrefab;
+    
+    // Hexes between each player's side
+    public static int rows;
+    // The way/distance hexes are tiled from left to right
+    public Vector3 rowXSpace;
+    // The vertical offset when hexes are tiled from left to right
+    public Vector3 rowZSpace;
+    // Hexes to the right and left of player
+    public static int columns;
+    // The way/distance hexes are tiled from top to bottom
+    public Vector3 columnSpace;
+
+    private Dictionary<string, GameObject>[][] hexDex = new Dictionary<string, GameObject>[columns][rows];
     private bool clickedLastFrame = false;
     // Start is called before the first frame update
     void Start()
     {
-        
+        // Set up board
+        // lastPosition = the last place we spawned in a hex, we'll then add some vectors to it to get our new position and spawn a new hex there
+        Vector3 lastPosition = new Vector3(0f, 0f, 0f);
+        for (int i = 0; i < hexDex.Length; i++)
+        {
+            bool lastWentDown = false;
+            for (int hexX = 0; hexX < hexDex[i].Length; hexX++)
+            {
+                // Vector math including whether to tile up or down
+                lastPosition += rowXSpace;
+                if (lastWentDown) {
+                    lastPosition += rowZSpace;
+                } 
+                else 
+                { 
+                    lastPosition -= rowZSpace; 
+                    lastWentDown = true; 
+                }
+                // Spawn in hex and put that in the arry
+                hexDex[i][hexX].Add("hex", Instantiate(hexPrefab, lastPosition, Quaternion.identity));
+            }
+            // Resets the x position of the first hex in the row to 0 and then adds the columnspace
+            lastPosition.Set(0f, lastPosition.y, lastPosition.z);
+            lastPosition += columnSpace;
+        }
+
     }
 
     // Update is called once per frame
@@ -28,6 +70,7 @@ public class Board : MonoBehaviour
                 try
                 {
                     Debug.Log(hit.transform.name);
+                    Debug.Log(hit.transform.position);
                 }
                 catch (System.NullReferenceException) {
                     Debug.Log("Not clicked anything");
