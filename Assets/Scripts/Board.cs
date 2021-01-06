@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Board : MonoBehaviour
-{   
+{
+    // Prefabs & scene objects
     public GameObject hexPrefab;
     public GameObject objHexPrefab;
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
+    public GameObject cam;
     
     // Hexes between each player's side
     public int rows;
@@ -59,7 +61,7 @@ public class Board : MonoBehaviour
             lastPosition.Set(0f, lastPosition.y, lastPosition.z);
             lastPosition += columnSpace;
         }
-
+        cam.transform.position = new Vector3((columns * rowXSpace.x) / 2, cam.transform.position.y, cam.transform.position.z);
     }
 
     // Update is called once per frame
