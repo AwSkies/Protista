@@ -42,6 +42,7 @@ public class Board : MonoBehaviour
                     lastPosition += rowXSpace;
                     if (lastWentDown) {
                         lastPosition += rowZSpace;
+                        lastWentDown = false;
                     } 
                     else 
                     { 
@@ -50,7 +51,8 @@ public class Board : MonoBehaviour
                     }
                 }
                 // Spawn in hex and put that in the array
-                hexDex[i, hexX].Add("hex", Instantiate(hexPrefab, lastPosition, Quaternion.identity));
+                Instantiate(hexPrefab, lastPosition, Quaternion.identity);
+                // hexDex[i, hexX].Add("hex", Instantiate(hexPrefab, lastPosition, Quaternion.identity));
                 firstHexInRow = false;
             }
             // Resets the x position of the first hex in the row to 0 and then adds the column space
