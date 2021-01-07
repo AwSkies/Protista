@@ -14,13 +14,13 @@ public class Board : MonoBehaviour
     // Hexes between each player's side
     public int rows;
     // The way/distance hexes are tiled from left to right
-    public Vector3 rowXSpace;
-    // The vertical offset when hexes are tiled from left to right
-    public Vector3 rowZSpace;
+    public Vector3 rowSpace;
     // Hexes to the right and left of player
     public int columns;
+    // The horizontal/z offset when hexes are tiled from left to right
+    public Vector3 columnZSpace;
     // The way/distance hexes are tiled from top to bottom
-    public Vector3 columnSpace;
+    public Vector3 columnXSpace;
 
     private Dictionary<string, GameObject>[,] hexDex;
     private bool clickedLastFrame = false;
@@ -32,36 +32,34 @@ public class Board : MonoBehaviour
         hexDex = new Dictionary<string, GameObject>[rows, columns];
         // lastPosition = the last place we spawned in a hex, we'll then add some vectors to it to get our new position and spawn a new hex there
         Vector3 lastPosition = new Vector3(0f, 0f, 0f);
+        // Whether or not the first hex in the last row generated was offsetted to the right
+        bool lastWentRight = true;
         for (int i = 0; i < hexDex.GetLength(0); i++)
         {
-            bool lastWentDown = false;
-            bool firstHexInRow = true;
             for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
             {
-                if (!firstHexInRow) 
-                {
-                    // Vector math including whether to tile up or down
-                    lastPosition += rowXSpace;
-                    if (lastWentDown) {
-                        lastPosition += rowZSpace;
-                        lastWentDown = false;
-                    } 
-                    else 
-                    { 
-                        lastPosition -= rowZSpace;
-                        lastWentDown = true; 
-                    }
-                }
                 // Spawn in hex and put that in the array
                 hexDex[i, hexX] = new Dictionary<string, GameObject>();
-                hexDex[i, hexX].Add("hex", Instantiate(hexPrefab, lastPosition, Quaternion.identity));
-                firstHexInRow = false;
+                hexDex[i, hexX].Add("hex", Instantiate(hexPrefab, lastPosition, Quaternion.Euler(0f, 30f, 0f)));
+                // Offets next hex position (for next time through loop)
+                lastPosition += rowSpace;
             }
             // Resets the x position of the first hex in the row to 0 and then adds the column space
             lastPosition.Set(0f, lastPosition.y, lastPosition.z);
-            lastPosition += columnSpace;
+            lastPosition += columnZSpace;
+            // Offsets first hex (for next time through loop)
+            if (lastWentRight) 
+            {
+                lastPosition += columnXSpace;
+                lastWentRight = false;
+            } 
+            else 
+            {
+                lastWentRight = true; 
+            }
         }
-        cam.transform.position = new Vector3((columns * rowXSpace.x) / 2, cam.transform.position.y, cam.transform.position.z);
+        // Centers camera with generated board by setting transform x position to be half the distance of the number of columns * row space offset
+        cam.transform.position = new Vector3((columns * rowSpace.x) / 2, cam.transform.position.y, cam.transform.position.z);
     }
 
     // Update is called once per frame

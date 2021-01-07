@@ -382,7 +382,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0.5895815, y: -0, z: -0, w: 0.807709}
-  m_LocalPosition: {x: 0, y: 80.9, z: 11.4}
+  m_LocalPosition: {x: 0, y: 67.2, z: 11.6}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -423,11 +423,11 @@ MonoBehaviour:
   whitePiecePrefab: {fileID: 0}
   blackPiecePrefab: {fileID: 0}
   cam: {fileID: 963194225}
-  rows: 20
-  rowXSpace: {x: 4.5, y: 0, z: 0}
-  rowZSpace: {x: 0, y: 0, z: 2.5}
+  rows: 19
+  rowSpace: {x: 5, y: 0, z: 0}
   columns: 15
-  columnSpace: {x: 0, y: 0, z: 5}
+  columnZSpace: {x: 0, y: 0, z: 4.5}
+  columnXSpace: {x: 2.5, y: 0, z: 0}
 --- !u!4 &1568063594
 Transform:
   m_ObjectHideFlags: 0
