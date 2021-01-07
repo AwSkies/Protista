@@ -419,10 +419,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hexPrefab: {fileID: 6163949011894488606, guid: 3bab5edc8446e1e4791b765dbbd4a2fc,
     type: 3}
-  objHexPrefab: {fileID: 0}
+  objHexPrefab: {fileID: 7856227418265277864, guid: 8a624b6f7b15bf34cb08e379950ac0f5,
+    type: 3}
   whitePiecePrefab: {fileID: 0}
   blackPiecePrefab: {fileID: 0}
   cam: {fileID: 963194225}
+  objHexNum: 3
   rows: 19
   rowSpace: {x: 5, y: 0, z: 0}
   columns: 15

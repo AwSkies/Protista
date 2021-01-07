@@ -39,33 +39,23 @@ public class Board : MonoBehaviour
         // Makes an array that has whether or not an objective hex needs to be generated in a coordinate, then makes all values false
         bool[,] objHexes = new bool[rows, columns];
         for (int i = 0; i < rows * columns; i++) { objHexes[i % rows, i / rows] = false; }
-        // Initializes variables that will be used for making sure no hexes get generated in the middle row
         // halfBoard = the number of rows that make up half the board, minus the middle row 
         int halfBoard = rows / 2;
-        // Start loop for generation, once for each player
-        for (int i = 0; i < 2; i++)
+        // Generates the needed number of objective hexes on each side
+        for (int i = 0; i < objHexNum; i++)
         {
-            // Generates the needed number of objective hexes on each side
-            for (int l = 0; l < objHexNum; l++)
+            // Chooses the rows that belong to each player
+            // If the position is already occupied by a previously generated objective hex, it will go through the do while loop again
+            int xPos, zPos;
+            do
             {
-                // Chooses the rows that belong to each player
-                // If the position is already occupied by a previously generated objective hex, it will go through the do while loop again
-                int xPos, zPos;
-                do
-                {
-                    xPos = random.Next(0, rows);
-                    if (i == 0) 
-                    {
-                        zPos = random.Next(0, halfBoard);
-                    } 
-                    else
-                    {
-                        zPos = random.Next(halfBoard + 1, columns);
-                    }
-                    objHexes[xPos, zPos] = true;
-                } 
-                while (objHexes[xPos, zPos]);
+                xPos = random.Next(0, columns);
+                zPos = random.Next(0, halfBoard);
+                objHexes[zPos, xPos] = true;
+                zPos = (rows - 1) - zPos;
+                objHexes[zPos, xPos] = true;
             } 
+            while (!objHexes[zPos, xPos]);
         }
         // lastPosition = the last place we spawned in a hex, we'll then add some vectors to it to get our new position and spawn a new hex there
         Vector3 lastPosition = new Vector3(0f, 0f, 0f);
