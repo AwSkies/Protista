@@ -6,7 +6,6 @@ TagManager:
   tags:
   - hex
   - objectiveHex
-  - checker
   - black
   - white
   layers:

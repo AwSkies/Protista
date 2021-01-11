@@ -421,8 +421,10 @@ MonoBehaviour:
     type: 3}
   objHexPrefab: {fileID: 7856227418265277864, guid: 8a624b6f7b15bf34cb08e379950ac0f5,
     type: 3}
-  whitePiecePrefab: {fileID: 0}
-  blackPiecePrefab: {fileID: 0}
+  whitePiecePrefab: {fileID: 4465150969597023528, guid: 0cda7aac825ba254188d62247e09c597,
+    type: 3}
+  blackPiecePrefab: {fileID: 1198216280521353497, guid: 445642dfdd0261d45ac669eb9702590d,
+    type: 3}
   cam: {fileID: 963194225}
   objHexNum: 3
   rows: 19
