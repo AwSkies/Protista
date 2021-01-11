@@ -432,6 +432,8 @@ MonoBehaviour:
   columns: 15
   columnZSpace: {x: 0, y: 0, z: 4.5}
   columnXSpace: {x: 2.5, y: 0, z: 0}
+  pieceNum: 5
+  pieceVertical: {x: 0, y: 0.6, z: 0}
 --- !u!4 &1568063594
 Transform:
   m_ObjectHideFlags: 0
