@@ -31,6 +31,7 @@ public class Board : MonoBehaviour
     public Vector3 pieceVertical;
 
     private Dictionary<string, GameObject>[,] hexDex;
+    private bool[,] selected;
     private bool clickedLastFrame = false;
     // Start is called before the first frame update
     void Start()
@@ -38,12 +39,17 @@ public class Board : MonoBehaviour
         // Set up board --------------------------------------
         // Initialize hexDex as 2D array with size of rows and columns specified
         hexDex = new Dictionary<string, GameObject>[rows, columns];
+        // Initialize the "selected" array as a 2D array referring to the hexes and pieces that are selected
+        selected = new bool[rows, columns];
+        // Set all values of selected to false
+        for (int i = 0; i < rows * columns; i++) { selected[i % rows, i / rows] = false; }
+
         // halfBoard = the number of rows that make up half the board, minus the middle row 
         int halfBoard = rows / 2;
         // Initialize random
         System.Random random = new System.Random();
 
-        // Generate objective hexe arrangement ---------------
+        // Generate objective hex arrangement ---------------
         // Makes an array that has whether or not an objective hex needs to be generated in a coordinate, then makes all values false
         bool[,] objHexes = new bool[rows, columns];
         for (int i = 0; i < rows * columns; i++) { objHexes[i % rows, i / rows] = false; }
@@ -164,13 +170,22 @@ public class Board : MonoBehaviour
                 // Since everything was made with Maya they won't have colliders already
                 // So make sure that everything we need to click on is set to have a mesh collider
                 Physics.Raycast(ray, out hit);
-                try
+                // Makes sure it hit something
+                if (hit.collider != null)
                 {
-                    Debug.Log(hit.transform.name);
-                    Debug.Log(hit.transform.position);
-                }
-                catch (System.NullReferenceException) {
-                    Debug.Log("Not clicked anything");
+                    // Gets coordinates to turn into array indexes
+                    Vector3 hitPos = hit.transform.position;
+                    // Accounts for sideways offset tiling
+                    if ((hit.transform.position.z / 4.5f) % 2 == 1) { hitPos -= columnXSpace; }
+                    // Turns coordinates into array indexes
+                    int hitZ = (int)(hitPos.z / columnZSpace.z);
+                    int hitX = (int)(hitPos.x / rowSpace.x);
+                    // Only select if there's a piece on the hex
+                    if (hexDex[hitZ, hitX]["piece"] != null)
+                    {
+                        // Toggles selected at coordinate
+                        selected[hitZ, hitX] = !selected[hitZ, hitX];
+                    }
                 }
             }
             clickedLastFrame = true;
