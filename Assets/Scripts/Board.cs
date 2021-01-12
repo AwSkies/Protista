@@ -1,4 +1,5 @@
-﻿using System;
+﻿using cakeslice;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -185,6 +186,8 @@ public class Board : MonoBehaviour
                     {
                         // Toggles selected at coordinate
                         selected[hitZ, hitX] = !selected[hitZ, hitX];
+                        // Toggles outline
+                        hexDex[hitZ, hitX]["hex"].GetComponent<cakeslice.Outline>().enabled = !hexDex[hitZ, hitX]["hex"].GetComponent<cakeslice.Outline>().enabled;
                     }
                 }
             }

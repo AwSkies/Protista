@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5900531416606539959}
   - component: {fileID: 8504503939936121981}
   - component: {fileID: 1502608326127424195}
+  - component: {fileID: 5723471737756977630}
   m_Layer: 0
   m_Name: ObjectiveHex
   m_TagString: objectiveHex
@@ -95,3 +96,17 @@ MeshCollider:
   m_Convex: 0
   m_CookingOptions: 30
   m_Mesh: {fileID: -3883183161384948293, guid: e6a1a9d9f4c4b604dabc26875d52ae26, type: 3}
+--- !u!114 &5723471737756977630
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7856227418265277864}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbf3575480402db40813e763382412fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  color: 0
+  eraseRenderer: 0
