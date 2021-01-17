@@ -117,8 +117,11 @@ public class Board : MonoBehaviour
                 // Choose to place normal or objective hex based on earlier generation
                 GameObject hexToPlace;
                 if (objHexes[i, hexX]) { hexToPlace = objHexPrefab; } else { hexToPlace = hexPrefab; }
-                // Spawn hex and place in hexDex
-                hexDex[i, hexX].Add("hex", Instantiate(hexToPlace, lastPosition, Quaternion.Euler(0f, 30f, 0f)));
+                // Spawn hex, add correct board position, and place in hexDex
+                GameObject hexSpawned = Instantiate(hexToPlace, lastPosition, Quaternion.Euler(0f, 30f, 0f));
+                hexSpawned.GetComponent<BoardPos>().x = hexX;
+                hexSpawned.GetComponent<BoardPos>().z = i;
+                hexDex[i, hexX].Add("hex", hexSpawned);
 
                 // Spawn pieces ------------------------------
                 // Choose whether or not to spawn pieces based on earlier generation
@@ -127,10 +130,13 @@ public class Board : MonoBehaviour
                     // Choose to place black or white piece depending on position in the board
                     GameObject pieceToPlace;
                     if (i < halfBoard) { pieceToPlace = whitePiecePrefab; } else { pieceToPlace = blackPiecePrefab; }
-                    // Spawn piece above hex and place in hexDex
-                    hexDex[i, hexX].Add("piece", Instantiate(pieceToPlace, lastPosition + pieceVertical, Quaternion.identity));
+                    // Spawn piece above hex, add correct board position, and place in hexDex
+                    GameObject pieceSpawned = Instantiate(pieceToPlace, lastPosition + pieceVertical, Quaternion.identity);
+                    pieceSpawned.GetComponent<BoardPos>().x = hexX;
+                    pieceSpawned.GetComponent<BoardPos>().z = i;
+                    hexDex[i, hexX].Add("piece", pieceSpawned);
                 }
-                // Make sure every index in the hexDex has a piece field so we can tell which ones don't have pieces
+                // Make sure every index in the hexDex has a piece value so we can tell which ones don't have pieces
                 else
                 {
                     hexDex[i, hexX].Add("piece", null);
@@ -174,13 +180,9 @@ public class Board : MonoBehaviour
                 // Makes sure it hit something
                 if (hit.collider != null)
                 {
-                    // Gets coordinates to turn into array indexes
-                    Vector3 hitPos = hit.transform.position;
-                    // Accounts for sideways offset tiling
-                    if ((hit.transform.position.z / 4.5f) % 2 == 1) { hitPos -= columnXSpace; }
-                    // Turns coordinates into array indexes
-                    int hitZ = (int)(hitPos.z / columnZSpace.z);
-                    int hitX = (int)(hitPos.x / rowSpace.x);
+                    // Gets coordinates of hit piece
+                    int hitX = hit.transform.gameObject.GetComponent<BoardPos>().x;
+                    int hitZ = hit.transform.gameObject.GetComponent<BoardPos>().z;
                     // Only select if there's a piece on the hex
                     if (hexDex[hitZ, hitX]["piece"] != null)
                     {
