@@ -159,6 +159,137 @@ public class Board : MonoBehaviour
                 lastWentRight = true; 
             }
         }
+
+        // Let hexes know their neighboring hexes ------------
+        int vertLeft;
+        int vertRight;
+        // These two variables determine what the top left and top right are, since they change depending on which row and the offset is
+        int transVert = 0;
+        int transHoriz = 0;
+        // Loop through each row
+        for (int i = 0; i < hexDex.GetLength(0); i++)
+        {
+            // Determine what top left and top right are based on whether it's an odd or even row
+            if (i % 2 == 0)
+            {
+                vertLeft = -1;
+                vertRight = 0;
+            }
+            else
+            {
+                vertLeft = 0;
+                vertRight = 1;
+            }
+
+            // Loop through each hex in each row
+            for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
+            {
+                GameObject[] allNeighbors = new GameObject[6];
+                // Assign for each of the six surrounding hexes
+                for (int iter = 0; iter < 6; iter++)
+                {
+                    // Say where each hex is in relation to the current hex
+                    switch (iter)
+                    {
+                        // Left
+                        case 0:
+                            transHoriz = -1;
+                            transVert = 0;
+                            break;
+                        // Right
+                        case 1:
+                            transHoriz = 1;
+                            transVert = 0;
+                            break;
+                        // Top left
+                        case 2:
+                            transHoriz = vertLeft;
+                            transVert = 1;
+                            break;
+                        // Top right
+                        case 3:
+                            transHoriz = vertRight;
+                            transVert = 1;
+                            break;
+                        // Bottom left
+                        case 4:
+                            transHoriz = vertLeft;
+                            transVert = -1;
+                            break;
+                        // Bottom right
+                        case 5:
+                            transHoriz = vertRight;
+                            transVert = -1;
+                            break;
+                    }
+                    GameObject neighborHex;
+                    // Makes sure that hexes on the edge get defined as null
+                    if (!((hexX + transHoriz < 0 || hexX + transHoriz >= columns) || (i + transVert < 0 || i + transVert >= rows)))
+                    {
+                        neighborHex = hexDex[i + transVert, hexX + transHoriz]["hex"];
+                    }
+                    else
+                    {
+                        neighborHex = null;
+                    }
+                    // Assigns the neighbor hex if there is one
+                    switch (iter)
+                    {
+                        // Left
+                        case 0:
+                            if (neighborHex != null)
+                            {
+                                hexDex[i, hexX]["hex"].GetComponent<Hex>().left = neighborHex;
+                            }
+                            break;
+                        // Right
+                        case 1:
+                            if (neighborHex != null)
+                            {
+                                hexDex[i, hexX]["hex"].GetComponent<Hex>().right = neighborHex;
+                            }
+                            break;
+                        // Top left
+                        case 2:
+                            if (neighborHex != null)
+                            {
+                                hexDex[i, hexX]["hex"].GetComponent<Hex>().topLeft = neighborHex;
+                            }
+                            break;
+                        // Top right
+                        case 3:
+                            if (neighborHex != null)
+                            {
+                                hexDex[i, hexX]["hex"].GetComponent<Hex>().topRight = neighborHex;
+                            }
+                            break;
+                        // Bottom left
+                        case 4:
+                            if (neighborHex != null)
+                            {
+                                hexDex[i, hexX]["hex"].GetComponent<Hex>().bottomLeft = neighborHex;
+                            }
+                            break;
+                        // Bottom right
+                        case 5:
+                            if (neighborHex != null)
+                            {
+                                hexDex[i, hexX]["hex"].GetComponent<Hex>().bottomRight = neighborHex;
+                            }
+                            break;
+                    }
+
+                    // Put this hex into the all neighbor hexes array
+                    if (neighborHex != null)
+                    {
+                        allNeighbors[iter] = neighborHex;
+                    }
+                }
+                // Set all array
+                hexDex[i, hexX]["hex"].GetComponent<Hex>().all = allNeighbors;
+            }
+            
+        }
         // Centers camera with generated board by setting transform x position to be half the distance of the number of columns * row space offset
         cam.transform.position = new Vector3((columns * rowSpace.x) / 2, cam.transform.position.y, cam.transform.position.z);
     }
