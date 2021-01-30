@@ -6,14 +6,15 @@ using UnityEngine;
 
 public class Board : MonoBehaviour
 {
-    // Prefabs & scene objects -------------------------------
+    #region Prefabs & scene objects
     public GameObject hexPrefab;
     public GameObject objHexPrefab;
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
     public GameObject cam;
+    #endregion
 
-    // Game variables for tweaking ---------------------------
+    #region Game behavior variables for tweaking
     // Number of objective hexes for each player
     public int objHexNum;
     // Hexes between each player's side
@@ -30,14 +31,18 @@ public class Board : MonoBehaviour
     public int pieceNum;
     // Vertical offset of each piece
     public Vector3 pieceVertical;
+    #endregion
 
+    #region Variables for use during generation and gameplay
     private Dictionary<string, GameObject>[,] hexDex;
     private bool[,] selected;
     private bool clickedLastFrame = false;
+    #endregion
+
     // Start is called before the first frame update
     void Start()
     {
-        // Set up board --------------------------------------
+        #region Initialize varibles for use during board generation
         // Initialize hexDex as 2D array with size of rows and columns specified
         hexDex = new Dictionary<string, GameObject>[rows, columns];
         // Initialize the "selected" array as a 2D array referring to the hexes and pieces that are selected
@@ -49,8 +54,9 @@ public class Board : MonoBehaviour
         int halfBoard = rows / 2;
         // Initialize random
         System.Random random = new System.Random();
+        #endregion
 
-        // Generate objective hex arrangement ---------------
+        #region Generate objective hex arrangement
         // Makes an array that has whether or not an objective hex needs to be generated in a coordinate, then makes all values false
         bool[,] objHexes = new bool[rows, columns];
         for (int i = 0; i < rows * columns; i++) { objHexes[i % rows, i / rows] = false; }
@@ -74,8 +80,9 @@ public class Board : MonoBehaviour
             } 
             while (!objHexes[zPos, xPos]);
         }
+        #endregion
 
-        // Generate piece arrangement ------------------------
+        #region Generate piece arrangement
         // Makes an array that has whether or not a piece needs to be generated in a coordinate, then makes all values false
         bool[,] pieces = new bool[rows, columns];
         for (int i = 0; i < rows * columns; i++) { pieces[i % rows, i / rows] = false; }
@@ -99,8 +106,9 @@ public class Board : MonoBehaviour
             } 
             while (!pieces[zPos, xPos]);
         }
+        #endregion
 
-        // Generating gameboard ------------------------------
+        #region Generate gameboard
         // lastPosition = the last place we spawned in a hex, we'll then add some vectors to it to get our new position and spawn a new hex there
         Vector3 lastPosition = new Vector3(0f, 0f, 0f);
         // Whether or not the first hex in the last row generated was offsetted to the right
@@ -113,7 +121,7 @@ public class Board : MonoBehaviour
                 // Create empty dictionary in position
                 hexDex[i, hexX] = new Dictionary<string, GameObject>();
 
-                // Spawn hexes -------------------------------
+                #region Spawn hexes
                 // Choose to place normal or objective hex based on earlier generation
                 GameObject hexToPlace;
                 if (objHexes[i, hexX]) { hexToPlace = objHexPrefab; } else { hexToPlace = hexPrefab; }
@@ -122,8 +130,9 @@ public class Board : MonoBehaviour
                 hexSpawned.GetComponent<BoardPos>().x = hexX;
                 hexSpawned.GetComponent<BoardPos>().z = i;
                 hexDex[i, hexX].Add("hex", hexSpawned);
+                #endregion
 
-                // Spawn pieces ------------------------------
+                #region Spawn pieces
                 // Choose whether or not to spawn pieces based on earlier generation
                 if (pieces[i, hexX])
                 {
@@ -141,6 +150,7 @@ public class Board : MonoBehaviour
                 {
                     hexDex[i, hexX].Add("piece", null);
                 }
+                #endregion
 
                 // Offets next hex position (for next time through loop)
                 lastPosition += rowSpace;
@@ -159,8 +169,9 @@ public class Board : MonoBehaviour
                 lastWentRight = true; 
             }
         }
+        #endregion
 
-        // Let hexes know their neighboring hexes ------------
+        #region Let hexes know their neighboring hexes
         int vertLeft;
         int vertRight;
         // These two variables determine what the top left and top right are, since they change depending on which row and the offset is
@@ -191,36 +202,42 @@ public class Board : MonoBehaviour
                     // Say where each hex is in relation to the current hex
                     switch (iter)
                     {
-                        // Left
+                        #region Left
                         case 0:
                             transHoriz = -1;
                             transVert = 0;
                             break;
-                        // Right
+                        #endregion
+                        #region Right
                         case 1:
                             transHoriz = 1;
                             transVert = 0;
                             break;
-                        // Top left
+                        #endregion
+                        #region Top left
                         case 2:
                             transHoriz = vertLeft;
                             transVert = 1;
                             break;
-                        // Top right
+                        #endregion
+                        #region Top right
                         case 3:
                             transHoriz = vertRight;
                             transVert = 1;
                             break;
-                        // Bottom left
+                        #endregion
+                        #region Bottom left
                         case 4:
                             transHoriz = vertLeft;
                             transVert = -1;
                             break;
-                        // Bottom right
+                        #endregion
+                        #region Bottom right
                         case 5:
                             transHoriz = vertRight;
                             transVert = -1;
                             break;
+                        #endregion
                     }
                     GameObject neighborHex;
                     // Makes sure that hexes on the edge get defined as null
@@ -235,48 +252,54 @@ public class Board : MonoBehaviour
                     // Assigns the neighbor hex if there is one
                     switch (iter)
                     {
-                        // Left
+                        #region Left
                         case 0:
                             if (neighborHex != null)
                             {
                                 hexDex[i, hexX]["hex"].GetComponent<Hex>().left = neighborHex;
                             }
                             break;
-                        // Right
+                        #endregion
+                        #region Right
                         case 1:
                             if (neighborHex != null)
                             {
                                 hexDex[i, hexX]["hex"].GetComponent<Hex>().right = neighborHex;
                             }
                             break;
-                        // Top left
+                        #endregion
+                        #region Top left
                         case 2:
                             if (neighborHex != null)
                             {
                                 hexDex[i, hexX]["hex"].GetComponent<Hex>().topLeft = neighborHex;
                             }
                             break;
-                        // Top right
+                        #endregion
+                        #region Top right
                         case 3:
                             if (neighborHex != null)
                             {
                                 hexDex[i, hexX]["hex"].GetComponent<Hex>().topRight = neighborHex;
                             }
                             break;
-                        // Bottom left
+                        #endregion
+                        #region Bottom left
                         case 4:
                             if (neighborHex != null)
                             {
                                 hexDex[i, hexX]["hex"].GetComponent<Hex>().bottomLeft = neighborHex;
                             }
                             break;
-                        // Bottom right
+                        #endregion
+                        #region Bottom right
                         case 5:
                             if (neighborHex != null)
                             {
                                 hexDex[i, hexX]["hex"].GetComponent<Hex>().bottomRight = neighborHex;
                             }
                             break;
+                        #endregion
                     }
 
                     // Put this hex into the all neighbor hexes array
@@ -285,11 +308,13 @@ public class Board : MonoBehaviour
                         allNeighbors[iter] = neighborHex;
                     }
                 }
-                // Set all array
+                // Set all neighbors array
                 hexDex[i, hexX]["hex"].GetComponent<Hex>().all = allNeighbors;
             }
             
         }
+        #endregion
+
         // Centers camera with generated board by setting transform x position to be half the distance of the number of columns * row space offset
         cam.transform.position = new Vector3((columns * rowSpace.x) / 2, cam.transform.position.y, cam.transform.position.z);
     }
