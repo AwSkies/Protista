@@ -33,7 +33,7 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Variables for use during generation and gameplay
-    private Dictionary<string, GameObject>[,] hexDex;
+    private GameObject[,] hexDex;
     private bool[,] selected;
     private bool clickedLastFrame = false;
     #endregion
@@ -43,7 +43,7 @@ public class Board : MonoBehaviour
     {
         #region Initialize varibles for use during board generation
         // Initialize hexDex as 2D array with size of rows and columns specified
-        hexDex = new Dictionary<string, GameObject>[rows, columns];
+        hexDex = new GameObject[rows, columns];
         // Initialize the "selected" array as a 2D array referring to the hexes and pieces that are selected
         selected = new bool[rows, columns];
         // Set all values of selected to false
@@ -117,18 +117,15 @@ public class Board : MonoBehaviour
         {
             for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
             {
-                // Create empty dictionary in position
-                hexDex[i, hexX] = new Dictionary<string, GameObject>();
-
                 #region Spawn hexes
                 // Choose to place normal or objective hex based on earlier generation
                 GameObject hexToPlace;
                 if (objHexes[i, hexX]) { hexToPlace = objHexPrefab; } else { hexToPlace = hexPrefab; }
-                // Spawn hex, add correct board position, and place in hexDex
+                // Spawn hex, add correct board position, and add to Hex object
                 GameObject hexSpawned = Instantiate(hexToPlace, lastPosition, Quaternion.Euler(0f, 30f, 0f));
                 hexSpawned.GetComponent<BoardPos>().x = hexX;
                 hexSpawned.GetComponent<BoardPos>().z = i;
-                hexDex[i, hexX].Add("hex", hexSpawned);
+                hexDex[i, hexX] = hexSpawned;
                 #endregion
 
                 #region Spawn pieces
@@ -142,12 +139,7 @@ public class Board : MonoBehaviour
                     GameObject pieceSpawned = Instantiate(pieceToPlace, lastPosition + pieceVertical, Quaternion.identity);
                     pieceSpawned.GetComponent<BoardPos>().x = hexX;
                     pieceSpawned.GetComponent<BoardPos>().z = i;
-                    hexDex[i, hexX].Add("piece", pieceSpawned);
-                }
-                // Make sure every index in the hexDex has a piece value so we can tell which ones don't have pieces
-                else
-                {
-                    hexDex[i, hexX].Add("piece", null);
+                    hexDex[i, hexX].GetComponent<Hex>().piece = pieceSpawned;
                 }
                 #endregion
 
@@ -242,7 +234,7 @@ public class Board : MonoBehaviour
                     // Makes sure that hexes on the edge get defined as null
                     if (!((hexX + transHoriz < 0 || hexX + transHoriz >= columns) || (i + transVert < 0 || i + transVert >= rows)))
                     {
-                        neighborHex = hexDex[i + transVert, hexX + transHoriz]["hex"];
+                        neighborHex = hexDex[i + transVert, hexX + transHoriz];
                     }
                     else
                     {
@@ -255,7 +247,7 @@ public class Board : MonoBehaviour
                         case 0:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().left = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().left = neighborHex;
                             }
                             break;
                         #endregion
@@ -263,7 +255,7 @@ public class Board : MonoBehaviour
                         case 1:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().right = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().right = neighborHex;
                             }
                             break;
                         #endregion
@@ -271,7 +263,7 @@ public class Board : MonoBehaviour
                         case 2:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().topLeft = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().topLeft = neighborHex;
                             }
                             break;
                         #endregion
@@ -279,7 +271,7 @@ public class Board : MonoBehaviour
                         case 3:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().topRight = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().topRight = neighborHex;
                             }
                             break;
                         #endregion
@@ -287,7 +279,7 @@ public class Board : MonoBehaviour
                         case 4:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().bottomLeft = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().bottomLeft = neighborHex;
                             }
                             break;
                         #endregion
@@ -295,7 +287,7 @@ public class Board : MonoBehaviour
                         case 5:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().bottomRight = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().bottomRight = neighborHex;
                             }
                             break;
                         #endregion
@@ -308,7 +300,7 @@ public class Board : MonoBehaviour
                     }
                 }
                 // Set all neighbors array
-                hexDex[i, hexX]["hex"].GetComponent<Hex>().all = allNeighbors;
+                hexDex[i, hexX].GetComponent<Hex>().all = allNeighbors;
             }
             
         }
@@ -339,12 +331,12 @@ public class Board : MonoBehaviour
                     int hitX = hit.transform.gameObject.GetComponent<BoardPos>().x;
                     int hitZ = hit.transform.gameObject.GetComponent<BoardPos>().z;
                     // Only select if there's a piece on the hex
-                    if (hexDex[hitZ, hitX]["piece"] != null)
+                    if (hexDex[hitZ, hitX].GetComponent<Hex>().piece != null)
                     {
                         // Toggles selected at coordinate
                         selected[hitZ, hitX] = !selected[hitZ, hitX];
                         // Toggles outline
-                        hexDex[hitZ, hitX]["hex"].GetComponent<cakeslice.Outline>().enabled = !hexDex[hitZ, hitX]["hex"].GetComponent<cakeslice.Outline>().enabled;
+                        hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled = !hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled;
                     }
                 }
             }
