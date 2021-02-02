@@ -26,10 +26,10 @@ public class Board : MonoBehaviour
     public Vector3 rowSpace;
     // Hexes to the right and left of player
     public int columns;
-    // The horizontal/z offset when hexes are tiled from left to right
-    public Vector3 columnZSpace;
-    // The way/distance hexes are tiled from top to bottom
-    public Vector3 columnXSpace;
+    // The horizontal/z offset when hexes are tiled from top to bottom
+    public Vector3 columnSpace;
+    // The offset of every other row
+    public Vector3 rowOffset;
     // Number of pieces for each player
     public int pieceNum;
     // Vertical offset of each piece
@@ -38,11 +38,11 @@ public class Board : MonoBehaviour
 
     #region Variables for use during generation and gameplay
     private GameObject[,] hexDex;
-    private bool[,] selected;
+    private List<GameObject> selected;
     private bool clickedLastFrame = false;
     #region Movement option chosen
     // Whether a movement option is chosen at all
-    private bool moving = false;
+    private bool selectedMoving = false;
     private bool singleMoving = false;
     private bool cannonMoving = false;
     private bool waveMoving = false;
@@ -54,19 +54,15 @@ public class Board : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        #region Initialize varibles for use during board generation
         // Initialize hexDex as 2D array with size of rows and columns specified
         hexDex = new GameObject[rows, columns];
-        // Initialize the "selected" array as a 2D array referring to the hexes and pieces that are selected
-        selected = new bool[rows, columns];
-        // Set all values of selected to false
-        for (int i = 0; i < rows * columns; i++) { selected[i % rows, i / rows] = false; }
+        // Initalize selected as an empty list
+        selected = new List<GameObject>();
 
         // halfBoard = the number of rows that make up half the board, minus the middle row 
         int halfBoard = rows / 2;
         // Initialize random
         System.Random random = new System.Random();
-        #endregion
 
         #region Generate objective hex arrangement
         // Makes an array that has whether or not an objective hex needs to be generated in a coordinate, then makes all values false
@@ -163,11 +159,11 @@ public class Board : MonoBehaviour
             }
             // Resets the x position of the first hex in the row to 0 and then adds the column space
             lastPosition.Set(0f, lastPosition.y, lastPosition.z);
-            lastPosition += columnZSpace;
+            lastPosition += columnSpace;
             // Offsets first hex (for next time through loop)
             if (lastWentRight) 
             {
-                lastPosition += columnXSpace;
+                lastPosition += rowOffset;
                 lastWentRight = false;
             } 
             else 
@@ -346,17 +342,25 @@ public class Board : MonoBehaviour
                     int hitX = hit.transform.gameObject.GetComponent<BoardPos>().x;
                     int hitZ = hit.transform.gameObject.GetComponent<BoardPos>().z;
                     // Checks if player has already selected a movement option
-                    if (!moving)
+                    // If they haven't, go on with selecting, if they have, go on with checking movement
+                    if (!selectedMoving)
                     {
                         // Only select if there's a piece on the hex
                         if (hexDex[hitZ, hitX].GetComponent<Hex>().piece != null)
                         {
                             // Makes sure outline color is selection color
                             hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color = 0;
-                            // Toggles selected at coordinate
-                            selected[hitZ, hitX] = !selected[hitZ, hitX];
+                            // Adds to list of selected if it's not selected, remove if it is
+                            if (!selected.Contains(hexDex[hitZ, hitX]))
+                            {
+                                selected.Add(hexDex[hitZ, hitX]);
+                            }
+                            else
+                            {
+                                selected.Remove(hexDex[hitZ, hitX]);
+                            }
                             // Toggles outline
-                            hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled = selected[hitZ, hitX];
+                            hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexDex[hitZ, hitX]);
                         }
                     }
                     else
@@ -364,7 +368,28 @@ public class Board : MonoBehaviour
                         // Checks movement option and executes proper move when clicked
                         if (singleMoving) 
                         {
-                            // Future movement code
+                            // Checks if hex clicked is highlighted green
+                            if (hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled && hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color == 1)
+                            {
+                                // Moves piece via movepiece function
+                                MovePiece(selected[0].GetComponent<Hex>().piece, hitZ, hitX);
+                            }
+                            // Resests moving variables, buttons, and outline
+                            selectedMoving = false;
+                            singleMoving = false;
+                            ChangeButtons(0, true);
+                            selected[0].GetComponent<cakeslice.Outline>().enabled = false;
+                            // Loops through all neighbors and unoutlines them
+                            foreach (GameObject hex in selected[0].GetComponent<Hex>().all)
+                            {
+                                // Makes sure there is a hex in the neighbor position
+                                if (hex != null)
+                                {
+                                    hex.GetComponent<cakeslice.Outline>().enabled = false;
+                                }
+                            }
+                            // Resets selected list back to an empty list
+                            selected = new List<GameObject>();
                         }
                         else if (cannonMoving) 
                         {
@@ -391,6 +416,18 @@ public class Board : MonoBehaviour
         {
             clickedLastFrame = false;
         }
+    }
+
+    private void MovePiece(GameObject piece, int newZ, int newX)
+    {
+        // Reassign the pieces on the hexes
+        hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+        hexDex[newZ, newX].GetComponent<Hex>().piece = piece;
+        // Reassign the piece's x and z values
+        piece.GetComponent<BoardPos>().z = newZ;
+        piece.GetComponent<BoardPos>().x = newX;
+        // Move piece
+        piece.GetComponent<Piece>().Move(hexDex[newZ, newX].transform.position.x, hexDex[newZ, newX].transform.position.z);
     }
 
     #region Moving buttons
@@ -421,35 +458,16 @@ public class Board : MonoBehaviour
     // When pressed, they enable moving and update hilighting
     public void SingleMovement()
     {
-        // Loops through all selected hexes and counts the total number
-        int selectedCount = 0;
-        // Each time a selected hex is found, it will be assigned to this, and if there's only one piece selected it should not be overwritten
-        GameObject selectedHex = null;
-        // Dimension 1
-        for (int i = 0; i < selected.GetLength(0); i++)
-        {
-            // Dimension 2
-            for (int j = 0; j < selected.GetLength(1); j++)
-            {
-                if (selected[i, j])
-                {
-                    // Adds to selected count
-                    selectedCount++;
-                    // Records this found selected hex
-                    selectedHex = hexDex[i, j];
-                }
-            }
-        }
         // Makes sure there's only one piece selected for single movement
         // If the button was pressed again to deselect single movement, there should still only be one hex selected since movement option select should disable selection
-        if (selectedCount == 1) 
+        if (selected.Count == 1)
         {
             // Toggles moving and singleMoving
-            moving = !moving;
+            selectedMoving = !selectedMoving;
             singleMoving = !singleMoving;
-            ChangeButtons(0, !moving);
+            ChangeButtons(0, !selectedMoving);
             // Loops through all neighbors and outlines them as valid moves
-            foreach (GameObject hex in selectedHex.GetComponent<Hex>().all)
+            foreach (GameObject hex in selected[0].GetComponent<Hex>().all)
             {
                 // Makes sure there is a hex in the neighbor position
                 if (hex != null)
@@ -470,36 +488,36 @@ public class Board : MonoBehaviour
     public void WaveMovement()
     {
         // Toggles moving and waveMoving
-        moving = !moving;
+        selectedMoving = !selectedMoving;
         waveMoving = !waveMoving;
-        ChangeButtons(1, !moving);
+        ChangeButtons(1, !selectedMoving);
         // Future code that checks and highlights possible moves
     }
 
     public void CannonMovement()
     {
         // Toggles moving and cannonMoving
-        moving = !moving;
+        selectedMoving = !selectedMoving;
         cannonMoving = !cannonMoving;
-        ChangeButtons(2, !moving);
+        ChangeButtons(2, !selectedMoving);
         // Future code that checks and highlights possible moves
     }
 
     public void VMovement()
     {
         // Toggles moving and vMoving
-        moving = !moving;
+        selectedMoving = !selectedMoving;
         vMoving = !vMoving;
-        ChangeButtons(3, !moving);
+        ChangeButtons(3, !selectedMoving);
         // Future code that checks and highlights possible moves
     }
 
     public void ContiguousMovement()
     {
         // Toggles moving and contiguousMoving
-        moving = !moving;
+        selectedMoving = !selectedMoving;
         contiguousMoving = !contiguousMoving;
-        ChangeButtons(4, !moving);
+        ChangeButtons(4, !selectedMoving);
         // Future code that checks and highlights possible moves
     }
     #endregion

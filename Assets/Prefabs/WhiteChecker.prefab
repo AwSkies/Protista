@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2807883688337863933}
   - component: {fileID: 4465150969597023529}
   - component: {fileID: 2277608394951999530}
+  - component: {fileID: 1968329517630703210}
   m_Layer: 0
   m_Name: WhiteChecker
   m_TagString: white
@@ -57,6 +58,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -81,6 +83,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!64 &4465150969597023529
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -109,3 +112,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   x: 0
   z: 0
+--- !u!114 &1968329517630703210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4465150969597023528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92571ce4cf2cae74cbbd8451231d8ce0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 10
