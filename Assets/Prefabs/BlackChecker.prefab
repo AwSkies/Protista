@@ -14,6 +14,8 @@ GameObject:
   - component: {fileID: 5271515676208782117}
   - component: {fileID: 394562131811421333}
   - component: {fileID: 3152029675558853222}
+  - component: {fileID: 5728499200041975217}
+  - component: {fileID: 4609883464192594954}
   m_Layer: 0
   m_Name: BlackChecker
   m_TagString: black
@@ -95,7 +97,7 @@ MeshCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 4
-  m_Convex: 0
+  m_Convex: 1
   m_CookingOptions: 30
   m_Mesh: {fileID: -3481718377373468750, guid: 12173b8fcaea36b4182eb33137a6fa88, type: 3}
 --- !u!114 &394562131811421333
@@ -124,4 +126,41 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92571ce4cf2cae74cbbd8451231d8ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  stackedPieces: []
   speed: 10
+  moving: 0
+--- !u!95 &5728499200041975217
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1198216280521353497}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 0}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!54 &4609883464192594954
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1198216280521353497}
+  serializedVersion: 2
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 126
+  m_CollisionDetection: 0

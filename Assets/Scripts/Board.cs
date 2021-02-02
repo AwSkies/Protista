@@ -368,28 +368,28 @@ public class Board : MonoBehaviour
                         // Checks movement option and executes proper move when clicked
                         if (singleMoving) 
                         {
-                            // Checks if hex clicked is highlighted green
+                            // Checks if hex clicked is highlighted green which would mean that you can move there
                             if (hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled && hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color == 1)
                             {
                                 // Moves piece via movepiece function
-                                MovePiece(selected[0].GetComponent<Hex>().piece, hitZ, hitX);
-                            }
-                            // Resests moving variables, buttons, and outline
-                            selectedMoving = false;
-                            singleMoving = false;
-                            ChangeButtons(0, true);
-                            selected[0].GetComponent<cakeslice.Outline>().enabled = false;
-                            // Loops through all neighbors and unoutlines them
-                            foreach (GameObject hex in selected[0].GetComponent<Hex>().all)
-                            {
-                                // Makes sure there is a hex in the neighbor position
-                                if (hex != null)
+                                MovePiece(selected[0].GetComponent<Hex>().piece, hitZ, hitX, canStack: true);
+                                // Resests moving variables, buttons, and outline
+                                selectedMoving = false;
+                                singleMoving = false;
+                                ChangeButtons(0, true);
+                                selected[0].GetComponent<cakeslice.Outline>().enabled = false;
+                                // Loops through all neighbors and unoutlines them
+                                foreach (GameObject hex in selected[0].GetComponent<Hex>().all)
                                 {
-                                    hex.GetComponent<cakeslice.Outline>().enabled = false;
+                                    // Makes sure there is a hex in the neighbor position
+                                    if (hex != null)
+                                    {
+                                        hex.GetComponent<cakeslice.Outline>().enabled = false;
+                                    }
                                 }
+                                // Resets selected back to an empty list
+                                selected = new List<GameObject>();
                             }
-                            // Resets selected list back to an empty list
-                            selected = new List<GameObject>();
                         }
                         else if (cannonMoving) 
                         {
@@ -418,7 +418,8 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void MovePiece(GameObject piece, int newZ, int newX)
+    #region Functions for moving
+    private void MovePiece(GameObject piece, int newZ, int newX, bool canStack = false)
     {
         // Reassign the pieces on the hexes
         hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
@@ -427,7 +428,7 @@ public class Board : MonoBehaviour
         piece.GetComponent<BoardPos>().z = newZ;
         piece.GetComponent<BoardPos>().x = newX;
         // Move piece
-        piece.GetComponent<Piece>().Move(hexDex[newZ, newX].transform.position.x, hexDex[newZ, newX].transform.position.z);
+        piece.GetComponent<Piece>().Move(hexDex[newZ, newX].transform.position.x, hexDex[newZ, newX].transform.position.z, canStack);
     }
 
     #region Moving buttons
@@ -520,5 +521,6 @@ public class Board : MonoBehaviour
         ChangeButtons(4, !selectedMoving);
         // Future code that checks and highlights possible moves
     }
+    #endregion
     #endregion
 }
