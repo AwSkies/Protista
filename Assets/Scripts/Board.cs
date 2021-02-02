@@ -36,6 +36,15 @@ public class Board : MonoBehaviour
     private GameObject[,] hexDex;
     private bool[,] selected;
     private bool clickedLastFrame = false;
+    #region Movement option chosen
+    // Whether a movement option is chosen at all
+    public bool moving = false;
+    public bool singleMoving = false;
+    public bool cannonMoving = false;
+    public bool waveMoving = false;
+    public bool contiguousMoving = false;
+    public bool vMoving = false;
+    #endregion
     #endregion
 
     // Start is called before the first frame update
@@ -113,8 +122,10 @@ public class Board : MonoBehaviour
         // Whether or not the first hex in the last row generated was offsetted to the right
         bool lastWentRight = true;
         // Loop through each row and hex in each row
+        // Dimension 1
         for (int i = 0; i < hexDex.GetLength(0); i++)
         {
+            // Dimension 2
             for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
             {
                 #region Spawn hexes
@@ -330,13 +341,43 @@ public class Board : MonoBehaviour
                     // Gets coordinates of hit piece
                     int hitX = hit.transform.gameObject.GetComponent<BoardPos>().x;
                     int hitZ = hit.transform.gameObject.GetComponent<BoardPos>().z;
-                    // Only select if there's a piece on the hex
-                    if (hexDex[hitZ, hitX].GetComponent<Hex>().piece != null)
+                    // Checks if player has already selected a movement option
+                    if (!moving)
                     {
-                        // Toggles selected at coordinate
-                        selected[hitZ, hitX] = !selected[hitZ, hitX];
-                        // Toggles outline
-                        hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled = !hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled;
+                        // Only select if there's a piece on the hex
+                        if (hexDex[hitZ, hitX].GetComponent<Hex>().piece != null)
+                        {
+                            // Makes sure outline color is selection color
+                            hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color = 0;
+                            // Toggles selected at coordinate
+                            selected[hitZ, hitX] = !selected[hitZ, hitX];
+                            // Toggles outline
+                            hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled = selected[hitZ, hitX];
+                        }
+                    }
+                    else
+                    {
+                        // Checks movement option and executes proper move when clicked
+                        if (singleMoving) 
+                        {
+                            // Future movement code
+                        }
+                        else if (cannonMoving) 
+                        {
+                            // Future movement code
+                        }
+                        else if (waveMoving) 
+                        {
+                            // Future movement code
+                        }
+                        else if (contiguousMoving) 
+                        {
+                            // Future movement code
+                        }
+                        else if (vMoving) 
+                        {
+                            // Future movement code
+                        }
                     }
                 }
             }
@@ -347,4 +388,83 @@ public class Board : MonoBehaviour
             clickedLastFrame = false;
         }
     }
+
+    #region Moving buttons
+    // When pressed, they enable moving and update hilighting
+    public void SingleMovement()
+    {
+        // Loops through all selected hexes and counts the total number
+        int selectedCount = 0;
+        // Each time a selected hex is found, it will be assigned to this, and if there's only one piece selected it should not be overwritten
+        GameObject selectedHex = null;
+        // Dimension 1
+        for (int i = 0; i < selected.GetLength(0); i++)
+        {
+            // Dimension 2
+            for (int j = 0; j < selected.GetLength(1); j++)
+            {
+                if (selected[i, j])
+                {
+                    // Adds to selected count
+                    selectedCount++;
+                    // Records this found selected hex
+                    selectedHex = hexDex[i, j];
+                }
+            }
+        }
+        // Makes sure there's only one piece selected for single movement
+        // If the button was pressed again to deselect single movement, there should still only be one hex selected since movement option select should disable selection
+        if (selectedCount == 1) 
+        {
+            // Toggles moving and singleMoving
+            moving = !moving;
+            singleMoving = !singleMoving;
+            // Loops through all neighbors and outlines them as valid moves
+            foreach (GameObject hex in selectedHex.GetComponent<Hex>().all)
+            {
+                // Makes sure there is a hex in the neighbor position
+                if (hex != null)
+                {
+                    // Changes outline color to one and turns on or off the outline
+                    hex.GetComponent<cakeslice.Outline>().color = 1;
+                    // Setting the value to singleMoving here makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
+                    hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
+                }
+            }
+        }
+    }
+
+    public void CannonMovement()
+    {
+        // Toggles moving and cannonMoving
+        moving = !moving;
+        cannonMoving = !cannonMoving;
+        // Future code that checks and highlights possible moves
+    }
+
+    public void WaveMovement()
+    {
+        // Toggles moving and waveMoving
+        moving = !moving;
+        waveMoving = !waveMoving;
+        // Future code that checks and highlights possible moves
+    }
+
+    public void ContiguousMovement()
+    {
+        // Toggles moving and contiguousMoving
+        moving = !moving;
+        contiguousMoving = !contiguousMoving;
+        // Future code that checks and highlights possible moves
+    }
+
+    public void VMovement()
+    {
+        // Toggles moving and vMoving
+        moving = !moving;
+        vMoving = !vMoving;
+        // Future code that checks and highlights possible moves
+    }
+
+    #endregion
 }
