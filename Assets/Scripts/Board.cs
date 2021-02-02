@@ -372,7 +372,7 @@ public class Board : MonoBehaviour
                             if (hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled && hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color == 1)
                             {
                                 // Moves piece via movepiece function
-                                MovePiece(selected[0].GetComponent<Hex>().piece, hitZ, hitX, canStack: true);
+                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, canStack: true);
                                 // Resests moving variables, buttons, and outline
                                 selectedMoving = false;
                                 singleMoving = false;
@@ -419,16 +419,32 @@ public class Board : MonoBehaviour
     }
 
     #region Functions for moving
-    private void MovePiece(GameObject piece, int newZ, int newX, bool canStack = false)
+    private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false)
     {
+        bool stacking;
         // Reassign the pieces on the hexes
+        if (canStack && hexDex[newZ, newX].GetComponent<Hex>().piece != null && hexDex[newZ, newX].GetComponent<Hex>().piece.tag == piece.tag)
+        {
+            hexDex[newZ, newX].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Add(piece);
+            stacking = true;
+        }
+        else
+        {
+            hexDex[newZ, newX].GetComponent<Hex>().piece = piece;
+            stacking = false;
+        }
+        // Make old hex have no pieces
         hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
-        hexDex[newZ, newX].GetComponent<Hex>().piece = piece;
-        // Reassign the piece's x and z values
-        piece.GetComponent<BoardPos>().z = newZ;
-        piece.GetComponent<BoardPos>().x = newX;
         // Move piece
-        piece.GetComponent<Piece>().Move(hexDex[newZ, newX].transform.position.x, hexDex[newZ, newX].transform.position.z, canStack);
+        piece.GetComponent<Piece>().Move
+        (
+            hexDex[newZ, newX].transform.position.x, 
+            hexDex[newZ, newX].transform.position.z, 
+            newX, 
+            newZ, 
+            stacking, 
+            hexDex[newZ, newX].GetComponent<Hex>().piece
+        );
     }
 
     #region Moving buttons

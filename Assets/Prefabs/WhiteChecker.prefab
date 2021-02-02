@@ -128,6 +128,7 @@ MonoBehaviour:
   stackedPieces: []
   speed: 10
   moving: 0
+  stackingHeight: {x: 0, y: 0.4, z: 0}
 --- !u!54 &-4258576543311768339
 Rigidbody:
   m_ObjectHideFlags: 0

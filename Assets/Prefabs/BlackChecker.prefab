@@ -129,6 +129,7 @@ MonoBehaviour:
   stackedPieces: []
   speed: 10
   moving: 0
+  stackingHeight: {x: 0, y: 0.4, z: 0}
 --- !u!95 &5728499200041975217
 Animator:
   serializedVersion: 3

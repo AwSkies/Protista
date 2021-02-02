@@ -9,6 +9,7 @@ public class Piece : MonoBehaviour
     public float speed;
     public bool moving;
     private Vector3 target;
+    public Vector3 stackingHeight;
 
     // Update is called once per frame
     void Update()
@@ -28,12 +29,23 @@ public class Piece : MonoBehaviour
         }
     }
 
-    public void Move(float newX, float newZ, bool canStack = false)
+    public void Move(float newXf, float newZf, int newX, int newZ, bool stacking = false, GameObject stackingOnto = null)
     {
+        // Reassign the piece's x and z values
+        GetComponent<BoardPos>().z = newZ;
+        GetComponent<BoardPos>().x = newX;
         // Set target and make moving true
-        target = new Vector3(newX, transform.position.y, newZ);
+        target = new Vector3(newXf, transform.position.y, newZf);
+        if (stacking)
+        {
+            target += (stackingHeight * stackingOnto.GetComponent<Piece>().stackedPieces.Count);
+        }
         moving = true;
-    }
+        foreach (GameObject piece in stackedPieces)
+        {
+            piece.GetComponent<Piece>().Move(newXf, newZf, newX, newZ);
+        }
+    }    
 
     void OnCollisionEnter(Collision otherObj)
     {
