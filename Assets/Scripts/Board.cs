@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class Board : MonoBehaviour
 {
@@ -11,6 +13,7 @@ public class Board : MonoBehaviour
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
     public GameObject cam;
+    public GameObject InvalidMovementOptionText;
     #endregion
 
     #region Game behavior variables for tweaking
@@ -38,12 +41,12 @@ public class Board : MonoBehaviour
     private bool clickedLastFrame = false;
     #region Movement option chosen
     // Whether a movement option is chosen at all
-    public bool moving = false;
-    public bool singleMoving = false;
-    public bool cannonMoving = false;
-    public bool waveMoving = false;
-    public bool contiguousMoving = false;
-    public bool vMoving = false;
+    private bool moving = false;
+    private bool singleMoving = false;
+    private bool cannonMoving = false;
+    private bool waveMoving = false;
+    private bool contiguousMoving = false;
+    private bool vMoving = false;
     #endregion
     #endregion
 
@@ -390,6 +393,19 @@ public class Board : MonoBehaviour
     }
 
     #region Moving buttons
+    #region Invalid movement option display and recind
+    private void InvalidMovementOptionDisplay()
+    {
+        InvalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = true;
+        Invoke("InvalidMovementOptionRecind", 2f);
+    }
+
+    private void InvalidMovementOptionRecind()
+    {
+        InvalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = false;
+    }
+    #endregion
+
     // When pressed, they enable moving and update hilighting
     public void SingleMovement()
     {
@@ -432,6 +448,10 @@ public class Board : MonoBehaviour
                 }
             }
         }
+        else
+        {
+            InvalidMovementOptionDisplay();
+        }
     }
 
     public void CannonMovement()
@@ -465,6 +485,5 @@ public class Board : MonoBehaviour
         vMoving = !vMoving;
         // Future code that checks and highlights possible moves
     }
-
     #endregion
 }
