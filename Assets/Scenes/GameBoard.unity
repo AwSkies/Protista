@@ -123,6 +123,12 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &18959123 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4757419627870318915, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
+    type: 3}
+  m_PrefabInstance: {fileID: 41764647}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &18959124 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4757419627870318912, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
@@ -263,6 +269,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6feff7c3b1387c847b5d2500dcfd76f2, type: 3}
+--- !u!1 &45441342 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4757419627870318915, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
+    type: 3}
+  m_PrefabInstance: {fileID: 639594252}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &45441343 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4757419627870318912, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
@@ -1116,6 +1128,12 @@ MonoBehaviour:
   outlineShaderMaterial: {fileID: 0}
   renderTexture: {fileID: 0}
   extraRenderTexture: {fileID: 0}
+--- !u!1 &1061933289 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4757419627870318915, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
+    type: 3}
+  m_PrefabInstance: {fileID: 88136432}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1061933290 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4757419627870318912, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
@@ -1360,6 +1378,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6feff7c3b1387c847b5d2500dcfd76f2, type: 3}
+--- !u!1 &1549433161 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4757419627870318915, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
+    type: 3}
+  m_PrefabInstance: {fileID: 4757419628747294730}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1549433162 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4757419627870318912, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
@@ -1404,7 +1428,13 @@ MonoBehaviour:
   blackPiecePrefab: {fileID: 1198216280521353497, guid: 445642dfdd0261d45ac669eb9702590d,
     type: 3}
   cam: {fileID: 963194225}
-  InvalidMovementOptionText: {fileID: 748715326}
+  invalidMovementOptionText: {fileID: 748715326}
+  buttons:
+  - {fileID: 1549433161}
+  - {fileID: 1061933289}
+  - {fileID: 1872925436}
+  - {fileID: 18959123}
+  - {fileID: 45441342}
   objHexNum: 3
   rows: 19
   rowSpace: {x: 5, y: 0, z: 0}
@@ -1427,6 +1457,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1872925436 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4757419627870318915, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
+    type: 3}
+  m_PrefabInstance: {fileID: 1309428266}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1872925437 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 4757419627870318912, guid: 6feff7c3b1387c847b5d2500dcfd76f2,

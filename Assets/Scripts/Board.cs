@@ -13,7 +13,8 @@ public class Board : MonoBehaviour
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
     public GameObject cam;
-    public GameObject InvalidMovementOptionText;
+    public GameObject invalidMovementOptionText;
+    public GameObject[] buttons;
     #endregion
 
     #region Game behavior variables for tweaking
@@ -396,15 +397,26 @@ public class Board : MonoBehaviour
     #region Invalid movement option display and recind
     private void InvalidMovementOptionDisplay()
     {
-        InvalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = true;
+        invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = true;
         Invoke("InvalidMovementOptionRecind", 2f);
     }
 
     private void InvalidMovementOptionRecind()
     {
-        InvalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = false;
+        invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = false;
     }
     #endregion
+
+    private void ChangeButtons(int buttonNum, bool on)
+    {
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            if (i != buttonNum)
+            {
+                buttons[i].GetComponent<Button>().interactable = on;
+            }
+        }
+    }
 
     // When pressed, they enable moving and update hilighting
     public void SingleMovement()
@@ -435,6 +447,7 @@ public class Board : MonoBehaviour
             // Toggles moving and singleMoving
             moving = !moving;
             singleMoving = !singleMoving;
+            ChangeButtons(0, !moving);
             // Loops through all neighbors and outlines them as valid moves
             foreach (GameObject hex in selectedHex.GetComponent<Hex>().all)
             {
@@ -454,27 +467,21 @@ public class Board : MonoBehaviour
         }
     }
 
-    public void CannonMovement()
-    {
-        // Toggles moving and cannonMoving
-        moving = !moving;
-        cannonMoving = !cannonMoving;
-        // Future code that checks and highlights possible moves
-    }
-
     public void WaveMovement()
     {
         // Toggles moving and waveMoving
         moving = !moving;
         waveMoving = !waveMoving;
+        ChangeButtons(1, !moving);
         // Future code that checks and highlights possible moves
     }
 
-    public void ContiguousMovement()
+    public void CannonMovement()
     {
-        // Toggles moving and contiguousMoving
+        // Toggles moving and cannonMoving
         moving = !moving;
-        contiguousMoving = !contiguousMoving;
+        cannonMoving = !cannonMoving;
+        ChangeButtons(2, !moving);
         // Future code that checks and highlights possible moves
     }
 
@@ -483,6 +490,16 @@ public class Board : MonoBehaviour
         // Toggles moving and vMoving
         moving = !moving;
         vMoving = !vMoving;
+        ChangeButtons(3, !moving);
+        // Future code that checks and highlights possible moves
+    }
+
+    public void ContiguousMovement()
+    {
+        // Toggles moving and contiguousMoving
+        moving = !moving;
+        contiguousMoving = !contiguousMoving;
+        ChangeButtons(4, !moving);
         // Future code that checks and highlights possible moves
     }
     #endregion
