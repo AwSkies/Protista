@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -29,8 +29,7 @@ public class Piece : MonoBehaviour
         }
     }
 
-    public void Move
-    (
+    public void Move(
         // Position of the hex the piece is moving onto
         Vector3 newHexPos, 
         // The board X position of the hex the piece is moving onto

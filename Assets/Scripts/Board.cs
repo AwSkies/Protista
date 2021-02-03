@@ -435,8 +435,7 @@ public class Board : MonoBehaviour
         // Make old hex have no pieces
         hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
         // Move piece
-        piece.GetComponent<Piece>().Move
-        (
+        piece.GetComponent<Piece>().Move(
             hexDex[newZ, newX].transform.position,
             newX, 
             newZ, 
