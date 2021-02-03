@@ -451,7 +451,7 @@ public class Board : MonoBehaviour
     private void InvalidMovementOptionDisplay()
     {
         invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = true;
-        Invoke("InvalidMovementOptionRecind", 2f);
+        Invoke(nameof(InvalidMovementOptionRecind), 2f);
     }
 
     private void InvalidMovementOptionRecind()
