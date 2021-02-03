@@ -425,7 +425,6 @@ public class Board : MonoBehaviour
         // Reassign the pieces on the hexes
         if (canStack && hexDex[newZ, newX].GetComponent<Hex>().piece != null && hexDex[newZ, newX].GetComponent<Hex>().piece.tag == piece.tag)
         {
-            hexDex[newZ, newX].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Add(piece);
             stacking = true;
         }
         else
@@ -438,12 +437,12 @@ public class Board : MonoBehaviour
         // Move piece
         piece.GetComponent<Piece>().Move
         (
-            hexDex[newZ, newX].transform.position.x, 
-            hexDex[newZ, newX].transform.position.z, 
+            hexDex[newZ, newX].transform.position,
             newX, 
             newZ, 
-            stacking, 
-            hexDex[newZ, newX].GetComponent<Hex>().piece
+            stacking: stacking, 
+            stackingOnto: hexDex[newZ, newX].GetComponent<Hex>().piece,
+            bottomPiece: true
         );
     }
 

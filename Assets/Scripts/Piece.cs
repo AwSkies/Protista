@@ -29,21 +29,87 @@ public class Piece : MonoBehaviour
         }
     }
 
-    public void Move(float newXf, float newZf, int newX, int newZ, bool stacking = false, GameObject stackingOnto = null)
+    public void Move(Vector3 newHexPos, int newX, int newZ, bool stacking = false, GameObject stackingOnto = null, bool stackingAStack = false, bool bottomPiece = false, int origStackCount = 0)
     {
+        // newHexPos:         Position of the hex the piece is moving onto
+        // newX:              The board X position of the hex the piece is moving onto
+        // newY:              The board Y position of the hex the piece is moving onto
+        // stacking:          Whether the piece is stacking onto another piece during this movement
+        // stackingOnto:      The piece this piece is stacking onto
+        // stackingAStack:    Whether this piece is in a stack that is being added onto another piece or stack
+        // currentStackCount: The amount of pieces in the stack that this piece is in
+
         // Reassign the piece's x and z values
         GetComponent<BoardPos>().z = newZ;
         GetComponent<BoardPos>().x = newX;
-        // Set target and make moving true
-        target = new Vector3(newXf, transform.position.y, newZf);
+        // Set target
+        target = newHexPos + new Vector3 (0f, transform.position.y, 0f);
+
+        // Whether this is the bottom piece of a stack that is being moved onto another piece
+        bool startingStackingAStack;
+        int stackCount;
+
         if (stacking)
         {
-            target += (stackingHeight * stackingOnto.GetComponent<Piece>().stackedPieces.Count);
+            // How high offset the bottom stacking piece needs to be in the piece its moving onto is stacked
+            if (stackingOnto.GetComponent<Piece>().stackedPieces.Count != 0)
+            {
+                if (stackingAStack)
+                {
+                    stackCount = origStackCount;
+                }
+                else
+                {
+                    stackCount = stackingOnto.GetComponent<Piece>().stackedPieces.Count;
+                }
+            }
+            else
+            {
+                stackCount = 0;
+            }
+            Vector3 stackOffset = stackingHeight * stackCount;
+            target += stackOffset;
+
+            // Checks if this piece has stacked pieces and is not a piece in the middle of a stack
+            // Begins a stack if so, doesn't if not
+            if (stackedPieces.Count != 0 && !stackingAStack)
+            {
+                startingStackingAStack = true;
+            }
+            else
+            {
+                startingStackingAStack = false;
+            }
+
+            // Add piece to the list of stacked pieces on the piece it's being stacked on
+            stackingOnto.GetComponent<Piece>().stackedPieces.Add(gameObject);
+
+            // Assign target position based on the height of the stack the piece is moving onto
+            // Since this method is recursive, every time it goes through each stacked piece, target gets added to each time 
+            // It gets offset by stackingHeight each time.
+            target += stackingHeight;
         }
+        else
+        {
+            // Make sure startingStackingAStack doesn't go unassigned
+            startingStackingAStack = false;
+            stackCount = 0;
+        }
+
+        // Piece is now moving to its next position
         moving = true;
+
+        // Repeats this for all stacked pieces
         foreach (GameObject piece in stackedPieces)
         {
-            piece.GetComponent<Piece>().Move(newXf, newZf, newX, newZ);
+            piece.GetComponent<Piece>().Move(newHexPos, newX, newZ, stacking: startingStackingAStack, stackingOnto: stackingOnto, stackingAStack: startingStackingAStack, origStackCount: stackCount);
+        }
+
+        // Things to do if this is the first piece in a stack that's moving
+        if (startingStackingAStack)
+        {
+            // Reset list to empty
+            stackedPieces = new List<GameObject>();
         }
     }    
 
