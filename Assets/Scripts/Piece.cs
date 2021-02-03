@@ -29,16 +29,26 @@ public class Piece : MonoBehaviour
         }
     }
 
-    public void Move(Vector3 newHexPos, int newX, int newZ, bool stacking = false, GameObject stackingOnto = null, bool stackingAStack = false, bool bottomPiece = false, int origStackCount = 0)
+    public void Move
+    (
+        // Position of the hex the piece is moving onto
+        Vector3 newHexPos, 
+        // The board X position of the hex the piece is moving onto
+        int newX, 
+        // The board Z position of the hex the piece is moving onto
+        int newZ, 
+        // Whether the piece is stacking onto another piece during this movement
+        bool stacking = false, 
+        // The piece this piece is stacking onto
+        GameObject stackingOnto = null, 
+        // Whether this piece is in a stack that is being added onto another piece or stack
+        bool stackingAStack = false, 
+        // Whether this piece is the only, or bottom piece in a stack
+        bool bottomPiece = false, 
+        // The original (before moving pieces on this stack into it) amount of pieces in the stack that this piece is moving onto
+        int origStackCount = 0
+    )
     {
-        // newHexPos:         Position of the hex the piece is moving onto
-        // newX:              The board X position of the hex the piece is moving onto
-        // newY:              The board Y position of the hex the piece is moving onto
-        // stacking:          Whether the piece is stacking onto another piece during this movement
-        // stackingOnto:      The piece this piece is stacking onto
-        // stackingAStack:    Whether this piece is in a stack that is being added onto another piece or stack
-        // currentStackCount: The amount of pieces in the stack that this piece is in
-
         // Reassign the piece's x and z values
         GetComponent<BoardPos>().z = newZ;
         GetComponent<BoardPos>().x = newX;
@@ -47,13 +57,16 @@ public class Piece : MonoBehaviour
 
         // Whether this is the bottom piece of a stack that is being moved onto another piece
         bool startingStackingAStack;
+        // How high offset the bottom stacking piece needs to be in the piece its moving onto is stacked
         int stackCount;
 
+        // Stacking 
         if (stacking)
         {
-            // How high offset the bottom stacking piece needs to be in the piece its moving onto is stacked
+            // Checks if the piece this piece is stacking onto has pieces stacked onto it
             if (stackingOnto.GetComponent<Piece>().stackedPieces.Count != 0)
             {
+                // Sets the original stack count if this piece is in a stack or the first piece in a stack
                 if (stackingAStack)
                 {
                     stackCount = origStackCount;
@@ -67,6 +80,8 @@ public class Piece : MonoBehaviour
             {
                 stackCount = 0;
             }
+
+            // Make stack offset for stacking on a stack
             Vector3 stackOffset = stackingHeight * stackCount;
             target += stackOffset;
 
@@ -102,7 +117,17 @@ public class Piece : MonoBehaviour
         // Repeats this for all stacked pieces
         foreach (GameObject piece in stackedPieces)
         {
-            piece.GetComponent<Piece>().Move(newHexPos, newX, newZ, stacking: startingStackingAStack, stackingOnto: stackingOnto, stackingAStack: startingStackingAStack, origStackCount: stackCount);
+            piece.GetComponent<Piece>().Move
+            (
+                newHexPos, 
+                newX, 
+                newZ, 
+                stacking: startingStackingAStack, 
+                stackingOnto: stackingOnto, 
+                stackingAStack: 
+                startingStackingAStack, 
+                origStackCount: stackCount
+            );
         }
 
         // Things to do if this is the first piece in a stack that's moving
