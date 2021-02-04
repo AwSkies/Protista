@@ -12,7 +12,6 @@ public class Board : MonoBehaviour
     public GameObject objHexPrefab;
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
-    public GameObject cam;
     public GameObject invalidMovementOptionText;
     public GameObject[] buttons;
     #endregion
@@ -318,7 +317,7 @@ public class Board : MonoBehaviour
         #endregion
 
         // Centers camera with generated board by setting transform x position to be half the distance of the number of columns * row space offset
-        cam.transform.position = new Vector3((columns * rowSpace.x) / 2, cam.transform.position.y, cam.transform.position.z);
+        Camera.main.transform.position = new Vector3((columns * rowSpace.x) / 2, Camera.main.transform.position.y, Camera.main.transform.position.z);
     }
 
     // Update is called once per frame

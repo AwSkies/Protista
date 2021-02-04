@@ -1,15 +1,22 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class Piece : MonoBehaviour
 {
+    // List of stacked pieces
     public List<GameObject> stackedPieces;
     // Variables for moving animation
     public float speed;
+    // Whether the piece is moving
     public bool moving;
-    private Vector3 target;
+    // The height of a piece, how high each piece should stack
     public Vector3 stackingHeight;
+    // Whether the piece is going to update its stack count once it stops moving
+    public bool goingToUpdateStack;
+    // The position that the piece needs to move to
+    private Vector3 target;
 
     // Update is called once per frame
     void Update()
@@ -18,14 +25,20 @@ public class Piece : MonoBehaviour
         {
             // Move our position a step closer to the target
             // calculate distance to move
-            float step =  speed * Time.deltaTime; 
+            float step = speed * Time.deltaTime; 
             transform.position = Vector3.MoveTowards(transform.position, target, step);
 
             // Check if the position is about where it should be
             if (Vector3.Distance(transform.position, target) < 0.001f)
             {
+                // Stop piece
                 moving = false;
             }
+        }
+
+        if (goingToUpdateStack)
+        {
+            UpdateStackCount();
         }
     }
 
@@ -135,7 +148,12 @@ public class Piece : MonoBehaviour
             // Reset list to empty
             stackedPieces = new List<GameObject>();
         }
-    }    
+
+        if (bottomPiece && stacking)
+        {
+            stackingOnto.GetComponent<Piece>().goingToUpdateStack = true;
+        }
+    }
 
     void OnCollisionEnter(Collision otherObj)
     {
@@ -145,6 +163,37 @@ public class Piece : MonoBehaviour
         if ((otherObj.gameObject.tag == "black" || otherObj.gameObject.tag == "white") && otherObj.gameObject.tag != tag && !otherObj.gameObject.GetComponent<Piece>().moving)
         {
             Destroy(otherObj.gameObject);
+        }
+    }
+
+    public void UpdateStackCount()
+    {
+        List<bool> stackMoving = new List<bool>();
+        foreach (GameObject piece in stackedPieces)
+        {
+            bool otherPieceMoving = piece.GetComponent<Piece>().moving;
+            if (otherPieceMoving)
+            {
+                stackMoving.Add(otherPieceMoving);
+            }
+        }
+        if (!stackMoving.Contains(true))
+        {
+            // Get canvas
+            GameObject canvas = stackedPieces[stackedPieces.Count - 1].transform.GetChild(0).gameObject;
+            // Get text
+            TextMeshProUGUI text = canvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
+            if (stackedPieces.Count != 0)
+            {
+                canvas.SetActive(true);
+                text.text = (stackedPieces.Count + 1).ToString();
+            }
+            else
+            {
+                canvas.SetActive(false);
+            }
+
+            goingToUpdateStack = false;
         }
     }
 }
