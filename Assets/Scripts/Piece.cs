@@ -183,6 +183,14 @@ public class Piece : MonoBehaviour
             GameObject canvas = stackedPieces[stackedPieces.Count - 1].transform.GetChild(0).gameObject;
             // Get text
             TextMeshProUGUI text = canvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
+
+            // Hide all the number for pieces that are stacked 
+            foreach (GameObject piece in stackedPieces)
+            {
+                // Hide canvas
+                piece.transform.GetChild(0).gameObject.SetActive(false);
+            }
+
             if (stackedPieces.Count != 0)
             {
                 canvas.SetActive(true);
