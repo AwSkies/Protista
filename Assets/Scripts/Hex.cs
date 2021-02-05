@@ -11,4 +11,5 @@ public class Hex : MonoBehaviour
     public GameObject bottomLeft;
     public GameObject bottomRight;
     public GameObject[] all;
+    public GameObject piece;
 }

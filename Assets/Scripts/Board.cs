@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class Board : MonoBehaviour
 {
@@ -10,7 +12,8 @@ public class Board : MonoBehaviour
     public GameObject objHexPrefab;
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
-    public GameObject cam;
+    public GameObject invalidMovementOptionText;
+    public GameObject[] buttons;
     #endregion
 
     #region Game behavior variables for tweaking
@@ -22,10 +25,10 @@ public class Board : MonoBehaviour
     public Vector3 rowSpace;
     // Hexes to the right and left of player
     public int columns;
-    // The horizontal/z offset when hexes are tiled from left to right
-    public Vector3 columnZSpace;
-    // The way/distance hexes are tiled from top to bottom
-    public Vector3 columnXSpace;
+    // The horizontal/z offset when hexes are tiled from top to bottom
+    public Vector3 columnSpace;
+    // The offset of every other row
+    public Vector3 rowOffset;
     // Number of pieces for each player
     public int pieceNum;
     // Vertical offset of each piece
@@ -33,27 +36,32 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Variables for use during generation and gameplay
-    private Dictionary<string, GameObject>[,] hexDex;
-    private bool[,] selected;
+    private GameObject[,] hexDex;
+    private List<GameObject> selected;
     private bool clickedLastFrame = false;
+    #region Movement option chosen
+    // Whether a movement option is chosen at all
+    private bool selectedMoving = false;
+    private bool singleMoving = false;
+    private bool cannonMoving = false;
+    private bool waveMoving = false;
+    private bool contiguousMoving = false;
+    private bool vMoving = false;
+    #endregion
     #endregion
 
     // Start is called before the first frame update
     void Start()
     {
-        #region Initialize varibles for use during board generation
         // Initialize hexDex as 2D array with size of rows and columns specified
-        hexDex = new Dictionary<string, GameObject>[rows, columns];
-        // Initialize the "selected" array as a 2D array referring to the hexes and pieces that are selected
-        selected = new bool[rows, columns];
-        // Set all values of selected to false
-        for (int i = 0; i < rows * columns; i++) { selected[i % rows, i / rows] = false; }
+        hexDex = new GameObject[rows, columns];
+        // Initalize selected as an empty list
+        selected = new List<GameObject>();
 
         // halfBoard = the number of rows that make up half the board, minus the middle row 
         int halfBoard = rows / 2;
         // Initialize random
         System.Random random = new System.Random();
-        #endregion
 
         #region Generate objective hex arrangement
         // Makes an array that has whether or not an objective hex needs to be generated in a coordinate, then makes all values false
@@ -113,22 +121,21 @@ public class Board : MonoBehaviour
         // Whether or not the first hex in the last row generated was offsetted to the right
         bool lastWentRight = true;
         // Loop through each row and hex in each row
+        // Dimension 1
         for (int i = 0; i < hexDex.GetLength(0); i++)
         {
+            // Dimension 2
             for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
             {
-                // Create empty dictionary in position
-                hexDex[i, hexX] = new Dictionary<string, GameObject>();
-
                 #region Spawn hexes
                 // Choose to place normal or objective hex based on earlier generation
                 GameObject hexToPlace;
                 if (objHexes[i, hexX]) { hexToPlace = objHexPrefab; } else { hexToPlace = hexPrefab; }
-                // Spawn hex, add correct board position, and place in hexDex
+                // Spawn hex, add correct board position, and add to Hex object
                 GameObject hexSpawned = Instantiate(hexToPlace, lastPosition, Quaternion.Euler(0f, 30f, 0f));
                 hexSpawned.GetComponent<BoardPos>().x = hexX;
                 hexSpawned.GetComponent<BoardPos>().z = i;
-                hexDex[i, hexX].Add("hex", hexSpawned);
+                hexDex[i, hexX] = hexSpawned;
                 #endregion
 
                 #region Spawn pieces
@@ -142,12 +149,7 @@ public class Board : MonoBehaviour
                     GameObject pieceSpawned = Instantiate(pieceToPlace, lastPosition + pieceVertical, Quaternion.identity);
                     pieceSpawned.GetComponent<BoardPos>().x = hexX;
                     pieceSpawned.GetComponent<BoardPos>().z = i;
-                    hexDex[i, hexX].Add("piece", pieceSpawned);
-                }
-                // Make sure every index in the hexDex has a piece value so we can tell which ones don't have pieces
-                else
-                {
-                    hexDex[i, hexX].Add("piece", null);
+                    hexDex[i, hexX].GetComponent<Hex>().piece = pieceSpawned;
                 }
                 #endregion
 
@@ -156,11 +158,11 @@ public class Board : MonoBehaviour
             }
             // Resets the x position of the first hex in the row to 0 and then adds the column space
             lastPosition.Set(0f, lastPosition.y, lastPosition.z);
-            lastPosition += columnZSpace;
+            lastPosition += columnSpace;
             // Offsets first hex (for next time through loop)
             if (lastWentRight) 
             {
-                lastPosition += columnXSpace;
+                lastPosition += rowOffset;
                 lastWentRight = false;
             } 
             else 
@@ -242,7 +244,7 @@ public class Board : MonoBehaviour
                     // Makes sure that hexes on the edge get defined as null
                     if (!((hexX + transHoriz < 0 || hexX + transHoriz >= columns) || (i + transVert < 0 || i + transVert >= rows)))
                     {
-                        neighborHex = hexDex[i + transVert, hexX + transHoriz]["hex"];
+                        neighborHex = hexDex[i + transVert, hexX + transHoriz];
                     }
                     else
                     {
@@ -255,7 +257,7 @@ public class Board : MonoBehaviour
                         case 0:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().left = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().left = neighborHex;
                             }
                             break;
                         #endregion
@@ -263,7 +265,7 @@ public class Board : MonoBehaviour
                         case 1:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().right = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().right = neighborHex;
                             }
                             break;
                         #endregion
@@ -271,7 +273,7 @@ public class Board : MonoBehaviour
                         case 2:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().topLeft = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().topLeft = neighborHex;
                             }
                             break;
                         #endregion
@@ -279,7 +281,7 @@ public class Board : MonoBehaviour
                         case 3:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().topRight = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().topRight = neighborHex;
                             }
                             break;
                         #endregion
@@ -287,7 +289,7 @@ public class Board : MonoBehaviour
                         case 4:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().bottomLeft = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().bottomLeft = neighborHex;
                             }
                             break;
                         #endregion
@@ -295,7 +297,7 @@ public class Board : MonoBehaviour
                         case 5:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX]["hex"].GetComponent<Hex>().bottomRight = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().bottomRight = neighborHex;
                             }
                             break;
                         #endregion
@@ -308,14 +310,14 @@ public class Board : MonoBehaviour
                     }
                 }
                 // Set all neighbors array
-                hexDex[i, hexX]["hex"].GetComponent<Hex>().all = allNeighbors;
+                hexDex[i, hexX].GetComponent<Hex>().all = allNeighbors;
             }
             
         }
         #endregion
 
         // Centers camera with generated board by setting transform x position to be half the distance of the number of columns * row space offset
-        cam.transform.position = new Vector3((columns * rowSpace.x) / 2, cam.transform.position.y, cam.transform.position.z);
+        Camera.main.transform.position = new Vector3((columns * rowSpace.x) / 2, Camera.main.transform.position.y, Camera.main.transform.position.z);
     }
 
     // Update is called once per frame
@@ -338,13 +340,72 @@ public class Board : MonoBehaviour
                     // Gets coordinates of hit piece
                     int hitX = hit.transform.gameObject.GetComponent<BoardPos>().x;
                     int hitZ = hit.transform.gameObject.GetComponent<BoardPos>().z;
-                    // Only select if there's a piece on the hex
-                    if (hexDex[hitZ, hitX]["piece"] != null)
+                    // Checks if player has already selected a movement option
+                    // If they haven't, go on with selecting, if they have, go on with checking movement
+                    if (!selectedMoving)
                     {
-                        // Toggles selected at coordinate
-                        selected[hitZ, hitX] = !selected[hitZ, hitX];
-                        // Toggles outline
-                        hexDex[hitZ, hitX]["hex"].GetComponent<cakeslice.Outline>().enabled = !hexDex[hitZ, hitX]["hex"].GetComponent<cakeslice.Outline>().enabled;
+                        // Only select if there's a piece on the hex
+                        if (hexDex[hitZ, hitX].GetComponent<Hex>().piece != null)
+                        {
+                            // Makes sure outline color is selection color
+                            hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color = 0;
+                            // Adds to list of selected if it's not selected, remove if it is
+                            if (!selected.Contains(hexDex[hitZ, hitX]))
+                            {
+                                selected.Add(hexDex[hitZ, hitX]);
+                            }
+                            else
+                            {
+                                selected.Remove(hexDex[hitZ, hitX]);
+                            }
+                            // Toggles outline
+                            hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexDex[hitZ, hitX]);
+                        }
+                    }
+                    else
+                    {
+                        // Checks movement option and executes proper move when clicked
+                        if (singleMoving) 
+                        {
+                            // Checks if hex clicked is highlighted green which would mean that you can move there
+                            if (hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled && hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color == 1)
+                            {
+                                // Moves piece via movepiece function
+                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, canStack: true);
+                                // Resests moving variables, buttons, and outline
+                                selectedMoving = false;
+                                singleMoving = false;
+                                ChangeButtons(0, true);
+                                selected[0].GetComponent<cakeslice.Outline>().enabled = false;
+                                // Loops through all neighbors and unoutlines them
+                                foreach (GameObject hex in selected[0].GetComponent<Hex>().all)
+                                {
+                                    // Makes sure there is a hex in the neighbor position
+                                    if (hex != null)
+                                    {
+                                        hex.GetComponent<cakeslice.Outline>().enabled = false;
+                                    }
+                                }
+                                // Resets selected back to an empty list
+                                selected = new List<GameObject>();
+                            }
+                        }
+                        else if (cannonMoving) 
+                        {
+                            // Future movement code
+                        }
+                        else if (waveMoving) 
+                        {
+                            // Future movement code
+                        }
+                        else if (contiguousMoving) 
+                        {
+                            // Future movement code
+                        }
+                        else if (vMoving) 
+                        {
+                            // Future movement code
+                        }
                     }
                 }
             }
@@ -355,4 +416,124 @@ public class Board : MonoBehaviour
             clickedLastFrame = false;
         }
     }
+
+    #region Functions for moving
+    private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false)
+    {
+        bool stacking;
+        // Reassign the pieces on the hexes
+        if (canStack && hexDex[newZ, newX].GetComponent<Hex>().piece != null && hexDex[newZ, newX].GetComponent<Hex>().piece.tag == piece.tag)
+        {
+            stacking = true;
+        }
+        else
+        {
+            hexDex[newZ, newX].GetComponent<Hex>().piece = piece;
+            stacking = false;
+        }
+        // Make old hex have no pieces
+        hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+        // Move piece
+        piece.GetComponent<Piece>().Move(
+            hexDex[newZ, newX].transform.position,
+            newX, 
+            newZ, 
+            stacking: stacking, 
+            stackingOnto: hexDex[newZ, newX].GetComponent<Hex>().piece,
+            bottomPiece: true
+        );
+    }
+
+    #region Moving buttons
+    #region Invalid movement option display and recind
+    private void InvalidMovementOptionDisplay()
+    {
+        invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = true;
+        Invoke(nameof(InvalidMovementOptionRecind), 2f);
+    }
+
+    private void InvalidMovementOptionRecind()
+    {
+        invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = false;
+    }
+    #endregion
+
+    private void ChangeButtons(int buttonNum, bool on)
+    {
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            if (i != buttonNum)
+            {
+                buttons[i].GetComponent<Button>().interactable = on;
+            }
+        }
+    }
+
+    // When pressed, they enable moving and update hilighting
+    public void SingleMovement()
+    {
+        // Makes sure there's only one piece selected for single movement
+        // If the button was pressed again to deselect single movement, there should still only be one hex selected since movement option select should disable selection
+        if (selected.Count == 1)
+        {
+            // Toggles moving and singleMoving
+            selectedMoving = !selectedMoving;
+            singleMoving = !singleMoving;
+            ChangeButtons(0, !selectedMoving);
+            // Loops through all neighbors and outlines them as valid moves
+            foreach (GameObject hex in selected[0].GetComponent<Hex>().all)
+            {
+                // Makes sure there is a hex in the neighbor position
+                if (hex != null)
+                {
+                    // Changes outline color to one and turns on or off the outline
+                    hex.GetComponent<cakeslice.Outline>().color = 1;
+                    // Setting the value to singleMoving here makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
+                    hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
+                }
+            }
+        }
+        else
+        {
+            InvalidMovementOptionDisplay();
+        }
+    }
+
+    public void WaveMovement()
+    {
+        // Toggles moving and waveMoving
+        selectedMoving = !selectedMoving;
+        waveMoving = !waveMoving;
+        ChangeButtons(1, !selectedMoving);
+        // Future code that checks and highlights possible moves
+    }
+
+    public void CannonMovement()
+    {
+        // Toggles moving and cannonMoving
+        selectedMoving = !selectedMoving;
+        cannonMoving = !cannonMoving;
+        ChangeButtons(2, !selectedMoving);
+        // Future code that checks and highlights possible moves
+    }
+
+    public void VMovement()
+    {
+        // Toggles moving and vMoving
+        selectedMoving = !selectedMoving;
+        vMoving = !vMoving;
+        ChangeButtons(3, !selectedMoving);
+        // Future code that checks and highlights possible moves
+    }
+
+    public void ContiguousMovement()
+    {
+        // Toggles moving and contiguousMoving
+        selectedMoving = !selectedMoving;
+        contiguousMoving = !contiguousMoving;
+        ChangeButtons(4, !selectedMoving);
+        // Future code that checks and highlights possible moves
+    }
+    #endregion
+    #endregion
 }
