@@ -135,8 +135,7 @@ Alternative: designate a 'king' playing piece on each side, first team to captur
    \/ \/ \/ \/ \/ \/ \/ \/ \/
    ```
 
-6. Pieces can be generated: if you have three pieces in a "cup" shape (shown as "X" in the figure), then the cup can be filled -- that is, the cell with "Y" gets filled with a piece of the same color as x.  
-   Alternative: any empty cell surrounded by four other pieces can regenerate
+6) Pieces can be generated: if you have two pieces in a line separate by three cells, you can complete the equilateral triangle on both sides in one move.  That is, if you don't have pieces of your color on those squares, you can place them there as a move.  ALTERNATE: consider "fill the cup"; or any empty cell surrounded by four of your color; or numbers other than three.  Need to consider the implications -- does it lead to complex behavior?  Does it make winning too easy?
    ```
    /\ /\ /\ /\ /\ /\ /\ /\ /\
      |  |  |x |x |  |  |  |  |
@@ -147,6 +146,8 @@ Alternative: designate a 'king' playing piece on each side, first team to captur
    \/ \/ \/ \/ \/ \/ \/ \/ \/
    ```
 7. A player can move one of their pieces onto another of their pieces (stacking them, similar to a king in checkers).  This can only be done by the first two kinds of moves (move a piece to an adjacent cell, or move a piece adjacent to the contiguous set of pieces).  This stacked piece behaves exactly as an ordinary piece for purposes of moving.  However, any move by an opponent stops its steps when it comes to one of these cells -- it stops at a step just before it would hit it.  When this happens, the stacked piece loses one of the stacks (alternative: loses two).
+
+8) If a piece has been stacked, it can be unstacked in one move.  For example, if you have a piece that is a stack of four in a cell, then in one move, you can change it to a line of four pieces, with one end at the original cell.
 
 ## Difference Between a Step, a Move, and a Turn:
 - Each movement of a piece from one hex to an adjacent cell is one step
