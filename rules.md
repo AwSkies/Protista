@@ -82,7 +82,7 @@ Alternative: designate a 'king' playing piece on each side, first team to captur
    Note what happens when you have two zigzag shapes facing each other that are both five pieces long: you have *two* loops.  So you can keep moving them until you hit a piece of your own color, or hit the edge, or hit a target cell.  
    Or: if you have a simple loop, of six pieces, you can consider it to be two "V"s.  So it can move twice as fast as it normally would: move one v, move the other v to create a loop and get an extra turn, move the first v, repeat.
 
-5) If you have a sharp "V" of pieces, then the vertex piece can move as many steps as there are pieces in either leg.  These steps are *not* to adjacent cells, they are to cells connected.  Notice the piece marked "y" in these two diagrams:
+5. If you have a sharp "V" of pieces, then the vertex piece can move as many steps as there are pieces in either leg.  These steps are *not* to adjacent cells, they are to cells connected.  Notice the piece marked "y" in these two diagrams:
    ```
    /\ /\ /\ /\ /\ /\ /\ /\ /\
      |  |  |  |  |  |  |  |  |
@@ -135,7 +135,8 @@ Alternative: designate a 'king' playing piece on each side, first team to captur
    \/ \/ \/ \/ \/ \/ \/ \/ \/
    ```
 
-6) Pieces can be generated: if you have two pieces in a line separate by three cells, you can complete the equilateral triangle on both sides in one move.  That is, if you don't have pieces of your color on those squares, you can place them there as a move.  ALTERNATE: consider "fill the cup"; or any empty cell surrounded by four of your color; or numbers other than three.  Need to consider the implications -- does it lead to complex behavior?  Does it make winning too easy?
+6. Pieces can be generated: if you have two pieces in a line separate by three cells, you can complete the equilateral triangle on both sides in one move.  That is, if you don't have pieces of your color on those squares, you can place them there as a move.  
+  Alternate: consider "fill the cup"; or any empty cell surrounded by four of your color; or numbers other than three.  Need to consider the implications -- does it lead to complex behavior?  Does it make winning too easy?
    ```
    /\ /\ /\ /\ /\ /\ /\ /\ /\
      |  |  |x |x |  |  |  |  |
@@ -147,7 +148,7 @@ Alternative: designate a 'king' playing piece on each side, first team to captur
    ```
 7. A player can move one of their pieces onto another of their pieces (stacking them, similar to a king in checkers).  This can only be done by the first two kinds of moves (move a piece to an adjacent cell, or move a piece adjacent to the contiguous set of pieces).  This stacked piece behaves exactly as an ordinary piece for purposes of moving.  However, any move by an opponent stops its steps when it comes to one of these cells -- it stops at a step just before it would hit it.  When this happens, the stacked piece loses one of the stacks (alternative: loses two).
 
-8) If a piece has been stacked, it can be unstacked in one move.  For example, if you have a piece that is a stack of four in a cell, then in one move, you can change it to a line of four pieces, with one end at the original cell.
+8. If a piece has been stacked, it can be unstacked in one move.  For example, if you have a piece that is a stack of four in a cell, then in one move, you can change it to a line of four pieces, with one end at the original cell.
 
 ## Difference Between a Step, a Move, and a Turn:
 - Each movement of a piece from one hex to an adjacent cell is one step
