@@ -15,9 +15,19 @@ public class Piece : MonoBehaviour
     public Vector3 stackingHeight;
     // Whether the piece is going to update its stack count once it stops moving
     public bool goingToUpdateStack;
+    // The last position of the piece
+    public Vector3 lastPosition;
     // The position that the piece needs to move to
     private Vector3 target;
+    // Game manager
+    private Board gameManager;
 
+    // Start is called before the first frame update
+    void Start()
+    {
+        gameManager = GameObject.FindObjectOfType<Board>();
+    }
+    
     // Update is called once per frame
     void Update()
     {
@@ -61,11 +71,21 @@ public class Piece : MonoBehaviour
         int origStackCount = 0
     )
     {
-        // Reassign the piece's x and z values
-        GetComponent<BoardPos>().z = newZ;
-        GetComponent<BoardPos>().x = newX;
+        // Reassign board position if this piece is not attacking a stack
+        if (gameManager.hexDex[newZ, newX].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0 
+            || stacking 
+            || gameManager.hexDex[newZ, newX].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Contains(gameObject)
+            || gameManager.hexDex[newZ, newX].GetComponent<Hex>().piece == gameObject)
+        {
+            // Reassign the piece's x and z values
+            GetComponent<BoardPos>().z = newZ;
+            GetComponent<BoardPos>().x = newX;
+        }
+
         // Set target
         target = newHexPos + new Vector3 (0f, transform.position.y, 0f);
+        // Set last position
+        lastPosition = transform.position;
 
         // Whether this is the bottom piece of a stack that is being moved onto another piece
         bool startingStackingAStack;
@@ -157,12 +177,32 @@ public class Piece : MonoBehaviour
 
     void OnCollisionEnter(Collision otherObj)
     {
+        Piece otherPiece = otherObj.gameObject.GetComponent<Piece>();
         // If a piece collides with another piece of the opposite color 
         // and that piece is not moving (to prevent both pieces calling this function at the same and destroying each other at the same time)
-        // the piece will destroy the other piece
-        if ((otherObj.gameObject.tag == "black" || otherObj.gameObject.tag == "white") && otherObj.gameObject.tag != tag && !otherObj.gameObject.GetComponent<Piece>().moving)
+        if ((otherObj.gameObject.tag == "black" || otherObj.gameObject.tag == "white") && otherObj.gameObject.tag != tag && !otherPiece.moving)
         {
-            Destroy(otherObj.gameObject);
+            GameObject pieceToDestroy;
+            // If attacking a stack
+            if (otherPiece.stackedPieces.Count != 0)
+            {
+                // Set pieceToDestroy
+                pieceToDestroy = otherPiece.stackedPieces[otherPiece.stackedPieces.Count - 1];
+                // Remove pieceToDestroy from list of stacked pieces to prevent missing GameObjects in the list
+                otherPiece.stackedPieces.Remove(pieceToDestroy);
+                // Updates stack count for one less piece
+                otherPiece.UpdateStackCount();
+                // Update target to last position
+                target = lastPosition; 
+            }
+            // If attacking a single piece
+            else
+            {
+                // Set pieceToDestroy
+                pieceToDestroy = otherObj.gameObject;
+            }
+            // Destroy piece
+            Destroy(pieceToDestroy);
         }
     }
 
@@ -180,7 +220,16 @@ public class Piece : MonoBehaviour
         if (!stackMoving.Contains(true))
         {
             // Get canvas
-            GameObject canvas = stackedPieces[stackedPieces.Count - 1].transform.GetChild(0).gameObject;
+            GameObject canvas;
+            if (stackedPieces.Count != 0) 
+            {
+                canvas = stackedPieces[stackedPieces.Count - 1].transform.GetChild(0).gameObject;
+            }
+            else
+            {
+                canvas = transform.GetChild(0).gameObject;
+            }
+
             // Get text
             TextMeshProUGUI text = canvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
 

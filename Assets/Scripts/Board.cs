@@ -36,7 +36,7 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Variables for use during generation and gameplay
-    private GameObject[,] hexDex;
+    public GameObject[,] hexDex;
     private List<GameObject> selected;
     private bool clickedLastFrame = false;
     #region Movement option chosen
@@ -421,18 +421,27 @@ public class Board : MonoBehaviour
     private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false)
     {
         bool stacking;
-        // Reassign the pieces on the hexes
+        // Reassign the pieces on the hexes if the piece is not stacking
+        // Stacking case
         if (canStack && hexDex[newZ, newX].GetComponent<Hex>().piece != null && hexDex[newZ, newX].GetComponent<Hex>().piece.tag == piece.tag)
         {
             stacking = true;
+            // Make old hex have no pieces
+            hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
         }
+        // Not stacking or attacking a stack case
+        else if (hexDex[newZ, newX].GetComponent<Hex>().piece == null || hexDex[newZ, newX].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0)
+        {
+            stacking = false;
+            hexDex[newZ, newX].GetComponent<Hex>().piece = piece;
+            // Make old hex have no pieces
+            hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+        }
+        // Attacking a stack case
         else
         {
-            hexDex[newZ, newX].GetComponent<Hex>().piece = piece;
             stacking = false;
         }
-        // Make old hex have no pieces
-        hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
         // Move piece
         piece.GetComponent<Piece>().Move(
             hexDex[newZ, newX].transform.position,

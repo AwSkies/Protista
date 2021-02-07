@@ -145,10 +145,10 @@ GameObject:
   - component: {fileID: 3944229180658552722}
   - component: {fileID: 77524501678325815}
   - component: {fileID: 2807883688337863933}
-  - component: {fileID: 4465150969597023529}
   - component: {fileID: 2277608394951999530}
   - component: {fileID: 1968329517630703210}
   - component: {fileID: -4258576543311768339}
+  - component: {fileID: 8218448044537543733}
   m_Layer: 0
   m_Name: WhiteChecker
   m_TagString: white
@@ -220,20 +220,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &4465150969597023529
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4465150969597023528}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 4
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 5583378642832824006, guid: bc4c11dc22e6a0b4d84096ee3a81a4c6, type: 3}
 --- !u!114 &2277608394951999530
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -265,6 +251,7 @@ MonoBehaviour:
   moving: 0
   stackingHeight: {x: 0, y: 0.4, z: 0}
   goingToUpdateStack: 0
+  lastPosition: {x: 0, y: 0, z: 0}
 --- !u!54 &-4258576543311768339
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -281,6 +268,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 126
   m_CollisionDetection: 0
+--- !u!65 &8218448044537543733
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4465150969597023528}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.020000003, y: 0.013938466, z: 0.020000007}
+  m_Center: {x: 0, y: 0.00032804674, z: 0}
 --- !u!1 &6039245355166929891
 GameObject:
   m_ObjectHideFlags: 0
