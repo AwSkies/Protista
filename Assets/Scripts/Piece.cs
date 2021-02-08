@@ -178,9 +178,14 @@ public class Piece : MonoBehaviour
     void OnCollisionEnter(Collision otherObj)
     {
         Piece otherPiece = otherObj.gameObject.GetComponent<Piece>();
-        // If a piece collides with another piece of the opposite color 
-        // and that piece is not moving (to prevent both pieces calling this function at the same and destroying each other at the same time)
-        if ((otherObj.gameObject.tag == "black" || otherObj.gameObject.tag == "white") && otherObj.gameObject.tag != tag && !otherPiece.moving)
+        if (
+            // If a piece collides with another piece of the opposite color 
+            (otherObj.gameObject.tag == "black" || otherObj.gameObject.tag == "white") && otherObj.gameObject.tag != tag 
+            // and that piece is not moving (to prevent both pieces calling this function at the same and destroying each other at the same time)
+            && !otherPiece.moving
+            // And this piece the bottom of a stack or has no pieces on top of it
+            && (stackedPieces.Count != 0 || transform.position.y == gameManager.pieceVertical.y)
+        )
         {
             GameObject pieceToDestroy;
             // If attacking a stack
@@ -194,6 +199,10 @@ public class Piece : MonoBehaviour
                 otherPiece.UpdateStackCount();
                 // Update target to last position
                 target = lastPosition; 
+                foreach (GameObject piece in stackedPieces)
+                {
+                    piece.GetComponent<Piece>().target = piece.GetComponent<Piece>().lastPosition;
+                }
             }
             // If attacking a single piece
             else
