@@ -196,7 +196,14 @@ public class Board : MonoBehaviour
             // Loop through each hex in each row
             for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
             {
-                GameObject[] allNeighbors = new GameObject[6];
+                Dictionary<string, GameObject> neighbors = new Dictionary<string, GameObject>();
+                neighbors["left"]        = null;
+                neighbors["right"]       = null;
+                neighbors["topLeft"]     = null;
+                neighbors["topRight"]    = null;
+                neighbors["bottomLeft"]  = null;
+                neighbors["bottomRight"] = null;
+                hexDex[i, hexX].GetComponent<Hex>().neighbors = neighbors;
                 // Assign for each of the six surrounding hexes
                 for (int iter = 0; iter < 6; iter++)
                 {
@@ -257,7 +264,7 @@ public class Board : MonoBehaviour
                         case 0:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX].GetComponent<Hex>().left = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().neighbors["left"] = neighborHex;
                             }
                             break;
                         #endregion
@@ -265,7 +272,7 @@ public class Board : MonoBehaviour
                         case 1:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX].GetComponent<Hex>().right = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().neighbors["right"] = neighborHex;
                             }
                             break;
                         #endregion
@@ -273,7 +280,7 @@ public class Board : MonoBehaviour
                         case 2:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX].GetComponent<Hex>().topLeft = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().neighbors["topLeft"] = neighborHex;
                             }
                             break;
                         #endregion
@@ -281,7 +288,7 @@ public class Board : MonoBehaviour
                         case 3:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX].GetComponent<Hex>().topRight = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().neighbors["topRight"] = neighborHex;
                             }
                             break;
                         #endregion
@@ -289,7 +296,7 @@ public class Board : MonoBehaviour
                         case 4:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX].GetComponent<Hex>().bottomLeft = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().neighbors["bottomLeft"] = neighborHex;
                             }
                             break;
                         #endregion
@@ -297,20 +304,12 @@ public class Board : MonoBehaviour
                         case 5:
                             if (neighborHex != null)
                             {
-                                hexDex[i, hexX].GetComponent<Hex>().bottomRight = neighborHex;
+                                hexDex[i, hexX].GetComponent<Hex>().neighbors["bottomRight"] = neighborHex;
                             }
                             break;
                         #endregion
                     }
-
-                    // Put this hex into the all neighbor hexes array
-                    if (neighborHex != null)
-                    {
-                        allNeighbors[iter] = neighborHex;
-                    }
                 }
-                // Set all neighbors array
-                hexDex[i, hexX].GetComponent<Hex>().all = allNeighbors;
             }
             
         }
@@ -378,7 +377,7 @@ public class Board : MonoBehaviour
                                 ChangeButtons(0, true);
                                 selected[0].GetComponent<cakeslice.Outline>().enabled = false;
                                 // Loops through all neighbors and unoutlines them
-                                foreach (GameObject hex in selected[0].GetComponent<Hex>().all)
+                                foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
                                 {
                                     // Makes sure there is a hex in the neighbor position
                                     if (hex != null)
@@ -490,7 +489,7 @@ public class Board : MonoBehaviour
             singleMoving = !singleMoving;
             ChangeButtons(0, !selectedMoving);
             // Loops through all neighbors and outlines them as valid moves
-            foreach (GameObject hex in selected[0].GetComponent<Hex>().all)
+            foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
             {
                 // Makes sure there is a hex in the neighbor position
                 if (hex != null)
