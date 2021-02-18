@@ -197,12 +197,6 @@ public class Board : MonoBehaviour
             for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
             {
                 Dictionary<string, GameObject> neighbors = new Dictionary<string, GameObject>();
-                neighbors["left"]        = null;
-                neighbors["right"]       = null;
-                neighbors["topLeft"]     = null;
-                neighbors["topRight"]    = null;
-                neighbors["bottomLeft"]  = null;
-                neighbors["bottomRight"] = null;
                 hexDex[i, hexX].GetComponent<Hex>().neighbors = neighbors;
                 // Assign for each of the six surrounding hexes
                 for (int iter = 0; iter < 6; iter++)
