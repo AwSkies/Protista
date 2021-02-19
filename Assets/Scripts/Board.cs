@@ -39,6 +39,7 @@ public class Board : MonoBehaviour
     public GameObject[,] hexDex;
     private List<GameObject> selected;
     private bool clickedLastFrame = false;
+    
     #region Movement option chosen
     // Whether a movement option is chosen at all
     private bool selectedMoving = false;
