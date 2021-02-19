@@ -410,6 +410,61 @@ public class Board : MonoBehaviour
         }
     }
 
+    // Finds lines of pieces of the same color
+    private Dictionary<string, List<GameObject>> FindLines(BoardPos position)
+    {
+        // Initialize variables
+        // Lines to return
+        // String is the direction the line is in
+        // List of GameObjects is the list of hexes in the line
+        Dictionary<string, List<GameObject>> lines = new Dictionary<string, List<GameObject>>();
+        // Hex that is the source of the line
+        Hex sourceHex = hexDex[position.z, position.x].GetComponent<Hex>();
+        // Color of the piece which line we want to get
+        string color = sourceHex.piece.tag;
+
+        // Loop through each neighbor of the original hex
+        foreach (string direction in sourceHex.neighbors.Keys)
+        {
+            // Set hex to original hex
+            GameObject hex = hexDex[position.z, position.x];
+            // Initialize list in this direction as empty list
+            lines[direction] = new List<GameObject>();
+
+            // Loop infinitely in the same direction
+            while (true)
+            {
+                // Get next hex in the line
+                GameObject nextHex = hex.GetComponent<Hex>().neighbors[direction];
+                // Add piece to line if there's a piece of the same color in the same direction
+                if (nextHex != null && nextHex.GetComponent<Hex>().piece != null && nextHex.GetComponent<Hex>().piece.tag == color)
+                {
+                    lines[direction].Add(nextHex);
+                }
+                // Break the loop if the line ends
+                else
+                {
+                    break;
+                }
+
+                // Set up the next hex for the next time through the loop
+                hex = nextHex;
+            }
+        }
+
+        return lines;
+    }
+
+    private bool LineIsSelected(Dictionary<string, List<GameObject>> lines, string direction)
+    {
+        List<bool> inCommon = new List<bool>();
+        foreach (GameObject hex in selected)
+        {
+            inCommon.Add(lines[direction].Contains(hex));
+        }
+        return !inCommon.Contains(false);
+    }
+
     #region Functions for moving
     private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false)
     {
@@ -512,6 +567,7 @@ public class Board : MonoBehaviour
 
     public void CannonMovement()
     {
+
         // Toggles moving and cannonMoving
         selectedMoving = !selectedMoving;
         cannonMoving = !cannonMoving;
