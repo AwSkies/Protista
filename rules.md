@@ -150,9 +150,22 @@ Alternative: designate a 'king' playing piece on each side, first team to captur
 
 8. If a piece has been stacked, it can be unstacked in one move.  For example, if you have a piece that is a stack of four in a cell, then in one move, you can change it to a line of four pieces, with one end at the original cell.
 
+9. Create portals.  Any piece that enters a portal can exit any other portal and move the remaining steps for that move.  The portals could be either three in a cup:
+   ```
+   /\ /\ /\ /\ /\ /\ /\ /\ /\
+     |  |  |x |x |  |  |  |  |
+   \/ \/ \/ \/ \/ \/ \/ \/ \/
+   |  |  |  | y |x |  |  |  |  |
+   /\ /\ /\ /\ /\ /\ /\ /\ /\
+     |  |  |  |  |  |  |  |  |
+   \/ \/ \/ \/ \/ \/ \/ \/ \/
+   ```
+
+
+
 ## Difference Between a Step, a Move, and a Turn:
 - Each movement of a piece from one hex to an adjacent cell is one step
 - The set of all steps counts as one move
 - If the move creates a new loop, then the player gets an extra move
 - The set of all these moves played consecutively by one person constitutes that person's turn
-  
+
