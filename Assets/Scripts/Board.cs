@@ -431,12 +431,24 @@ public class Board : MonoBehaviour
             GameObject hex = hexDex[position.z, position.x];
             // Initialize list in this direction as empty list
             lines[direction] = new List<GameObject>();
+            // Add source hex (for seeing if line is selected)
+            lines[direction].Add(hex);
 
             // Loop infinitely in the same direction
             while (true)
             {
-                // Get next hex in the line
-                GameObject nextHex = hex.GetComponent<Hex>().neighbors[direction];
+                // Make sure key is assigned
+                GameObject nextHex;
+                try
+                {
+                    // Get next hex in the line
+                    nextHex = hex.GetComponent<Hex>().neighbors[direction];
+                }
+                catch (KeyNotFoundException)
+                {
+                    break;
+                }
+
                 // Add piece to line if there's a piece of the same color in the same direction
                 if (nextHex != null && nextHex.GetComponent<Hex>().piece != null && nextHex.GetComponent<Hex>().piece.tag == color)
                 {
@@ -458,12 +470,25 @@ public class Board : MonoBehaviour
 
     private bool LineIsSelected(Dictionary<string, List<GameObject>> lines, string direction)
     {
-        List<bool> inCommon = new List<bool>();
-        foreach (GameObject hex in selected)
+        // Makes sure line is more than just the source hex in the line
+        if (lines[direction].Count > 1) 
         {
-            inCommon.Add(lines[direction].Contains(hex));
+            // Make list of whether hexes are shared between selected and 
+            List<bool> inCommon = new List<bool>();
+            // Loop through each hex in the line
+            foreach (GameObject hex in lines[direction])
+            {
+                // See if current hex is selected
+                inCommon.Add(selected.Contains(hex));
+            }
+            // Return true if all hexes in the line are selected and no more
+            return !inCommon.Contains(false) && inCommon.Count == selected.Count;
         }
-        return !inCommon.Contains(false);
+        // No line is found 
+        else
+        {
+            return false;
+        }
     }
 
     #region Functions for moving
@@ -568,12 +593,27 @@ public class Board : MonoBehaviour
 
     public void CannonMovement()
     {
-
-        // Toggles moving and cannonMoving
-        selectedMoving = !selectedMoving;
-        cannonMoving = !cannonMoving;
-        ChangeButtons(2, !selectedMoving);
-        // Future code that checks and highlights possible moves
+        if (selected.Count > 0)
+        {
+            Dictionary<string, List<GameObject>> lines = FindLines(selected[0].GetComponent<BoardPos>());
+            foreach (string direction in selected[0].GetComponent<Hex>().neighbors.Keys)
+            {
+                if (lines[direction].Count > 2 && LineIsSelected(lines, direction))
+                {
+                    // Toggles moving and cannonMoving
+                    selectedMoving = !selectedMoving;
+                    cannonMoving = !cannonMoving;
+                    ChangeButtons(2, !selectedMoving);
+                    // Future code highlighting moves
+                    return;
+                }
+            }
+            InvalidMovementOptionDisplay();
+        }
+        else
+        {
+            InvalidMovementOptionDisplay();
+        }
     }
 
     public void VMovement()
