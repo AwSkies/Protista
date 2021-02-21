@@ -682,7 +682,7 @@ public class Board : MonoBehaviour
                                     // Makes sure no pieces of the same color are blocking the way
                                     // Checks if there's a piece on the hex
                                     && !(hex.GetComponent<Hex>().neighbors[highlightDirection].GetComponent<Hex>().piece != null 
-                                        // Checks if the piece on hex is the same color is the first hex in the line (line should be of all the same color anyway)
+                                        // Checks if the piece on hex is the same color as the first hex in the line (line should be of all the same color anyway)
                                         && hex.GetComponent<Hex>().neighbors[highlightDirection].GetComponent<Hex>().piece.tag 
                                             == lines[direction][0].GetComponent<Hex>().piece.tag))
                                 {
