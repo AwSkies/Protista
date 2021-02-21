@@ -468,15 +468,15 @@ public class Board : MonoBehaviour
         return lines;
     }
 
-    private bool LineIsSelected(Dictionary<string, List<GameObject>> lines, string direction)
+    private bool LineIsSelected(List<GameObject> line)
     {
         // Makes sure line is more than just the source hex in the line
-        if (lines[direction].Count > 1) 
+        if (line.Count > 1) 
         {
             // Make list of whether hexes are shared between selected and 
             List<bool> inCommon = new List<bool>();
             // Loop through each hex in the line
-            foreach (GameObject hex in lines[direction])
+            foreach (GameObject hex in line)
             {
                 // See if current hex is selected
                 inCommon.Add(selected.Contains(hex));
@@ -552,6 +552,27 @@ public class Board : MonoBehaviour
         }
     }
 
+    private string GetOppositeDirection(string direction) 
+    {
+        switch (direction)
+        {
+            case "left":
+                return "right";
+            case "right":
+                return "left";
+            case "topLeft":
+                return "bottomRight";
+            case "topRight":
+                return "bottomLeft";
+            case "bottomLeft":
+                return "topRight";
+            case "bottomRight":
+                return "topLeft";
+            default:
+                return null;
+        }
+    }
+
     // When pressed, they enable moving and update hilighting
     public void SingleMovement()
     {
@@ -569,7 +590,7 @@ public class Board : MonoBehaviour
                 // Makes sure there is a hex in the neighbor position
                 if (hex != null)
                 {
-                    // Changes outline color to one and turns on or off the outline
+                    // Changes outline color to one/green and turns on or off the outline
                     hex.GetComponent<cakeslice.Outline>().color = 1;
                     // Setting the value to singleMoving here makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
                     hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
@@ -593,18 +614,82 @@ public class Board : MonoBehaviour
 
     public void CannonMovement()
     {
+        // Makes sure that something is actually selected
         if (selected.Count > 0)
         {
+            // Gets lines from selected, if they are in a line like they should the line will be selected
             Dictionary<string, List<GameObject>> lines = FindLines(selected[0].GetComponent<BoardPos>());
+            // Loops through each direction from the selected hex
             foreach (string direction in selected[0].GetComponent<Hex>().neighbors.Keys)
             {
-                if (lines[direction].Count > 2 && LineIsSelected(lines, direction))
+                // If there is a line in that direction and it's selected
+                if (lines[direction].Count >= 2 && LineIsSelected(lines[direction]))
                 {
                     // Toggles moving and cannonMoving
                     selectedMoving = !selectedMoving;
                     cannonMoving = !cannonMoving;
                     ChangeButtons(2, !selectedMoving);
-                    // Future code highlighting moves
+                    // Loops through twice and gets possible moves for both ends of the line
+                    for (int i = 0; i < 2; i++)
+                    {
+                        // Hex to perform operations on
+                        GameObject hex = null;
+                        // Direction to highilight in (for source hex, the way to highlight is opposite to the direction of the line)
+                        string highlightDirection = null;
+                        // Highlight from both sides
+                        switch (i)
+                        {
+                            // Source hex
+                            case 0:
+                                // Set hex to source hex
+                                hex = lines[direction][0];
+                                // Reverses direction
+                                highlightDirection = GetOppositeDirection(direction);
+                                break;
+                            // Opposite from source hex
+                            case 1:
+                                // Set hex to hex at the end of the line
+                                hex = lines[direction][lines[direction].Count - 1];
+                                // Keep direction as the direction of the line
+                                highlightDirection = direction;
+                                break;
+                        }
+
+                        // Highlight possible moves
+                        for (int j = 0; j < lines[direction].Count; j++)
+                        {
+                            // Makes sure the hexes down the board exist
+                            try
+                            {
+                                // Checks and highlights valid moves
+                                // Make sure the hex down the board exist
+                                if (hex.GetComponent<Hex>().neighbors[highlightDirection] != null
+                                    // Makes sure no pieces of the same color are blocking the way
+                                    // Checks if there's a piece on the hex
+                                    && !(hex.GetComponent<Hex>().neighbors[highlightDirection].GetComponent<Hex>().piece != null 
+                                        // Checks if the piece on hex is the same color is the first hex in the line (line should be of all the same color anyway)
+                                        && hex.GetComponent<Hex>().neighbors[highlightDirection].GetComponent<Hex>().piece.tag 
+                                            == lines[direction][0].GetComponent<Hex>().piece.tag))
+                                {
+                                    // Sets current hex to hex to the direction of the past hex
+                                    hex = hex.GetComponent<Hex>().neighbors[highlightDirection];
+                                    // Changes color to one/green
+                                    hex.GetComponent<cakeslice.Outline>().color = 1;
+                                    // Toggles outline
+                                    hex.GetComponent<cakeslice.Outline>().enabled = cannonMoving;
+                                }
+                                // Stop the highlighting, make all moves down the line invalid
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                            catch (KeyNotFoundException)
+                            {
+                                break;
+                            }
+                        }
+                    }
                     return;
                 }
             }
