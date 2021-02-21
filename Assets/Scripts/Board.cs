@@ -409,6 +409,21 @@ public class Board : MonoBehaviour
         {
             clickedLastFrame = false;
         }
+
+        // Deselect all hexes with right click
+        if (Input.GetMouseButton(1) && !selectedMoving)
+        {
+            // Make a copy to avoid modifying a list while iterating through it
+            List<GameObject> selectedCopy = new List<GameObject>(selected);
+            // Iterate through each selected hex
+            foreach (GameObject hex in selectedCopy)
+            {
+                // Remove hex from selected list
+                selected.Remove(hex);
+                // Turn off outline
+                hex.GetComponent<cakeslice.Outline>().enabled = false;
+            }
+        }
     }
 
     // Finds lines of pieces of the same color
