@@ -37,7 +37,8 @@ public class Board : MonoBehaviour
 
     #region Variables for use during generation and gameplay
     public GameObject[,] hexDex;
-    private List<GameObject> selected;
+    private List<GameObject> selected = new List<GameObject>();
+    private List<GameObject> highlighted = new List<GameObject>();
     private bool clickedLastFrame = false;
     
     #region Movement option chosen
@@ -56,8 +57,6 @@ public class Board : MonoBehaviour
     {
         // Initialize hexDex as 2D array with size of rows and columns specified
         hexDex = new GameObject[rows, columns];
-        // Initalize selected as an empty list
-        selected = new List<GameObject>();
 
         // halfBoard = the number of rows that make up half the board, minus the middle row 
         int halfBoard = rows / 2;
@@ -321,13 +320,14 @@ public class Board : MonoBehaviour
         {
             if (!clickedLastFrame)
             {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
                 // Casts the ray and get the first game object hit
                 // This required colliders since it's a physics action
                 // Since everything was made with Maya they won't have colliders already
                 // So make sure that everything we need to click on is set to have a mesh collider
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                RaycastHit hit;
                 Physics.Raycast(ray, out hit);
+                
                 // Makes sure it hit something
                 if (hit.collider != null)
                 {
@@ -370,18 +370,9 @@ public class Board : MonoBehaviour
                                 selectedMoving = false;
                                 singleMoving = false;
                                 ChangeButtons(0, true);
-                                selected[0].GetComponent<cakeslice.Outline>().enabled = false;
                                 // Loops through all neighbors and unoutlines them
-                                foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
-                                {
-                                    // Makes sure there is a hex in the neighbor position
-                                    if (hex != null)
-                                    {
-                                        hex.GetComponent<cakeslice.Outline>().enabled = false;
-                                    }
-                                }
-                                // Resets selected back to an empty list
-                                selected = new List<GameObject>();
+                                DehighlightAllHexes();
+                                DeselectAllHexes();
                             }
                         }
                         else if (cannonMoving) 
@@ -413,18 +404,35 @@ public class Board : MonoBehaviour
         // Deselect all hexes with right click
         if (Input.GetMouseButton(1) && !selectedMoving)
         {
-            // Make a copy to avoid modifying a list while iterating through it
-            List<GameObject> selectedCopy = new List<GameObject>(selected);
-            // Iterate through each selected hex
-            foreach (GameObject hex in selectedCopy)
-            {
-                // Remove hex from selected list
-                selected.Remove(hex);
-                // Turn off outline
-                hex.GetComponent<cakeslice.Outline>().enabled = false;
-            }
+            DeselectAllHexes();
         }
     }
+
+    #region Deselect and dehighlight selected or hghilighted hexes
+    private void DeselectAllHexes()
+    {
+        // Iterate through each selected hex
+        foreach (GameObject hex in selected)
+        {
+            // Turn off outline
+            hex.GetComponent<cakeslice.Outline>().enabled = false;
+        }
+        // Resets selected back to empty list
+        selected = new List<GameObject>();
+    }
+
+    private void DehighlightAllHexes()
+    {
+        // Iterate through each highlighted hex
+        foreach (GameObject hex in highlighted)
+        {
+            // Turn off outline
+            hex.GetComponent<cakeslice.Outline>().enabled = false;
+        }
+        // Resets highlighted back to empty list
+        highlighted = new List<GameObject>();
+    }
+    #endregion
 
     // Finds lines of pieces of the same color
     private Dictionary<string, List<GameObject>> FindLines(BoardPos position)
@@ -599,17 +607,29 @@ public class Board : MonoBehaviour
             selectedMoving = !selectedMoving;
             singleMoving = !singleMoving;
             ChangeButtons(0, !selectedMoving);
-            // Loops through all neighbors and outlines them as valid moves
-            foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
+            if (selectedMoving)
             {
-                // Makes sure there is a hex in the neighbor position
-                if (hex != null)
+                // Loops through all neighbors and outlines them as valid moves
+                foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
                 {
-                    // Changes outline color to one/green and turns on or off the outline
-                    hex.GetComponent<cakeslice.Outline>().color = 1;
-                    // Setting the value to singleMoving here makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
-                    hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
+                    // Makes sure there is a hex in the neighbor position
+                    if (hex != null)
+                    {
+                        // Changes outline color to one/green and turns on or off the outline
+                        hex.GetComponent<cakeslice.Outline>().color = 1;
+                        // Setting the value to singleMoving here makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
+                        hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
+                        // Adds hex to the list of hilighted
+                        if (!highlighted.Contains(hex))
+                        {
+                            highlighted.Add(hex);
+                        }
+                    }
                 }
+            }
+            else
+            {
+                DehighlightAllHexes();
             }
         }
         else
@@ -692,6 +712,12 @@ public class Board : MonoBehaviour
                                     hex.GetComponent<cakeslice.Outline>().color = 1;
                                     // Toggles outline
                                     hex.GetComponent<cakeslice.Outline>().enabled = cannonMoving;
+                                    // Makes sure hex is not in highlighted
+                                    if (!highlighted.Contains(hex))
+                                    {
+                                        // Add hex to highlighted list
+                                        highlighted.Add(hex);
+                                    }
                                 }
                                 // Stop the highlighting, make all moves down the line invalid
                                 else
@@ -704,6 +730,10 @@ public class Board : MonoBehaviour
                                 break;
                             }
                         }
+                    }
+                    if (!selectedMoving)
+                    {
+                        DehighlightAllHexes();
                     }
                     return;
                 }
