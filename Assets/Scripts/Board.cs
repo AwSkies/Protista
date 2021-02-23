@@ -686,8 +686,17 @@ public class Board : MonoBehaviour
                     // Makes sure there is a hex in the neighbor position
                     if (hex != null)
                     {
+                        int color;
+                        if (hex.GetComponent<Hex>().piece == null)
+                        {
+                            color = 1;
+                        }
+                        else
+                        {
+                            color = 2;
+                        }
                         // Changes outline color to one/green and turns on or off the outline
-                        hex.GetComponent<cakeslice.Outline>().color = 1;
+                        hex.GetComponent<cakeslice.Outline>().color = color;
                         // Setting the value to singleMoving here makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
                         hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
                         // Adds hex to the list of hilighted
