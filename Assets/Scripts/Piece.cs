@@ -68,10 +68,14 @@ public class Piece : MonoBehaviour
         // Whether this piece is the only, or bottom piece in a stack
         bool bottomPiece = false, 
         // The original (before moving pieces on this stack into it) amount of pieces in the stack that this piece is moving onto
-        int origStackCount = 0
+        int origStackCount = 0,
+        // Whether this move is moving multiple spaces like cannon or v movements
+        bool multipleHexMove = false,
+        // The direction that the multiple hex move is going in
+        string multipleHexDirection = null
     )
     {
-        // Reassign board position if this piece is not attacking a stack
+        // Reassign board position if this piece is not attacking a stack or doing a multiple hex movement and bouncing off
         if (gameManager.hexDex[newZ, newX].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0 
             || stacking 
             || gameManager.hexDex[newZ, newX].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Contains(gameObject)
@@ -81,11 +85,28 @@ public class Piece : MonoBehaviour
             GetComponent<BoardPos>().z = newZ;
             GetComponent<BoardPos>().x = newX;
         }
+        // If the piece is attacking a stack, is it doing a multiple hex move?
+        else if (multipleHexMove)
+        {
+            // Reassign position to one hex short of the target
+            BoardPos bouncingOnto;
+            bouncingOnto = gameManager.hexDex[newZ, newX].GetComponent<Hex>().neighbors[multipleHexDirection].GetComponent<BoardPos>();
+            GetComponent<BoardPos>().x = bouncingOnto.x;
+            GetComponent<BoardPos>().z = bouncingOnto.z;
+        }
 
         // Set target
         target = newHexPos + new Vector3 (0f, transform.position.y, 0f);
+
         // Set last position
-        lastPosition = transform.position;
+        if (!multipleHexMove)
+        {
+            lastPosition = transform.position;
+        }
+        else
+        {
+            lastPosition = gameManager.hexDex[newZ, newX].GetComponent<Hex>().neighbors[multipleHexDirection].transform.position + new Vector3(0f, transform.position.y, 0f);
+        }
 
         // Whether this is the bottom piece of a stack that is being moved onto another piece
         bool startingStackingAStack;
