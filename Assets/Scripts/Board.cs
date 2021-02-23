@@ -567,15 +567,21 @@ public class Board : MonoBehaviour
     {
         bool stacking;
 
-        string direction;
-        // Make sure we don't get a NullReferenceException when getting the direction
+        string direction = null;
+        // Make sure we don't get a NullReferenceException when getting the direction, and only reverse 
         if (movementDirection != null)
         {
-            direction = GetOppositeDirection(movementDirection);
-        }
-        else
-        {
-            direction = null;
+            if (cannonMoving)
+            {
+                if (piece != linesFound[0][0].GetComponent<Hex>().piece)
+                {
+                    direction = GetOppositeDirection(movementDirection);
+                }
+                else
+                {
+                    direction = movementDirection;
+                }
+            }
         }
 
         // Reassign the pieces on the hexes if the piece is not stacking
