@@ -373,7 +373,7 @@ public class Board : MonoBehaviour
                             {
                                 // Moves piece via movepiece function
                                 MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, canStack: true);
-                                // Resests moving variable and buttons
+                                // Resets moving variable and buttons
                                 singleMoving = false;
                                 ChangeButtons(0, true);
                             }
@@ -853,11 +853,13 @@ public class Board : MonoBehaviour
 
     public void ContiguousMovement()
     {
+	// gsdebug: compare with SingleMovement
+
         // Toggles moving and contiguousMoving
+        // Future code that checks and highlights possible moves
         selectedMoving = !selectedMoving;
         contiguousMoving = !contiguousMoving;
         ChangeButtons(4, !selectedMoving);
-        // Future code that checks and highlights possible moves
     }
     #endregion
     #endregion

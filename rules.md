@@ -161,7 +161,7 @@ Alternative: designate a 'king' playing piece on each side, first team to captur
    \/ \/ \/ \/ \/ \/ \/ \/ \/
    ```
 
-
+10. Create 3 (perhaps 4) new pieces in randomly chosen empty cells.  Probably have this be over the entire board, not just in player's half.
 
 ## Difference Between a Step, a Move, and a Turn:
 - Each movement of a piece from one hex to an adjacent cell is one step
