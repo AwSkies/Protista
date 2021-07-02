@@ -12,7 +12,7 @@ public class Board : MonoBehaviour
     public GameObject objHexPrefab;
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
-    public GameObject invalidMovementOptionText;
+    public TextMeshProUGUI invalidMovementOptionText;
     public GameObject[] buttons;
     #endregion
 
@@ -33,15 +33,25 @@ public class Board : MonoBehaviour
     public int pieceNum;
     // Vertical offset of each piece
     public Vector3 pieceVertical;
+
+    // The amount of time it takes to rescind the invalid movement option text
+    // Since the project's fixed timeskip is probably set to 0.02 or 1/50th it should be 100
+    public int textRescindTime;
     #endregion
 
     #region Variables for use during generation and gameplay
+    // Index of hexes ordered by x, z position
     public GameObject[,] hexDex;
+    // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
+    // Highlighted hexes
     private List<GameObject> highlighted = new List<GameObject>();
+    // Whether the player clicked the previous frame
     private bool clickedLastFrame = false;
     // The direction the piece is moving for multiple piece moving
     private List<string> movementDirections = new List<string>();
+    // The amount of time left to rescind the invalid movement option text
+    private int textRescindCountdown;
     
     #region Movement option chosen
     // Whether a movement option is chosen at all
@@ -449,6 +459,19 @@ public class Board : MonoBehaviour
             DeselectAllHexes();
         }
     }
+    
+    // FixedUpdate is called at a fixed interval
+    private void FixedUpdate() 
+    {
+        if (invalidMovementOptionText.enabled)
+        {
+            textRescindCountdown--;
+            if (textRescindCountdown <= 0 )
+            {
+                invalidMovementOptionText.enabled = false;
+            }
+        }
+    }
 
     #region Deselect and dehighlight selected or hghilighted hexes
     private void DeselectAllHexes()
@@ -587,14 +610,9 @@ public class Board : MonoBehaviour
     #region Invalid movement option display and rescind
     private void InvalidMovementOptionDisplay(string error = "Invalid Movement Option")
     {
-        invalidMovementOptionText.GetComponent<TextMeshProUGUI>().SetText(error);
-        invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = true;
-        Invoke(nameof(InvalidMovementOptionRescind), 2f);
-    }
-
-    private void InvalidMovementOptionRescind()
-    {
-        invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = false;
+        invalidMovementOptionText.SetText(error);
+        invalidMovementOptionText.enabled = true;
+        textRescindCountdown = textRescindTime;
     }
     #endregion
 

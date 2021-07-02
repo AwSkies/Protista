@@ -1428,7 +1428,7 @@ MonoBehaviour:
     type: 3}
   blackPiecePrefab: {fileID: 1198216280521353497, guid: 445642dfdd0261d45ac669eb9702590d,
     type: 3}
-  invalidMovementOptionText: {fileID: 748715326}
+  invalidMovementOptionText: {fileID: 748715328}
   buttons:
   - {fileID: 1549433161}
   - {fileID: 1061933289}
@@ -1443,6 +1443,7 @@ MonoBehaviour:
   rowOffset: {x: 2.5, y: 0, z: 0}
   pieceNum: 5
   pieceVertical: {x: 0, y: 0.6, z: 0}
+  textRescindTime: 100
 --- !u!4 &1568063594
 Transform:
   m_ObjectHideFlags: 0
