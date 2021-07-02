@@ -558,9 +558,10 @@ public class Board : MonoBehaviour
         // Attacking a stack and multiple hex moving
         else if (cannonMoving || vMoving)
         {
-            hexDex[newZ, newX].GetComponent<Hex>().neighbors[GetOppositeDirection(movementDirection)].GetComponent<Hex>().piece = piece;
             // Make old hex have no pieces
             hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+            // Assign piece to new hex
+            hexDex[newZ, newX].GetComponent<Hex>().neighbors[GetOppositeDirection(movementDirection)].GetComponent<Hex>().piece = piece;
             stacking = false;
         }
         // Attacking a stack case
@@ -731,8 +732,8 @@ public class Board : MonoBehaviour
                 foreach (string direction in lines.Keys)
                 {
                     // Make sure not to add directions where a piece is in the middle of a line
-                    // If there is a piece in one direction and not in the opposite direction then the piece is at the end of a line in that direction
-                    if (neighbors[direction].GetComponent<Hex>().piece == null && neighbors[GetOppositeDirection(direction)].GetComponent<Hex>().piece != null)
+                    // If the line is just one (just the source hex) in one direction and the opposite direction it's more than one
+                    if (lines[direction].Count == 1 && lines[GetOppositeDirection(direction)].Count > 1)
                     {
                         directions.Add(direction);
                     }
@@ -788,7 +789,7 @@ public class Board : MonoBehaviour
                                         // Add hex to highlighted list
                                         highlighted.Add(hex);
                                     }
-                                    // If there's a piece on the hex and it is stacked
+                                    // If there's a piece on the current hex and it is stacked
                                     if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0)
                                     {
                                         hex.GetComponent<cakeslice.Outline>().color = 2;
