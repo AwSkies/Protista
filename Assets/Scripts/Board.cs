@@ -378,23 +378,25 @@ public class Board : MonoBehaviour
                             {
                                 // Initialize movement direction
                                 string movementDirection = "";
-                                // Cache selected hex to start from
-                                GameObject hex = selected[0];
                                 // Loop out in the possible directions from the selected hex until we hit the hex we want to move to or run out
                                 // Then move on or choose that direction
                                 foreach (string direction in movementDirections)
                                 {
+                                    // Choose selected hex to start from
+                                    GameObject hex = selected[0];
                                     // Check if current hex is hex we want to move to
-                                    while (hex.GetComponent<Hex>().neighbors[direction] != null && hex.GetComponent<Hex>().neighbors[direction] != hexDex[hitZ, hitX])
+                                    while (hex.GetComponent<Hex>().neighbors.ContainsKey(direction) && hex.GetComponent<Hex>().neighbors[direction] != hexDex[hitZ, hitX])
                                     {
                                         // Set hex to be next
                                         hex = hex.GetComponent<Hex>().neighbors[direction];
                                     }
                                     // If the next hex existed, then we must have exited the loop because it was the right direction
-                                    if (hex.GetComponent<Hex>().neighbors[direction] != null)
+                                    if (hex.GetComponent<Hex>().neighbors.ContainsKey(direction))
                                     {
                                         // Save movement direction
                                         movementDirection = direction;
+                                        // Exit loop
+                                        break;
                                     }
                                 }
                                 // Move piece via move piece function
@@ -556,7 +558,7 @@ public class Board : MonoBehaviour
         // Attacking a stack and multiple hex moving
         else if (cannonMoving || vMoving)
         {
-            hexDex[newZ, newX].GetComponent<Hex>().neighbors[movementDirection].GetComponent<Hex>().piece = piece;
+            hexDex[newZ, newX].GetComponent<Hex>().neighbors[GetOppositeDirection(movementDirection)].GetComponent<Hex>().piece = piece;
             // Make old hex have no pieces
             hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
             stacking = false;
