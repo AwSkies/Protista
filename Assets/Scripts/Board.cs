@@ -474,7 +474,6 @@ public class Board : MonoBehaviour
     }
     #endregion
 
-    #region Dealing with lines
     // Finds lines of pieces of the same color
     private Dictionary<string, List<GameObject>> FindLines(BoardPos position)
     {
@@ -531,30 +530,6 @@ public class Board : MonoBehaviour
 
         return lines;
     }
-
-    private bool LineIsSelected(List<GameObject> line)
-    {
-        // Makes sure line is more than just the source hex in the line
-        if (line.Count > 1) 
-        {
-            // Make list of whether hexes are shared between selected and 
-            List<bool> inCommon = new List<bool>();
-            // Loop through each hex in the line
-            foreach (GameObject hex in line)
-            {
-                // See if current hex is selected
-                inCommon.Add(selected.Contains(hex));
-            }
-            // Return true if all hexes in the line are selected and no more
-            return !inCommon.Contains(false) && inCommon.Count == selected.Count;
-        }
-        // No line is found 
-        else
-        {
-            return false;
-        }
-    }
-    #endregion
 
     #region Functions for moving
     private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false, string movementDirection = null)
