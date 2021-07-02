@@ -40,11 +40,8 @@ public class Board : MonoBehaviour
     private List<GameObject> selected = new List<GameObject>();
     private List<GameObject> highlighted = new List<GameObject>();
     private bool clickedLastFrame = false;
-    #region Cannon moving variables
-    private List<List<GameObject>> linesFound = new List<List<GameObject>>();
     // The direction the piece is moving for multiple piece moving
-    private string movementDirection = null;
-    #endregion
+    private List<string> movementDirections = new List<string>();
     
     #region Movement option chosen
     // Whether a movement option is chosen at all
@@ -379,36 +376,33 @@ public class Board : MonoBehaviour
                             }
                             else if (cannonMoving) 
                             {
-                                // Get first and last hex in line and position
-                                GameObject sourceHex = linesFound[0][0];
-                                BoardPos sourceHexPos = sourceHex.GetComponent<BoardPos>();
-                                GameObject endHex = linesFound[0][linesFound[0].Count - 1];
-                                BoardPos endHexPos = endHex.GetComponent<BoardPos>();
-                                // Get distances
-                                double sourceDist = Math.Sqrt(Math.Pow((hitX - sourceHexPos.x), 2f) + Math.Pow((hitZ - sourceHexPos.z), 2f));
-                                double endDist = Math.Sqrt(Math.Pow((hitX - endHexPos.x), 2f) + Math.Pow((hitZ - endHexPos.z), 2f));
-                                // Choose which hex is closer based on closer distance
-                                GameObject hex;
-                                if (Math.Min(sourceDist, endDist) == sourceDist)
+                                // Initialize movement direction
+                                string movementDirection = "";
+                                // Cache selected hex to start from
+                                GameObject hex = selected[0];
+                                // Loop out in the possible directions from the selected hex until we hit the hex we want to move to or run out
+                                // Then move on or choose that direction
+                                foreach (string direction in movementDirections)
                                 {
-                                    hex = sourceHex;
-                                }
-                                else
-                                {
-                                    hex = endHex;
+                                    // Check if current hex is hex we want to move to
+                                    while (hex.GetComponent<Hex>().neighbors[direction] != null && hex.GetComponent<Hex>().neighbors[direction] != hexDex[hitZ, hitX])
+                                    {
+                                        // Set hex to be next
+                                        hex = hex.GetComponent<Hex>().neighbors[direction];
+                                    }
+                                    // If the next hex existed, then we must have exited the loop because it was the right direction
+                                    if (hex.GetComponent<Hex>().neighbors[direction] != null)
+                                    {
+                                        // Save movement direction
+                                        movementDirection = direction;
+                                    }
                                 }
                                 // Move piece via move piece function
-                                MovePiece(
-                                    hex.GetComponent<Hex>().piece,
-                                    hitX,
-                                    hitZ
-                                );
-                                // Reset linesFound and linesDirections back to empty list
-                                linesFound = new List<List<GameObject>>();
-                                movementDirection = null;
-                                // Resests moving variable and buttons
+                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, movementDirection: movementDirection);
                                 cannonMoving = false;
                                 ChangeButtons(2, true);
+                                // Reset movement directions
+                                movementDirections = new List<string>();
                             }
                             else if (waveMoving) 
                             {
@@ -563,26 +557,10 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Functions for moving
-    private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false)
+    private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false, string movementDirection = null)
     {
+        // Initialize stacking variable
         bool stacking;
-
-        string direction = null;
-        // Make sure we don't get a NullReferenceException when getting the direction, and only reverse 
-        if (movementDirection != null)
-        {
-            if (cannonMoving)
-            {
-                if (piece != linesFound[0][0].GetComponent<Hex>().piece)
-                {
-                    direction = GetOppositeDirection(movementDirection);
-                }
-                else
-                {
-                    direction = movementDirection;
-                }
-            }
-        }
 
         // Reassign the pieces on the hexes if the piece is not stacking
         // Stacking case
@@ -603,7 +581,7 @@ public class Board : MonoBehaviour
         // Attacking a stack and multiple hex moving
         else if (cannonMoving || vMoving)
         {
-            hexDex[newZ, newX].GetComponent<Hex>().neighbors[direction].GetComponent<Hex>().piece = piece;
+            hexDex[newZ, newX].GetComponent<Hex>().neighbors[movementDirection].GetComponent<Hex>().piece = piece;
             // Make old hex have no pieces
             hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
             stacking = false;
@@ -623,19 +601,20 @@ public class Board : MonoBehaviour
             stackingOnto: hexDex[newZ, newX].GetComponent<Hex>().piece,
             bottomPiece: true,
             multipleHexMove: cannonMoving,
-            multipleHexDirection: direction
+            multipleHexDirection: movementDirection
         );
     }
 
     #region Moving buttons
-    #region Invalid movement option display and recind
-    private void InvalidMovementOptionDisplay()
+    #region Invalid movement option display and rescind
+    private void InvalidMovementOptionDisplay(string error = "Invalid Movement Option")
     {
+        invalidMovementOptionText.GetComponent<TextMeshProUGUI>().SetText(error);
         invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = true;
-        Invoke(nameof(InvalidMovementOptionRecind), 2f);
+        Invoke(nameof(InvalidMovementOptionRescind), 2f);
     }
 
-    private void InvalidMovementOptionRecind()
+    private void InvalidMovementOptionRescind()
     {
         invalidMovementOptionText.GetComponent<TextMeshProUGUI>().enabled = false;
     }
@@ -673,130 +652,155 @@ public class Board : MonoBehaviour
         }
     }
 
+    public bool NothingSelected()
+    {
+        if (selected.Count == 0)
+        {
+            InvalidMovementOptionDisplay("No pieces selected");
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     // When pressed, they enable moving and update hilighting
     public void SingleMovement()
     {
-        // Makes sure there's only one piece selected for single movement
-        // If the button was pressed again to deselect single movement, there should still only be one hex selected since movement option select should disable selection
-        if (selected.Count == 1)
+        // Makes sure a piece is selected
+        if (!NothingSelected())
         {
-            // Toggles moving and singleMoving
-            selectedMoving = !selectedMoving;
-            singleMoving = !singleMoving;
-            ChangeButtons(0, !selectedMoving);
-            if (selectedMoving)
+            // Makes sure there's only one piece selected for single movement
+            // If the button was pressed again to deselect single movement, there should still only be one hex selected since movement option select should disable selection
+            if (selected.Count == 1)
             {
-                // Loops through all neighbors and outlines them as valid moves
-                foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
+                // Toggles moving and singleMoving
+                selectedMoving = !selectedMoving;
+                singleMoving = !singleMoving;
+                ChangeButtons(0, !selectedMoving);
+                if (selectedMoving)
                 {
-                    // Makes sure there is a hex in the neighbor position
-                    if (hex != null)
+                    // Loops through all neighbors and outlines them as valid moves
+                    foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
                     {
-                        int color;
-                        if (hex.GetComponent<Hex>().piece == null)
+                        // Makes sure there is a hex in the neighbor position
+                        if (hex != null)
                         {
-                            color = 1;
-                        }
-                        else
-                        {
-                            color = 2;
-                        }
-                        // Changes outline color to one/green and turns on or off the outline
-                        hex.GetComponent<cakeslice.Outline>().color = color;
-                        // Setting the value to singleMoving here makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
-                        hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
-                        // Adds hex to the list of hilighted
-                        if (!highlighted.Contains(hex))
-                        {
-                            highlighted.Add(hex);
+                            int color;
+                            if (hex.GetComponent<Hex>().piece == null)
+                            {
+                                color = 1;
+                            }
+                            else
+                            {
+                                color = 2;
+                            }
+                            // Changes outline color to one/green and turns on or off the outline
+                            hex.GetComponent<cakeslice.Outline>().color = color;
+                            // Setting the value to singleMoving makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
+                            hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
+                            // Adds hex to the list of hilighted
+                            if (!highlighted.Contains(hex))
+                            {
+                                highlighted.Add(hex);
+                            }
                         }
                     }
+                }
+                else
+                {
+                    DehighlightAllHexes();
                 }
             }
             else
             {
-                DehighlightAllHexes();
+                InvalidMovementOptionDisplay("Select only one piece for Single Movement");
             }
-        }
-        else
-        {
-            InvalidMovementOptionDisplay();
         }
     }
 
     public void WaveMovement()
     {
-        // Toggles moving and waveMoving
-        selectedMoving = !selectedMoving;
-        waveMoving = !waveMoving;
-        ChangeButtons(1, !selectedMoving);
-        // Future code that checks and highlights possible moves
+        if (!NothingSelected())
+        {
+            // Toggles moving and waveMoving
+            selectedMoving = !selectedMoving;
+            waveMoving = !waveMoving;
+            ChangeButtons(1, !selectedMoving);
+            // Future code that checks and highlights possible moves
+        }
     }
 
     public void CannonMovement()
     {
-        // Makes sure that something is actually selected
-        if (selected.Count > 0)
+        if (!NothingSelected())
         {
-            // Gets lines from selected, if they are in a line like they should the line will be selected
-            Dictionary<string, List<GameObject>> lines = FindLines(selected[0].GetComponent<BoardPos>());
-            // Loops through each direction from the selected hex
-            foreach (string direction in selected[0].GetComponent<Hex>().neighbors.Keys)
+            // Makes sure that only one hex is selected
+            if (selected.Count == 1)
             {
-                // If there is a line in that direction and it's selected
-                if (lines[direction].Count >= 2 && LineIsSelected(lines[direction]))
+                #region Initialize/Cache variables
+                // Hex to perform operations on
+                GameObject hex = selected[0];
+                // Gets lines from selected
+                Dictionary<string, List<GameObject>> lines = FindLines(hex.GetComponent<BoardPos>());
+                // Initialize directions list
+                List<string> directions = new List<string>();
+                // Cache neighbors
+                Dictionary<string, GameObject> neighbors = hex.GetComponent<Hex>().neighbors;
+                #endregion
+
+                // Gets directions to highlight
+                foreach (string direction in lines.Keys)
+                {
+                    // Make sure not to add directions where a piece is in the middle of a line
+                    // If there is a piece in one direction and not in the opposite direction then the piece is at the end of a line in that direction
+                    if (neighbors[direction].GetComponent<Hex>().piece == null && neighbors[GetOppositeDirection(direction)].GetComponent<Hex>().piece != null)
+                    {
+                        directions.Add(direction);
+                    }
+                }
+                // Make sure that the piece has at least one line and is not only in the middle of line(s)
+                if (directions.Count != 0)
                 {
                     // Toggles moving and cannonMoving
                     selectedMoving = !selectedMoving;
                     cannonMoving = !cannonMoving;
                     ChangeButtons(2, !selectedMoving);
-                    // Store line for when moving
-                    linesFound.Add(lines[direction]);
-                    movementDirection = direction;
-                    // Loops through twice and gets possible moves for both ends of the line
-                    for (int i = 0; i < 2; i++)
+
+                    // Dehilight all hexes if deselecting a movement option
+                    if (!selectedMoving)
                     {
-                        // Hex to perform operations on
-                        GameObject hex = null;
-                        // Direction to highilight in (for source hex, the way to highlight is opposite to the direction of the line)
-                        string highlightDirection = null;
-                        // Highlight from both sides
-                        switch (i)
-                        {
-                            // Source hex
-                            case 0:
-                                // Set hex to source hex
-                                hex = lines[direction][0];
-                                // Reverses direction
-                                highlightDirection = GetOppositeDirection(direction);
-                                break;
-                            // Opposite from source hex
-                            case 1:
-                                // Set hex to hex at the end of the line
-                                hex = lines[direction][lines[direction].Count - 1];
-                                // Keep direction as the direction of the line
-                                highlightDirection = direction;
-                                break;
-                        }
+                        DehighlightAllHexes();
+                        return;
+                    }
+
+                    // Loop through all directions piece can move
+                    // This if for if piece is the end of multiple lines
+                    foreach (string direction in directions)
+                    {
+                        hex = selected[0];
+                        // Store direction for moving
+                        movementDirections.Add(direction);
 
                         // Highlight possible moves
-                        for (int j = 0; j < lines[direction].Count; j++)
+                        for (int i = 0; i < lines[GetOppositeDirection(direction)].Count; i++)
                         {
                             // Makes sure the hexes down the board exist
                             try
                             {
                                 // Checks and highlights valid moves
-                                // Make sure the hex down the board exist
-                                if (hex.GetComponent<Hex>().neighbors[highlightDirection] != null
+                                // Make sure the hex down the board exists
+                                if (hex.GetComponent<Hex>().neighbors[direction] != null
                                     // Makes sure no pieces of the same color are blocking the way
                                     // Checks if there's a piece on the hex
-                                    && !(hex.GetComponent<Hex>().neighbors[highlightDirection].GetComponent<Hex>().piece != null 
-                                        // Checks if the piece on hex is the same color as the first hex in the line (line should be all the same color anyway) or if its stacked
-                                        && hex.GetComponent<Hex>().neighbors[highlightDirection].GetComponent<Hex>().piece.tag 
+                                    && !(hex.GetComponent<Hex>().neighbors[direction].GetComponent<Hex>().piece != null 
+                                        // Checks if the piece on hex is the same color as the first piece in the line
+                                        && hex.GetComponent<Hex>().neighbors[direction].GetComponent<Hex>().piece.tag 
                                             == lines[direction][0].GetComponent<Hex>().piece.tag))
                                 {
                                     // Sets current hex to hex to the direction of the past hex
-                                    hex = hex.GetComponent<Hex>().neighbors[highlightDirection];
+                                    hex = hex.GetComponent<Hex>().neighbors[direction];
                                     // Changes color to one/green
                                     hex.GetComponent<cakeslice.Outline>().color = 1;
                                     // Toggles outline
@@ -807,6 +811,7 @@ public class Board : MonoBehaviour
                                         // Add hex to highlighted list
                                         highlighted.Add(hex);
                                     }
+                                    // If there's a piece on the hex and it is stacked
                                     if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0)
                                     {
                                         hex.GetComponent<cakeslice.Outline>().color = 2;
@@ -825,41 +830,42 @@ public class Board : MonoBehaviour
                             }
                         }
                     }
-
-                    // Dehilight all hexes if deselecting a movement option
-                    if (!selectedMoving)
-                    {
-                        DehighlightAllHexes();
-                    }
-                    return;
+                }
+                else
+                {
+                    InvalidMovementOptionDisplay("Piece must be at the end of a line");
                 }
             }
-            InvalidMovementOptionDisplay();
-        }
-        else
-        {
-            InvalidMovementOptionDisplay();
+            else
+            {
+                InvalidMovementOptionDisplay("Select only one piece for Cannon Movement");
+            }
         }
     }
 
     public void VMovement()
     {
-        // Toggles moving and vMoving
-        selectedMoving = !selectedMoving;
-        vMoving = !vMoving;
-        ChangeButtons(3, !selectedMoving);
-        // Future code that checks and highlights possible moves
+        if (!NothingSelected())
+        {
+            // Toggles moving and vMoving
+            selectedMoving = !selectedMoving;
+            vMoving = !vMoving;
+            ChangeButtons(3, !selectedMoving);
+            // Future code that checks and highlights possible moves
+        }
     }
 
     public void ContiguousMovement()
     {
 	// gsdebug: compare with SingleMovement
-
-        // Toggles moving and contiguousMoving
-        // Future code that checks and highlights possible moves
-        selectedMoving = !selectedMoving;
-        contiguousMoving = !contiguousMoving;
-        ChangeButtons(4, !selectedMoving);
+        if (!NothingSelected())
+        {
+            // Toggles moving and contiguousMoving
+            // Future code that checks and highlights possible moves
+            selectedMoving = !selectedMoving;
+            contiguousMoving = !contiguousMoving;
+            ChangeButtons(4, !selectedMoving);
+        }
     }
     #endregion
     #endregion
