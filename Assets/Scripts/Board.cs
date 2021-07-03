@@ -12,6 +12,7 @@ public class Board : MonoBehaviour
     public GameObject objHexPrefab;
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
+    public GameObject curledMovementArrow;
     public TextMeshProUGUI invalidMovementOptionText;
     public GameObject[] buttons;
     #endregion
@@ -33,6 +34,8 @@ public class Board : MonoBehaviour
     public int pieceNum;
     // Vertical offset of each piece
     public Vector3 pieceVertical;
+    // Vertical offset of the movement arrows
+    public Vector3 arrowVertical;
 
     // The amount of time it takes to rescind the invalid movement option text
     // Since the project's fixed timeskip is probably set to 0.02 or 1/50th it should be 100
@@ -48,6 +51,12 @@ public class Board : MonoBehaviour
     private List<GameObject> highlighted = new List<GameObject>();
     // Whether the player clicked the previous frame
     private bool clickedLastFrame = false;
+    // Movement arrow object currently in use
+    private GameObject movementArrow;
+    // The hex hit with a raycast on the previous frame
+    private GameObject previousHexHit;
+    // List of all the string directions
+    private string[] possibleDirections = {"right", "bottomRight", "bottomLeft", "left", "topLeft", "topRight"};
     // The direction the piece is moving for multiple piece moving
     private List<string> movementDirections = new List<string>();
     // The amount of time left to rescind the invalid movement option text
@@ -328,52 +337,119 @@ public class Board : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetMouseButton(0))
+        // Casts the ray and get the first game object hit
+        // This required colliders since it's a physics action
+        // Since everything was made with Maya they won't have colliders already
+        // So make sure that everything we need to click on is set to have a collider
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        Physics.Raycast(ray, out hit);
+
+        // If something was hit
+        if (hit.collider != null)
         {
-            if (!clickedLastFrame)
+            // Cache board position
+            BoardPos hexHitBoardPos = hit.transform.gameObject.GetComponent<BoardPos>();
+            // Gets coordinates of hit piece
+            int hitX = hexHitBoardPos.x;
+            int hitZ = hexHitBoardPos.z;
+            // Get hex hit
+            GameObject hexHit = hexDex[hitZ, hitX];
+
+            // Cache color
+            int color = hexHit.GetComponent<cakeslice.Outline>().color;
+            // Movement arrows case
+            // If we're selecting a move and the hex hit is highlighted a valid color or there is already a movement arrow
+            if (selectedMoving && (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2)))
             {
-                // Casts the ray and get the first game object hit
-                // This required colliders since it's a physics action
-                // Since everything was made with Maya they won't have colliders already
-                // So make sure that everything we need to click on is set to have a mesh collider
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                RaycastHit hit;
-                Physics.Raycast(ray, out hit);
-                
-                // Makes sure it hit something
-                if (hit.collider != null)
+                // Only generate movement arrow if there isn't one already or if the one hit this frame doesn't match the one from last frame
+                if (movementArrow == null || hexHit != previousHexHit)
                 {
-                    // Gets coordinates of hit piece
-                    int hitX = hit.transform.gameObject.GetComponent<BoardPos>().x;
-                    int hitZ = hit.transform.gameObject.GetComponent<BoardPos>().z;
+                    // Destroy old hex if hex hit this frame doesn't match last frame's
+                    if (hexHit != previousHexHit)
+                    {
+                        GameObject.Destroy(movementArrow);
+                    }
+
+                    // Initalize an arrow position already with vertical offset
+                    Vector3 arrowPosition = arrowVertical;
+                    if (singleMoving)
+                    {
+                        // Get the position the arrow will be in
+                        // Average position of the two hexes plus the vertical offset
+                        arrowPosition += ((hexHit.transform.position + selected[0].transform.position) / 2);
+                        // Find multiple of rotation by iterating through and finding which direcion it faces
+                        int rotation = 0;
+                        for (int i = 0; i < possibleDirections.Length; i++)
+                        {
+                            // If the hex in that direction exists and in that direction is the hex we hit
+                            if (selected[0].GetComponent<Hex>().neighbors.ContainsKey(possibleDirections[i]) 
+                                && selected[0].GetComponent<Hex>().neighbors[possibleDirections[i]] == hexHit)
+                            {
+                                // Save rotation and end search
+                                rotation = i;
+                                break;
+                            }
+                        }
+                        movementArrow = Instantiate(curledMovementArrow, arrowPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60)));
+                    }
+                    else if (cannonMoving)
+                    {
+                        
+                    }
+                    else if (waveMoving)
+                    {
+                        
+                    }
+                    else if (contiguousMoving)
+                    {
+                        
+                    }
+                    else if (vMoving)
+                    {
+                        
+                    }
+                }
+            }
+            else if (movementArrow != null)
+            {
+                GameObject.Destroy(movementArrow);
+                movementArrow = null;
+            }
+
+            // If clicked
+            if (Input.GetMouseButton(0))
+            {
+                // If not holding down mouse button and hit something
+                if (!clickedLastFrame && hit.collider != null)
+                {
                     // Checks if player has already selected a movement option
                     // If they haven't, go on with selecting, if they have, go on with checking movement
                     if (!selectedMoving)
                     {
                         // Only select if there's a piece on the hex
-                        if (hexDex[hitZ, hitX].GetComponent<Hex>().piece != null)
+                        if (hexHit.GetComponent<Hex>().piece != null)
                         {
                             // Makes sure outline color is selection color
-                            hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color = 0;
+                            hexHit.GetComponent<cakeslice.Outline>().color = 0;
                             // Adds to list of selected if it's not selected, remove if it is
-                            if (!selected.Contains(hexDex[hitZ, hitX]))
+                            if (!selected.Contains(hexHit))
                             {
-                                selected.Add(hexDex[hitZ, hitX]);
+                                selected.Add(hexHit);
                             }
                             else
                             {
-                                selected.Remove(hexDex[hitZ, hitX]);
+                                selected.Remove(hexHit);
                             }
                             // Toggles outline
-                            hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexDex[hitZ, hitX]);
+                            hexHit.GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexHit);
                         }
                     }
                     else
                     {
                         // When you click the movement option button, the correct options are highlighted green
                         // Checks if hex clicked is highlighted green which would mean that you can move there
-                        int color = hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().color;
-                        if (hexDex[hitZ, hitX].GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2))
+                        if (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2))
                         {
                             // Checks movement option and executes proper move when clicked
                             if (singleMoving) 
@@ -395,7 +471,7 @@ public class Board : MonoBehaviour
                                     // Choose selected hex to start from
                                     GameObject hex = selected[0];
                                     // Check if current hex is hex we want to move to
-                                    while (hex.GetComponent<Hex>().neighbors.ContainsKey(direction) && hex.GetComponent<Hex>().neighbors[direction] != hexDex[hitZ, hitX])
+                                    while (hex.GetComponent<Hex>().neighbors.ContainsKey(direction) && hex.GetComponent<Hex>().neighbors[direction] != hexHit)
                                     {
                                         // Set hex to be next
                                         hex = hex.GetComponent<Hex>().neighbors[direction];
@@ -445,14 +521,15 @@ public class Board : MonoBehaviour
                         }
                     }
                 }
+                clickedLastFrame = true;
+            } 
+            else 
+            {
+                clickedLastFrame = false;
             }
-            clickedLastFrame = true;
-        } 
-        else 
-        {
-            clickedLastFrame = false;
+            // Set hex hit this frame to hex hit previous frame
+            previousHexHit = hexHit;
         }
-
         // Deselect all hexes with right click
         if (Input.GetMouseButton(1) && !selectedMoving)
         {
