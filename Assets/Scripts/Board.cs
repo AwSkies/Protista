@@ -8,12 +8,19 @@ using TMPro;
 public class Board : MonoBehaviour
 {
     #region Prefabs & scene objects
+    #region Game pieces
     public GameObject hexPrefab;
     public GameObject objHexPrefab;
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
+    #endregion
+
+    #region Movement icons
     public GameObject curledMovementArrow;
     public GameObject attackIcon;
+    public GameObject stackIcon;
+    #endregion
+
     public TextMeshProUGUI invalidMovementOptionText;
     public GameObject[] buttons;
     #endregion
@@ -57,8 +64,9 @@ public class Board : MonoBehaviour
     private Dictionary<string, List<GameObject>> movementIcons;
     // Template for empty movement icons variable
     private Dictionary<string, List<GameObject>> emptyMovementIcons = new Dictionary<string, List<GameObject>> {
-                                                                                                                    {"arrows", new List<GameObject>()}, 
-                                                                                                                    {"attack", new List<GameObject>()} 
+                                                                                                                    {"arrows", new List<GameObject>()},
+                                                                                                                    {"attack", new List<GameObject>()},
+                                                                                                                    {"stack",  new List<GameObject>()}
                                                                                                                 };
     // The hex hit with a raycast on the previous frame
     private GameObject previousHexHit;
@@ -412,12 +420,29 @@ public class Board : MonoBehaviour
                             }
                             // Spawn movement arrow
                             movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60))));
-                            // If there is a piece on the hex moused over and it is the opposite color
-                            // (We shouldn't have to check for it being stacked since we did that already)
-                            if (hexHit.GetComponent<Hex>().piece != null && hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag)
+
+                            // Spawn aditional icons
+                            // If there is a piece on the hex
+                            if (hexHit.GetComponent<Hex>().piece != null)
                             {
-                                movementIcons["attack"].Add(
-                                    Instantiate(attackIcon, movementIconVertical + hexHit.GetComponent<Hex>().piece.transform.position, Quaternion.identity)
+                                string key;
+                                GameObject icon;
+                                // If the piece moused over is the opposite color
+                                // (We shouldn't have to check for it being stacked since we did that already)
+                                if (hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag)
+                                {
+                                    key = "attack";
+                                    icon = attackIcon;
+                                }
+                                // If the piece moused over is the same color
+                                else
+                                {
+                                    key = "stack";
+                                    icon = stackIcon;
+
+                                }
+                                movementIcons[key].Add(
+                                    Instantiate(icon, movementIconVertical + hexHit.GetComponent<Hex>().piece.transform.position, Quaternion.identity)
                                 );
                             }
                         }
