@@ -13,6 +13,7 @@ public class Board : MonoBehaviour
     public GameObject whitePiecePrefab;
     public GameObject blackPiecePrefab;
     public GameObject curledMovementArrow;
+    public GameObject attackIcon;
     public TextMeshProUGUI invalidMovementOptionText;
     public GameObject[] buttons;
     #endregion
@@ -35,7 +36,7 @@ public class Board : MonoBehaviour
     // Vertical offset of each piece
     public Vector3 pieceVertical;
     // Vertical offset of the movement arrows
-    public Vector3 arrowVertical;
+    public Vector3 movementIconVertical;
 
     // The amount of time it takes to rescind the invalid movement option text
     // Since the project's fixed timeskip is probably set to 0.02 or 1/50th it should be 100
@@ -51,10 +52,17 @@ public class Board : MonoBehaviour
     private List<GameObject> highlighted = new List<GameObject>();
     // Whether the player clicked the previous frame
     private bool clickedLastFrame = false;
+
     // Movement arrow object currently in use
-    private GameObject movementArrow;
+    private Dictionary<string, List<GameObject>> movementIcons;
+    // Template for empty movement icons variable
+    private Dictionary<string, List<GameObject>> emptyMovementIcons = new Dictionary<string, List<GameObject>> {
+                                                                                                                    {"arrows", new List<GameObject>()}, 
+                                                                                                                    {"attack", new List<GameObject>()} 
+                                                                                                                };
     // The hex hit with a raycast on the previous frame
     private GameObject previousHexHit;
+
     // List of all the string directions
     private string[] possibleDirections = {"right", "bottomRight", "bottomLeft", "left", "topLeft", "topRight"};
     // The direction the piece is moving for multiple piece moving
@@ -358,40 +366,65 @@ public class Board : MonoBehaviour
 
             // Cache color
             int color = hexHit.GetComponent<cakeslice.Outline>().color;
-            // Movement arrows case
-            // If we're selecting a move and the hex hit is highlighted a valid color or there is already a movement arrow
+            // Movement icons case
+            // If we're selecting a move and the hex hit is highlighted a valid color or there is already a movement icon
             if (selectedMoving && (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2)))
             {
-                // Only generate movement arrow if there isn't one already or if the one hit this frame doesn't match the one from last frame
-                if (movementArrow == null || hexHit != previousHexHit)
+                // Only generate icons if there isn't one already or if the one hit this frame doesn't match the one from last frame
+                if (movementIcons == null || hexHit != previousHexHit)
                 {
-                    // Destroy old hex if hex hit this frame doesn't match last frame's
+                    // Destroy old icons if hex hit this frame doesn't match last frame's
                     if (hexHit != previousHexHit)
                     {
-                        GameObject.Destroy(movementArrow);
+                        KillAllMovementIcons();
                     }
+                    // Initialize movementIcons and keys
+                    movementIcons = emptyMovementIcons;
 
-                    // Initalize an arrow position already with vertical offset
-                    Vector3 arrowPosition = arrowVertical;
+                    // Initalize an icon position already with vertical offset
+                    Vector3 iconPosition = movementIconVertical;
                     if (singleMoving)
                     {
-                        // Get the position the arrow will be in
-                        // Average position of the two hexes plus the vertical offset
-                        arrowPosition += ((hexHit.transform.position + selected[0].transform.position) / 2);
-                        // Find multiple of rotation by iterating through and finding which direcion it faces
-                        int rotation = 0;
-                        for (int i = 0; i < possibleDirections.Length; i++)
+                        // If there's no piece on moused over hex 
+                        if (hexHit.GetComponent<Hex>().piece == null
+                            // Or if the piece on the moused over hex is the opposite color and not stacked
+                            || (hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
+                                && hexHit.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0)
+                            // Or if the piece on the moused over hex is the same color as the selected piece
+                            || hexHit.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag)
+                        // Otherwise display only movement icon
                         {
-                            // If the hex in that direction exists and in that direction is the hex we hit
-                            if (selected[0].GetComponent<Hex>().neighbors.ContainsKey(possibleDirections[i]) 
-                                && selected[0].GetComponent<Hex>().neighbors[possibleDirections[i]] == hexHit)
+                            // Get the position the arrow will be in
+                            // Average position of the two hexes plus the vertical offset
+                            iconPosition += ((hexHit.transform.position + selected[0].transform.position) / 2);
+                            // Find multiple of rotation by iterating through and finding which direcion it faces
+                            int rotation = 0;
+                            for (int i = 0; i < possibleDirections.Length; i++)
                             {
-                                // Save rotation and end search
-                                rotation = i;
-                                break;
+                                // If the hex in that direction exists and in that direction is the hex we hit
+                                if (selected[0].GetComponent<Hex>().neighbors.ContainsKey(possibleDirections[i]) 
+                                    && selected[0].GetComponent<Hex>().neighbors[possibleDirections[i]] == hexHit)
+                                {
+                                    // Save rotation and end search
+                                    rotation = i;
+                                    break;
+                                }
+                            }
+                            // Spawn movement arrow
+                            movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60))));
+                            // If there is a piece on the hex moused over and it is the opposite color
+                            // (We shouldn't have to check for it being stacked since we did that already)
+                            if (hexHit.GetComponent<Hex>().piece != null && hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag)
+                            {
+                                movementIcons["attack"].Add(
+                                    Instantiate(attackIcon, movementIconVertical + hexHit.GetComponent<Hex>().piece.transform.position, Quaternion.identity)
+                                );
                             }
                         }
-                        movementArrow = Instantiate(curledMovementArrow, arrowPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60)));
+                        else
+                        {
+                            movementIcons["attack"].Add(Instantiate(attackIcon, movementIconVertical + hexHit.GetComponent<Hex>().piece.transform.position, Quaternion.identity));
+                        }
                     }
                     else if (cannonMoving)
                     {
@@ -411,10 +444,9 @@ public class Board : MonoBehaviour
                     }
                 }
             }
-            else if (movementArrow != null)
+            else if (movementIcons != null)
             {
-                GameObject.Destroy(movementArrow);
-                movementArrow = null;
+                KillAllMovementIcons();
             }
 
             // If clicked
@@ -534,6 +566,21 @@ public class Board : MonoBehaviour
         if (Input.GetMouseButton(1) && !selectedMoving)
         {
             DeselectAllHexes();
+        }
+    }
+
+    private void KillAllMovementIcons()
+    {
+        if (movementIcons != null)
+        {
+            foreach (string type in movementIcons.Keys)
+            {
+                foreach (GameObject icon in movementIcons[type])
+                {
+                    GameObject.Destroy(icon);
+                }
+            }
+            movementIcons = null;
         }
     }
     

@@ -1,15 +1,22 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using TMPro;
 
 public class FaceCamera : MonoBehaviour
 {
-    public TextMeshProUGUI text;
+    private Camera cam;
+
+    // Start is called before the first frame update
+    private void Start() 
+    {
+        // Cache main camera
+        cam = Camera.main;
+    }
 
     // Update is called once per frame
     void Update()
     {
-        text.transform.rotation = Quaternion.LookRotation(transform.position - Camera.main.transform.GetChild(0).position);
+        // Transforms rotation to look at the camera
+        transform.rotation = Quaternion.LookRotation(transform.position - cam.transform.GetChild(0).position);
     }
 }
