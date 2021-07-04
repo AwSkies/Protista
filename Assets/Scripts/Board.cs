@@ -425,11 +425,14 @@ public class Board : MonoBehaviour
                             // If there is a piece on the hex
                             if (hexHit.GetComponent<Hex>().piece != null)
                             {
+                                // Cache piece
+                                GameObject piece = hexHit.GetComponent<Hex>().piece;
+                                // Type of icon to choose
                                 string key;
                                 GameObject icon;
                                 // If the piece moused over is the opposite color
                                 // (We shouldn't have to check for it being stacked since we did that already)
-                                if (hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag)
+                                if (piece.tag != selected[0].GetComponent<Hex>().piece.tag)
                                 {
                                     key = "attack";
                                     icon = attackIcon;
@@ -442,7 +445,7 @@ public class Board : MonoBehaviour
 
                                 }
                                 movementIcons[key].Add(
-                                    Instantiate(icon, movementIconVertical + hexHit.GetComponent<Hex>().piece.transform.position, Quaternion.identity)
+                                    Instantiate(icon, movementIconVertical + piece.transform.position, Quaternion.identity)
                                 );
                             }
                         }
