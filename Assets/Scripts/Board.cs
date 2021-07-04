@@ -51,7 +51,7 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Variables for use during generation and gameplay
-    // Index of hexes ordered by x, z position
+    // Index of hexes ordered by z, x position
     public GameObject[,] hexDex;
     // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
@@ -389,8 +389,6 @@ public class Board : MonoBehaviour
                     // Initialize movementIcons and keys
                     movementIcons = emptyMovementIcons;
 
-                    // Initalize an icon position already with vertical offset
-                    Vector3 iconPosition = movementIconVertical;
                     if (singleMoving)
                     {
                         // If there's no piece on moused over hex 
@@ -402,24 +400,8 @@ public class Board : MonoBehaviour
                             || hexHit.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag)
                         // Otherwise display only movement icon
                         {
-                            // Get the position the arrow will be in
-                            // Average position of the two hexes plus the vertical offset
-                            iconPosition += ((hexHit.transform.position + selected[0].transform.position) / 2);
-                            // Find multiple of rotation by iterating through and finding which direcion it faces
-                            int rotation = 0;
-                            for (int i = 0; i < possibleDirections.Length; i++)
-                            {
-                                // If the hex in that direction exists and in that direction is the hex we hit
-                                if (selected[0].GetComponent<Hex>().neighbors.ContainsKey(possibleDirections[i]) 
-                                    && selected[0].GetComponent<Hex>().neighbors[possibleDirections[i]] == hexHit)
-                                {
-                                    // Save rotation and end search
-                                    rotation = i;
-                                    break;
-                                }
-                            }
-                            // Spawn movement arrow
-                            movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60))));
+                            // Place arrow
+                            PlaceArrow(selected[0], hexHit);
 
                             // Spawn aditional icons
                             // If there is a piece on the hex
@@ -458,6 +440,34 @@ public class Board : MonoBehaviour
                     }
                     else if (cannonMoving)
                     {
+                        // Cache hex
+                        GameObject hex = selected[0];
+                        // Get direction to put arrows in
+                        string direction = GetDirection(hex, hexHit);
+                        // Place arrows up to hit hex
+                        do 
+                        {
+                            // Set hex to be next
+                            hex = hex.GetComponent<Hex>().neighbors[direction];
+                            // Cache hex component
+                            Hex hexComponent = hex.GetComponent<Hex>();
+                            // If there are pieces on this hex add attack icon
+                            if (hexComponent.piece != null)
+                            {
+                                // Add attack icon
+                                movementIcons["attack"].Add(
+                                    Instantiate(attackIcon, movementIconVertical + hexComponent.piece.GetComponent<Piece>().transform.position, Quaternion.identity)
+                                );
+                                // If the pieces on this hex are stacked then don't place arrow
+                                if (hexComponent.piece.GetComponent<Piece>().stackedPieces.Count != 0)
+                                {
+                                    break;
+                                }
+                            }
+                            // Place arrow between current and previous hex
+                            PlaceArrow(hex.GetComponent<Hex>().neighbors[GetOppositeDirection(direction)], hex);
+                        }
+                        while (hex != hexHit);
                         
                     }
                     else if (waveMoving)
@@ -524,31 +534,8 @@ public class Board : MonoBehaviour
                             }
                             else if (cannonMoving) 
                             {
-                                // Initialize movement direction
-                                string movementDirection = "";
-                                // Loop out in the possible directions from the selected hex until we hit the hex we want to move to or run out
-                                // Then move on or choose that direction
-                                foreach (string direction in movementDirections)
-                                {
-                                    // Choose selected hex to start from
-                                    GameObject hex = selected[0];
-                                    // Check if current hex is hex we want to move to
-                                    while (hex.GetComponent<Hex>().neighbors.ContainsKey(direction) && hex.GetComponent<Hex>().neighbors[direction] != hexHit)
-                                    {
-                                        // Set hex to be next
-                                        hex = hex.GetComponent<Hex>().neighbors[direction];
-                                    }
-                                    // If the next hex existed, then we must have exited the loop because it was the right direction
-                                    if (hex.GetComponent<Hex>().neighbors.ContainsKey(direction))
-                                    {
-                                        // Save movement direction
-                                        movementDirection = direction;
-                                        // Exit loop
-                                        break;
-                                    }
-                                }
                                 // Move piece via move piece function
-                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, movementDirection: movementDirection);
+                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, movementDirection: GetDirection(selected[0], hexHit));
                                 cannonMoving = false;
                                 ChangeButtons(2, true);
                                 // Reset movement directions
@@ -599,6 +586,7 @@ public class Board : MonoBehaviour
         }
     }
 
+    #region Functions for utility
     private void KillAllMovementIcons()
     {
         if (movementIcons != null)
@@ -709,6 +697,56 @@ public class Board : MonoBehaviour
 
         return lines;
     }
+
+    string GetDirection(GameObject source, GameObject target)
+    {
+        // Initialize movement direction
+        string movementDirection = "";
+        // Loop out in the possible directions from the selected hex until we hit the hex we want to move to or run out
+        // Then move on or choose that direction
+        foreach (string direction in movementDirections)
+        {
+            // Choose selected hex to start from
+            GameObject hex = source;
+            // Check if current hex is hex we want to move to
+            while (hex.GetComponent<Hex>().neighbors.ContainsKey(direction) && hex.GetComponent<Hex>().neighbors[direction] != target)
+            {
+                // Set hex to be next
+                hex = hex.GetComponent<Hex>().neighbors[direction];
+            }
+            // If the next hex existed, then we must have exited the loop because it was the right direction
+            if (hex.GetComponent<Hex>().neighbors.ContainsKey(direction))
+            {
+                // Save movement direction
+                movementDirection = direction;
+            }
+        }
+        return movementDirection;
+    }
+
+    // Place movement arrows from hex1 to hex2
+    void PlaceArrow(GameObject hex1, GameObject hex2)
+    {
+        // Get the position the arrow will be in
+        // Average position of the two hexes plus the vertical offset
+        Vector3 iconPosition = ((hex1.transform.position + hex2.transform.position) / 2) + movementIconVertical;
+        // Find multiple of rotation by iterating through and finding which direcion it faces
+        int rotation = 0;
+        for (int i = 0; i < possibleDirections.Length; i++)
+        {
+            // If the hex in that direction exists and in that direction is the hex we hit
+            if (hex1.GetComponent<Hex>().neighbors.ContainsKey(possibleDirections[i]) 
+                && hex1.GetComponent<Hex>().neighbors[possibleDirections[i]] == hex2)
+            {
+                // Save rotation and end search
+                rotation = i;
+                break;
+            }
+        }
+        // Spawn movement arrow
+        movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60))));
+    }
+    #endregion
 
     #region Functions for moving
     private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false, string movementDirection = null)
