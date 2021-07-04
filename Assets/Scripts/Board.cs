@@ -468,7 +468,6 @@ public class Board : MonoBehaviour
                             PlaceArrow(hex.GetComponent<Hex>().neighbors[GetOppositeDirection(direction)], hex);
                         }
                         while (hex != hexHit);
-                        
                     }
                     else if (waveMoving)
                     {
