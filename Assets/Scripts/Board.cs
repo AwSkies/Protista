@@ -451,7 +451,9 @@ public class Board : MonoBehaviour
                         }
                         else
                         {
-                            movementIcons["attack"].Add(Instantiate(attackIcon, movementIconVertical + hexHit.GetComponent<Hex>().piece.transform.position, Quaternion.identity));
+                            movementIcons["attack"].Add(
+                                Instantiate(attackIcon, movementIconVertical + hexHit.GetComponent<Hex>().piece.transform.position, Quaternion.identity)
+                            );
                         }
                     }
                     else if (cannonMoving)
