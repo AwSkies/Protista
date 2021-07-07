@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -771,23 +771,33 @@ public class Board : MonoBehaviour
 
     public string GetOppositeDirection(string direction) 
     {
-        switch (direction)
+        // Get index of direction from possile directions
+        int directionIndex = Array.IndexOf(possibleDirections, direction);
+        // Add 3 to get direction halfway through list from current index
+        directionIndex += 3;
+        // If direction has overflowed past 6, bring it back
+        if (directionIndex >= 6) { directionIndex -= 6; }
+        // Return direction in new index
+        return possibleDirections[directionIndex];
+    }
+
+    // Returns adjacent hexes with pieces on them
+    private List<GameObject> GetAdjacentPieces(GameObject hex)
+    {
+        // Initialize list of hexes with pieces on them
+        List<GameObject> adjacentPieces = new List<GameObject>();
+        // Cache neighbors
+        Dictionary<string, GameObject> neighbors = hex.GetComponent<Hex>().neighbors;
+        // Loop through directions
+        foreach (string direction in neighbors.Keys)
         {
-            case "left":
-                return "right";
-            case "right":
-                return "left";
-            case "topLeft":
-                return "bottomRight";
-            case "topRight":
-                return "bottomLeft";
-            case "bottomLeft":
-                return "topRight";
-            case "bottomRight":
-                return "topLeft";
-            default:
-                return null;
+            // If hex in that direction has a piece on it add that hex to the list
+            if (neighbors[direction].GetComponent<Hex>().piece != null)
+            {
+                adjacentPieces.Add(neighbors[direction]);
+            }
         }
+        return adjacentPieces;
     }
     #endregion
 
