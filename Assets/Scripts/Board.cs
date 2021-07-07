@@ -614,7 +614,7 @@ public class Board : MonoBehaviour
         }
     }
 
-    #region Deselect and dehighlight selected or hghilighted hexes
+    #region Deselect and dehighlight selected or highlighted hexes
     private void DeselectAllHexes()
     {
         // Iterate through each selected hex
@@ -627,13 +627,17 @@ public class Board : MonoBehaviour
         selected = new List<GameObject>();
     }
 
-    private void DehighlightAllHexes()
+    private void DehighlightAllHexes(bool excludeSelected = false)
     {
         // Iterate through each highlighted hex
         foreach (GameObject hex in highlighted)
         {
-            // Turn off outline
-            hex.GetComponent<cakeslice.Outline>().enabled = false;
+            // If not exclude selected or exclude selected and this hex isn't selected
+            if (!excludeSelected || (excludeSelected && !selected.Contains(hex)))
+            {
+                // Turn off outline
+                hex.GetComponent<cakeslice.Outline>().enabled = false;
+            }
         }
         // Resets highlighted back to empty list
         highlighted = new List<GameObject>();
@@ -858,8 +862,9 @@ public class Board : MonoBehaviour
         }
     }
 
-
-    public bool NothingSelected()
+    #region Functions to check at the beginning of movement buttons
+    #region Functions to check number of pieces selected and display errors
+    private bool NothingSelected()
     {
         if (selected.Count == 0)
         {
@@ -871,7 +876,8 @@ public class Board : MonoBehaviour
             return false;
         }
     }
-    public bool OnlyOneSelected()
+
+    private bool OnlyOneSelected()
     {
         if (selected.Count == 1)
         {
@@ -883,70 +889,87 @@ public class Board : MonoBehaviour
             return false;
         }
     }
+    #endregion
+
+    // Saves time looking for and toggling highlights for hexes
+    private bool NotMoving(int buttonNum)
+    {
+        if (selectedMoving)
+        {
+            selectedMoving   = false;
+            singleMoving     = false;
+            cannonMoving     = false;
+            waveMoving       = false;
+            contiguousMoving = false;
+            vMoving          = false;
+            ChangeButtons(buttonNum, true);
+            DehighlightAllHexes(true);
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    #endregion
 
     // When pressed, they enable moving and update hilighting
     public void SingleMovement()
     {
-        // Makes sure only one piece is selected
-        if (!NothingSelected() && OnlyOneSelected())
+        // Makes sure only one piece is selected and we aren't already trying to move
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving(0))
         {
             // Toggles moving and singleMoving
-            selectedMoving = !selectedMoving;
-            singleMoving = !singleMoving;
-            ChangeButtons(0, !selectedMoving);
-            if (selectedMoving)
+            selectedMoving = true;
+            singleMoving = true;
+            ChangeButtons(0, false);
+            // Loops through all neighbors and outlines them as valid moves
+            foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
             {
-                // Loops through all neighbors and outlines them as valid moves
-                foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
+                // Makes sure there is a hex in the neighbor position
+                if (hex != null)
                 {
-                    // Makes sure there is a hex in the neighbor position
-                    if (hex != null)
+                    int color;
+                    if (hex.GetComponent<Hex>().piece == null)
                     {
-                        int color;
-                        if (hex.GetComponent<Hex>().piece == null)
-                        {
-                            color = 1;
-                        }
-                        else
-                        {
-                            color = 2;
-                        }
-                        // Changes outline color to one/green and turns on or off the outline
-                        hex.GetComponent<cakeslice.Outline>().color = color;
-                        // Setting the value to singleMoving makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
-                        hex.GetComponent<cakeslice.Outline>().enabled = singleMoving;
-                        // Adds hex to the list of hilighted
-                        if (!highlighted.Contains(hex))
-                        {
-                            highlighted.Add(hex);
-                        }
+                        color = 1;
+                    }
+                    else
+                    {
+                        color = 2;
+                    }
+                    // Changes outline color to one/green and turns on or off the outline
+                    hex.GetComponent<cakeslice.Outline>().color = color;
+                    // Setting the value to singleMoving makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
+                    hex.GetComponent<cakeslice.Outline>().enabled = true;
+                    // Adds hex to the list of hilighted
+                    if (!highlighted.Contains(hex))
+                    {
+                        highlighted.Add(hex);
                     }
                 }
-            }
-            else
-            {
-                DehighlightAllHexes();
             }
         }
     }
 
     public void WaveMovement()
     {
-        if (!NothingSelected())
+        // Makes sure pieces are selected and we aren't already trying to move
+        if (!NothingSelected() && NotMoving(1))
         {
-            // Future code that checks and highlights possible moves
-
             // Toggles moving and waveMoving
             selectedMoving = !selectedMoving;
             waveMoving = !waveMoving;
             ChangeButtons(1, !selectedMoving);
+            // Future code that checks and highlights possible moves
+
         }
     }
 
     public void CannonMovement()
     {
-        // Make sure that only one hex is selected
-        if (!NothingSelected() && OnlyOneSelected())
+        // Make sure that only one hex is selected and we aren't already trying to move
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving(2))
         {
             #region Initialize/Cache variables
             // Hex to perform operations on
@@ -963,16 +986,9 @@ public class Board : MonoBehaviour
             if (directions.Count != 0)
             {
                 // Toggles moving and cannonMoving
-                selectedMoving = !selectedMoving;
-                cannonMoving = !cannonMoving;
-                ChangeButtons(2, !selectedMoving);
-
-                // Dehilight all hexes if deselecting a movement option
-                if (!selectedMoving)
-                {
-                    DehighlightAllHexes();
-                    return;
-                }
+                selectedMoving = true;
+                cannonMoving = true;
+                ChangeButtons(2, false);
 
                 // Loop through all directions piece can move
                 // This if for if piece is the end of multiple lines
@@ -1003,7 +1019,7 @@ public class Board : MonoBehaviour
                                 // Changes color to one/green
                                 hex.GetComponent<cakeslice.Outline>().color = 1;
                                 // Toggles outline
-                                hex.GetComponent<cakeslice.Outline>().enabled = cannonMoving;
+                                hex.GetComponent<cakeslice.Outline>().enabled = true;
                                 // Makes sure hex is not in highlighted
                                 if (!highlighted.Contains(hex))
                                 {
@@ -1039,7 +1055,8 @@ public class Board : MonoBehaviour
 
     public void VMovement()
     {
-        if (!NothingSelected() && OnlyOneSelected())
+        // Make sure that only one hex is selected and we aren't already trying to move
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving(3))
         {
             // Lines and directions
             Dictionary<string, List<GameObject>> lines = FindLines(selected[0].GetComponent<BoardPos>());
@@ -1071,9 +1088,9 @@ public class Board : MonoBehaviour
                 if (Vs.Count != 0)
                 {
                     // Toggles moving and vMoving
-                    selectedMoving = !selectedMoving;
-                    vMoving = !vMoving;
-                    ChangeButtons(3, !selectedMoving);
+                    selectedMoving = true;
+                    vMoving = true;
+                    ChangeButtons(3, false);
                 }
                 else
                 {
@@ -1090,14 +1107,15 @@ public class Board : MonoBehaviour
     public void ContiguousMovement()
     {
         // gsdebug: compare with SingleMovement
-        if (!NothingSelected() && OnlyOneSelected())
+        // Make sure that only one hex is selected and we aren't already trying to move
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving(4))
         {
+            // Toggles moving and contiguousMoving
+            selectedMoving = true;
+            contiguousMoving = true;
+            ChangeButtons(4, false);
             // Future code that checks and highlights possible moves
 
-            // Toggles moving and contiguousMoving
-            selectedMoving = !selectedMoving;
-            contiguousMoving = !contiguousMoving;
-            ChangeButtons(4, !selectedMoving);
         }
     }
     #endregion
