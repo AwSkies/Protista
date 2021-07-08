@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -755,7 +755,7 @@ public class Board : MonoBehaviour
         {
             // Make sure not to add directions where a piece is in the middle of a line
             // If the line is just one (just the source hex) in one direction and the opposite direction it's more than one
-            if (lines[direction].Count == 1 && lines[GetOppositeDirection(direction)].Count > 1)
+            if (lines[direction].Count == 1 && lines.ContainsKey(GetOppositeDirection(direction)) && lines[GetOppositeDirection(direction)].Count > 1)
             {
                 directions.Add(direction);
             }
