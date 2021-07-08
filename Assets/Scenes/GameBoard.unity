@@ -1450,6 +1450,7 @@ MonoBehaviour:
   pieceNum: 15
   pieceVertical: {x: 0, y: 0.6, z: 0}
   movementIconVertical: {x: 0, y: 3.33, z: 0}
+  maxContiguousVisits: 5
   textRescindTime: 100
 --- !u!4 &1568063594
 Transform:

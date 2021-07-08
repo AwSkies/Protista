@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -44,6 +44,8 @@ public class Board : MonoBehaviour
     public Vector3 pieceVertical;
     // Vertical offset of the movement arrows
     public Vector3 movementIconVertical;
+    // The number of times a contiguous piece can be visited
+    public int maxContiguousVisits;
 
     // The amount of time it takes to rescind the invalid movement option text
     // Since the project's fixed timeskip is probably set to 0.02 or 1/50th it should be 100
@@ -79,11 +81,11 @@ public class Board : MonoBehaviour
     private int textRescindCountdown;
 
     #region Variables for contiguous movement
-    // The contiguous pieces
-    private List<GameObject> contiguousPieces = new List<GameObject>();
     // The valid hexes and the directions taken to them
     // For each hex there is a list of the lists of directions that it took to get there
     private Dictionary<GameObject, List<List<string>>> contiguousHexes = new Dictionary<GameObject, List<List<string>>>();
+    // The hexes with pieces visitec
+    private List<GameObject> contiguousVisits;
     // The directions it has taken to get to a hex
     private List<string> directionsList = new List<string>();
     #endregion
@@ -490,6 +492,7 @@ public class Board : MonoBehaviour
                             }
                         }
                         // Go through list of directions and place arrows
+                        // Start with selected hex
                         GameObject hex = selected[0];
                         foreach (string direction in directionList)
                         {
@@ -588,7 +591,7 @@ public class Board : MonoBehaviour
                                 ChangeButtons(4, true);
                                 // Reset variables
                                 contiguousHexes  = new Dictionary<GameObject, List<List<string>>>();
-                                contiguousPieces = new List<GameObject>();
+                                contiguousVisits = new List<GameObject>();
                                 directionsList   = new List<string>();
                             }
                             // Turns off moving
@@ -1166,7 +1169,7 @@ public class Board : MonoBehaviour
         {
             // Reset variables
             contiguousHexes  = new Dictionary<GameObject, List<List<string>>>();
-            contiguousPieces = new List<GameObject>();
+            contiguousVisits = new List<GameObject>();
             directionsList   = new List<string>();
             // Finds contiguous pieces
             FindContiguous(selected[0]);
@@ -1180,23 +1183,19 @@ public class Board : MonoBehaviour
                 // Go through every found piece
                 foreach (GameObject hex in contiguousHexes.Keys)
                 {
-                    // If the neighbor doesn't have a piece on it, or if it has a piece of the opposite color, it is valid
-                    if (hex.GetComponent<Hex>().piece == null || hex.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag)
+                    // Choose color
+                    int color = 0;
+                    // If there's no piece, green
+                    if (hex.GetComponent<Hex>().piece == null)
                     {
-                        // Choose color
-                        int color = 0;
-                        // If there's no piece, green
-                        if (hex.GetComponent<Hex>().piece == null)
-                        {
-                            color = 1;
-                        }
-                        // If there is a piece of opposite color, hit color
-                        else if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag)
-                        {
-                            color = 2;
-                        }
-                        OutlineHex(hex, color);
+                        color = 1;
                     }
+                    // If there is a piece of opposite color, hit color
+                    else
+                    {
+                        color = 2;
+                    }
+                    OutlineHex(hex, color);
                 }
             }
             else
@@ -1206,41 +1205,48 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void FindContiguous(GameObject sourceHex, GameObject previousHex = null)
+    private void FindContiguous(GameObject sourceHex)
     {
         // Get pieces adjacent to current hex
         List<GameObject> adjacent = GetAdjacentPieces(sourceHex);
         // Loops through all found adjacent hexes with pieces
         foreach (GameObject hex in adjacent)
         {
-            // If hex is not already found in contiguous pieces or is not the source hex
-            if (hex != previousHex && hex != selected[0])
+            // If hex is not the source hex or has been visited in this string of visits
+            if (hex != selected[0] && !contiguousVisits.Contains(hex))
             {
-                // Add hex to contiguous pieces
-                contiguousPieces.Add(hex);
+                // Add hex to list of visits
+                contiguousVisits.Add(hex);
                 // Add direction to directions list
                 directionsList.Add(GetDirection(sourceHex, hex, new List<string>(possibleDirections)));
                 
                 // Go through every neighbor of each found contiguous piece
                 foreach (GameObject hexNeighbor in hex.GetComponent<Hex>().neighbors.Values)
                 {
-                    // Add direction to directions list
-                    directionsList.Add(GetDirection(hex, hexNeighbor, new List<string>(possibleDirections)));
-                    // Initialize the list of lists at the key of the hex if not already done
-                    if (!contiguousHexes.ContainsKey(hexNeighbor))
+                    // Don't deal with it if it has a piece of the same color on it
+                    if (!(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag))
                     {
-                        contiguousHexes[hexNeighbor] = new List<List<string>>();
-                    }
-                    // Add list of directions to big dictionary of directions for each hex
-                    contiguousHexes[hexNeighbor].Add(new List<string>(directionsList));
+                        // Add direction to directions list
+                        directionsList.Add(GetDirection(hex, hexNeighbor, new List<string>(possibleDirections)));
+                        // Initialize the list of lists at the key of the hex if not already done
+                        if (!contiguousHexes.ContainsKey(hexNeighbor))
+                        {
+                            contiguousHexes[hexNeighbor] = new List<List<string>>();
+                        }
+                        // Add list of directions to big dictionary of directions for each hex
+                        contiguousHexes[hexNeighbor].Add(new List<string>(directionsList));
 
-                    // Clear this direction from the end of the list
-                    if (directionsList.Count != 0)
-                    {
-                        directionsList.RemoveAt(directionsList.Count - 1);
+                        // Clear this direction from the end of the list
+                        if (directionsList.Count != 0)
+                        {
+                            directionsList.RemoveAt(directionsList.Count - 1);
+                        }
                     }
                 }
-                FindContiguous(hex, sourceHex);
+                // Find contiguous from current hex
+                FindContiguous(hex);
+                // We're done with this hex, so remove it from the string of visits
+                contiguousVisits.RemoveAt(contiguousVisits.Count - 1);
             }
         }
         if (directionsList.Count != 0)
