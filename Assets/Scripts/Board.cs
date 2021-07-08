@@ -377,12 +377,9 @@ public class Board : MonoBehaviour
         if (hit.collider != null)
         {
             // Cache board position
-            BoardPos hexHitBoardPos = hit.transform.gameObject.GetComponent<BoardPos>();
-            // Gets coordinates of hit piece
-            int hitX = hexHitBoardPos.x;
-            int hitZ = hexHitBoardPos.z;
+            BoardPos hexPos = hit.transform.gameObject.GetComponent<BoardPos>();
             // Get hex hit
-            GameObject hexHit = hexDex[hitZ, hitX];
+            GameObject hexHit = hexDex[hexPos.z, hexPos.x];
 
             // Cache color
             int color = hexHit.GetComponent<cakeslice.Outline>().color;
@@ -477,27 +474,24 @@ public class Board : MonoBehaviour
                     }
                     else if (contiguousMoving)
                     {
-                        // Initialize list to store shortest list of directions
-                        List<string> directionList = null;
-                        // Go through each directions list and find the shortest one
-                        foreach (List<string> directions in contiguousHexes[hexHit])
-                        {
-                            if (directionList == null)
-                            {
-                                directionList = directions;
-                            }
-                            else if (directions.Count < directionList.Count)
-                            {
-                                directionList = directions;
-                            }
-                        }
+                        // Get shortest list of directions
+                        List<string> directionList = GetDirectionsTo(hexHit);
                         // Go through list of directions and place arrows
                         // Start with selected hex
                         GameObject hex = selected[0];
-                        foreach (string direction in directionList)
+                        // Do not place arrows if hitHex has a stack on it
+                        // Should only trigger for last hex in the list
+                        if (!(hexHit.GetComponent<Hex>().piece != null
+                            && hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
+                            && hexHit.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0))
                         {
-                            PlaceArrow(hex, hex.GetComponent<Hex>().neighbors[direction]);
-                            hex = hex.GetComponent<Hex>().neighbors[direction];
+                            foreach (string direction in directionList)
+                            {
+                                // Place arrow
+                                PlaceArrow(hex, hex.GetComponent<Hex>().neighbors[direction]);
+                                // Update hex for next time through the loop
+                                hex = hex.GetComponent<Hex>().neighbors[direction];
+                            }
                         }
                         // Place attack icons
                         // Because of our highlighting algorithm, hexes with pieces of the same color should not be highlighted so we don't need to worry
@@ -555,7 +549,7 @@ public class Board : MonoBehaviour
                             if (singleMoving) 
                             {
                                 // Moves piece via movepiece function
-                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, canStack: true);
+                                MovePiece(selected[0].GetComponent<Hex>().piece, new List<BoardPos> { hexPos }, canStack: true);
                                 // Resets moving variable and buttons
                                 singleMoving = false;
                                 ChangeButtons(0, true);
@@ -570,7 +564,11 @@ public class Board : MonoBehaviour
                             else if (cannonMoving) 
                             {
                                 // Move piece via move piece function
-                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, movementDirection: GetDirection(selected[0], hexHit, movementDirections));
+                                MovePiece(
+                                    selected[0].GetComponent<Hex>().piece,
+                                    new List<BoardPos> { hexPos },
+                                    movementDirection: GetDirection(selected[0], hexHit, movementDirections)
+                                );
                                 cannonMoving = false;
                                 ChangeButtons(2, true);
                                 // Reset movement directions
@@ -585,7 +583,19 @@ public class Board : MonoBehaviour
                             }
                             else if (contiguousMoving) 
                             {
-                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ);
+                                // Get smallest directions list
+                                List<string> directionList = GetDirectionsTo(hexHit);
+                                // Start with source hex
+                                GameObject hex = selected[0];
+                                // Initalize targets
+                                List<BoardPos> targets = new List<BoardPos>();
+                                foreach (string direction in directionList)
+                                {
+                                    hex = hex.GetComponent<Hex>().neighbors[direction];
+                                    targets.Add(hex.GetComponent<BoardPos>());
+                                }
+                                // Move piece
+                                MovePiece(selected[0].GetComponent<Hex>().piece, targets);
                                 // Resests moving variable and buttons
                                 contiguousMoving = false;
                                 ChangeButtons(4, true);
@@ -866,24 +876,25 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Functions for moving
-    private void MovePiece(GameObject piece, int newX, int newZ, bool canStack = false, string movementDirection = null)
+    private void MovePiece(GameObject piece, List<BoardPos> targets, bool canStack = false, string movementDirection = null)
     {
+        BoardPos newPos = targets[targets.Count - 1];
         // Initialize stacking variable
         bool stacking;
 
         // Reassign the pieces on the hexes if the piece is not stacking
         // Stacking case
-        if (canStack && hexDex[newZ, newX].GetComponent<Hex>().piece != null && hexDex[newZ, newX].GetComponent<Hex>().piece.tag == piece.tag)
+        if (canStack && hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece != null && hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.tag == piece.tag)
         {
             stacking = true;
             // Make old hex have no pieces
             hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
         }
         // Not stacking or attacking a stack case
-        else if (hexDex[newZ, newX].GetComponent<Hex>().piece == null || hexDex[newZ, newX].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0)
+        else if (hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0)
         {
             stacking = false;
-            hexDex[newZ, newX].GetComponent<Hex>().piece = piece;
+            hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = piece;
             // Make old hex have no pieces
             hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
         }
@@ -893,7 +904,7 @@ public class Board : MonoBehaviour
             // Make old hex have no pieces
             hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
             // Assign piece to new hex
-            hexDex[newZ, newX].GetComponent<Hex>().neighbors[GetOppositeDirection(movementDirection)].GetComponent<Hex>().piece = piece;
+            hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[GetOppositeDirection(movementDirection)].GetComponent<Hex>().piece = piece;
             stacking = false;
         }
         // Attacking a stack case
@@ -904,11 +915,9 @@ public class Board : MonoBehaviour
 
         // Move piece
         piece.GetComponent<Piece>().Move(
-            hexDex[newZ, newX].transform.position,
-            newX, 
-            newZ, 
+            targets,
             stacking: stacking,  
-            stackingOnto: hexDex[newZ, newX].GetComponent<Hex>().piece,
+            stackingOnto: hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece,
             bottomPiece: true,
             multipleHexMove: cannonMoving,
             multipleHexDirection: movementDirection
@@ -1203,6 +1212,26 @@ public class Board : MonoBehaviour
                 InvalidMovementOptionDisplay("Piece has no contiguous pieces");
             }
         }
+    }
+
+    // Returns smallest list of direction to get from the selected hex to the given hex
+    private List<string> GetDirectionsTo(GameObject hex)
+    {
+        // Initialize list to store shortest list of directions
+        List<string> directionList = null;
+        // Go through each directions list and find the shortest one
+        foreach (List<string> directions in contiguousHexes[hex])
+        {
+            if (directionList == null)
+            {
+                directionList = directions;
+            }
+            else if (directions.Count < directionList.Count)
+            {
+                directionList = directions;
+            }
+        }
+        return directionList;
     }
 
     private void FindContiguous(GameObject sourceHex)
