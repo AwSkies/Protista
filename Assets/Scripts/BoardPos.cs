@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,6 +9,6 @@ public class BoardPos : MonoBehaviour
 
     public override string ToString()
     {
-        return $"({x}, {z})";
+        return base.ToString() + $"({x}, {z})";
     }
 }
