@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -77,6 +77,16 @@ public class Board : MonoBehaviour
     private List<string> movementDirections = new List<string>();
     // The amount of time left to rescind the invalid movement option text
     private int textRescindCountdown;
+
+    #region Variables for contiguous movement
+    // The contiguous pieces
+    private List<GameObject> contiguousPieces = new List<GameObject>();
+    // The valid hexes and the directions taken to them
+    // For each hex there is a list of the lists of directions that it took to get there
+    private Dictionary<GameObject, List<List<string>>> contiguousHexes = new Dictionary<GameObject, List<List<string>>>();
+    // The directions it has taken to get to a hex
+    private List<string> directionsList = new List<string>();
+    #endregion
     
     #region Movement option chosen
     // Whether a movement option is chosen at all
@@ -411,31 +421,23 @@ public class Board : MonoBehaviour
                                 GameObject piece = hexHit.GetComponent<Hex>().piece;
                                 // Type of icon to choose
                                 string key;
-                                GameObject icon;
                                 // If the piece moused over is the opposite color
                                 // (We shouldn't have to check for it being stacked since we did that already)
                                 if (piece.tag != selected[0].GetComponent<Hex>().piece.tag)
                                 {
                                     key = "attack";
-                                    icon = attackIcon;
                                 }
                                 // If the piece moused over is the same color
                                 else
                                 {
                                     key = "stack";
-                                    icon = stackIcon;
-
                                 }
-                                movementIcons[key].Add(
-                                    Instantiate(icon, movementIconVertical + piece.transform.position, Quaternion.identity)
-                                );
+                                PlaceIcon(hexHit, key);
                             }
                         }
                         else
                         {
-                            movementIcons["attack"].Add(
-                                Instantiate(attackIcon, movementIconVertical + hexHit.GetComponent<Hex>().piece.transform.position, Quaternion.identity)
-                            );
+                            PlaceIcon(hexHit);
                         }
                     }
                     else if (cannonMoving)
@@ -443,7 +445,7 @@ public class Board : MonoBehaviour
                         // Cache hex
                         GameObject hex = selected[0];
                         // Get direction to put arrows in
-                        string direction = GetDirection(hex, hexHit);
+                        string direction = GetDirection(hex, hexHit, movementDirections);
                         // Place arrows up to hit hex
                         do 
                         {
@@ -455,9 +457,7 @@ public class Board : MonoBehaviour
                             if (hexComponent.piece != null)
                             {
                                 // Add attack icon
-                                movementIcons["attack"].Add(
-                                    Instantiate(attackIcon, movementIconVertical + hexComponent.piece.GetComponent<Piece>().transform.position, Quaternion.identity)
-                                );
+                                PlaceIcon(hex);
                                 // If the pieces on this hex are stacked then don't place arrow
                                 if (hexComponent.piece.GetComponent<Piece>().stackedPieces.Count != 0)
                                 {
@@ -475,7 +475,33 @@ public class Board : MonoBehaviour
                     }
                     else if (contiguousMoving)
                     {
-                        
+                        // Initialize list to store shortest list of directions
+                        List<string> directionList = null;
+                        // Go through each directions list and find the shortest one
+                        foreach (List<string> directions in contiguousHexes[hexHit])
+                        {
+                            if (directionList == null)
+                            {
+                                directionList = directions;
+                            }
+                            else if (directions.Count < directionList.Count)
+                            {
+                                directionList = directions;
+                            }
+                        }
+                        // Go through list of directions and place arrows
+                        GameObject hex = selected[0];
+                        foreach (string direction in directionList)
+                        {
+                            PlaceArrow(hex, hex.GetComponent<Hex>().neighbors[direction]);
+                            hex = hex.GetComponent<Hex>().neighbors[direction];
+                        }
+                        // Place attack icons
+                        // Because of our highlighting algorithm, hexes with pieces of the same color should not be highlighted so we don't need to worry
+                        if (hexHit.GetComponent<Hex>().piece != null)
+                        {
+                            PlaceIcon(hexHit);
+                        }
                     }
                     else if (vMoving)
                     {
@@ -531,15 +557,6 @@ public class Board : MonoBehaviour
                                 singleMoving = false;
                                 ChangeButtons(0, true);
                             }
-                            else if (cannonMoving) 
-                            {
-                                // Move piece via move piece function
-                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, movementDirection: GetDirection(selected[0], hexHit));
-                                cannonMoving = false;
-                                ChangeButtons(2, true);
-                                // Reset movement directions
-                                movementDirections = new List<string>();
-                            }
                             else if (waveMoving) 
                             {
                                 // Future movement code
@@ -547,12 +564,14 @@ public class Board : MonoBehaviour
                                 waveMoving = false;
                                 ChangeButtons(1, true);
                             }
-                            else if (contiguousMoving) 
+                            else if (cannonMoving) 
                             {
-                                // Future movement code
-                                // Resests moving variable and buttons
-                                contiguousMoving = false;
-                                ChangeButtons(4, true);
+                                // Move piece via move piece function
+                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ, movementDirection: GetDirection(selected[0], hexHit, movementDirections));
+                                cannonMoving = false;
+                                ChangeButtons(2, true);
+                                // Reset movement directions
+                                movementDirections = new List<string>();
                             }
                             else if (vMoving) 
                             {
@@ -561,9 +580,20 @@ public class Board : MonoBehaviour
                                 vMoving = false;
                                 ChangeButtons(3, true);
                             }
+                            else if (contiguousMoving) 
+                            {
+                                MovePiece(selected[0].GetComponent<Hex>().piece, hitX, hitZ);
+                                // Resests moving variable and buttons
+                                contiguousMoving = false;
+                                ChangeButtons(4, true);
+                                // Reset variables
+                                contiguousHexes  = new Dictionary<GameObject, List<List<string>>>();
+                                contiguousPieces = new List<GameObject>();
+                                directionsList   = new List<string>();
+                            }
                             // Turns off moving
                             selectedMoving = false;
-                            // Loops through all neighbors and unoutlines them
+                            // Unoutlines and deselects all
                             DehighlightAllHexes();
                             DeselectAllHexes();
                         }
@@ -585,6 +615,19 @@ public class Board : MonoBehaviour
         }
     }
 
+    // FixedUpdate is called at a fixed interval
+    private void FixedUpdate() 
+    {
+        if (invalidMovementOptionText.enabled)
+        {
+            textRescindCountdown--;
+            if (textRescindCountdown <= 0 )
+            {
+                invalidMovementOptionText.enabled = false;
+            }
+        }
+    }
+
     #region Functions for utility
     private void KillAllMovementIcons()
     {
@@ -599,20 +642,7 @@ public class Board : MonoBehaviour
             }
             movementIcons = null;
         }
-    }
-    
-    // FixedUpdate is called at a fixed interval
-    private void FixedUpdate() 
-    {
-        if (invalidMovementOptionText.enabled)
-        {
-            textRescindCountdown--;
-            if (textRescindCountdown <= 0 )
-            {
-                invalidMovementOptionText.enabled = false;
-            }
-        }
-    }
+    }  
 
     #region Deselect and dehighlight selected or highlighted hexes
     private void DeselectAllHexes()
@@ -643,6 +673,21 @@ public class Board : MonoBehaviour
         highlighted = new List<GameObject>();
     }
     #endregion
+
+    private void OutlineHex(GameObject hex, int color)
+    {
+        // Cache outline component
+        cakeslice.Outline outline = hex.GetComponent<cakeslice.Outline>();
+        // Changes outline color
+        outline.color = color;
+        // Setting the value to singleMoving makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
+        outline.enabled = true;
+        // Adds hex to the list of hilighted
+        if (!highlighted.Contains(hex))
+        {
+            highlighted.Add(hex);
+        }
+    }
 
     // Finds lines of pieces of the same color
     private Dictionary<string, List<GameObject>> FindLines(BoardPos position)
@@ -720,13 +765,13 @@ public class Board : MonoBehaviour
     }
 
     // Gets direction target hex (not adjacent to source) is in
-    string GetDirection(GameObject source, GameObject target)
+    string GetDirection(GameObject source, GameObject target, List<string> directions)
     {
         // Initialize movement direction
         string movementDirection = "";
         // Loop out in the possible directions from the selected hex until we hit the hex we want to move to or run out
         // Then move on or choose that direction
-        foreach (string direction in movementDirections)
+        foreach (string direction in directions)
         {
             // Choose selected hex to start from
             GameObject hex = source;
@@ -747,7 +792,7 @@ public class Board : MonoBehaviour
     }
 
     // Place movement arrows from hex1 to hex2
-    void PlaceArrow(GameObject hex1, GameObject hex2)
+    private void PlaceArrow(GameObject hex1, GameObject hex2)
     {
         // Get the position the arrow will be in
         // Average position of the two hexes plus the vertical offset
@@ -767,6 +812,22 @@ public class Board : MonoBehaviour
         }
         // Spawn movement arrow
         movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60))));
+    }
+
+    private void PlaceIcon(GameObject hex, string key = "attack")
+    {
+        GameObject icon = null;
+        if (key == "attack")
+        {
+            icon = attackIcon;
+        }
+        else if (key == "stack")
+        {
+            icon = stackIcon;
+        }
+        movementIcons[key].Add(
+            Instantiate(icon, movementIconVertical + hex.GetComponent<Hex>().piece.transform.position, Quaternion.identity)
+        );
     }
 
     public string GetOppositeDirection(string direction) 
@@ -791,8 +852,8 @@ public class Board : MonoBehaviour
         // Loop through directions
         foreach (string direction in neighbors.Keys)
         {
-            // If hex in that direction has a piece on it add that hex to the list
-            if (neighbors[direction].GetComponent<Hex>().piece != null)
+            // If hex in that direction has a piece on it and that piece is the same color add that hex to the list
+            if (neighbors[direction].GetComponent<Hex>().piece != null && neighbors[direction].GetComponent<Hex>().piece.tag == hex.GetComponent<Hex>().piece.tag)
             {
                 adjacentPieces.Add(neighbors[direction]);
             }
@@ -948,15 +1009,7 @@ public class Board : MonoBehaviour
                     {
                         color = 2;
                     }
-                    // Changes outline color to one/green and turns on or off the outline
-                    hex.GetComponent<cakeslice.Outline>().color = color;
-                    // Setting the value to singleMoving makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
-                    hex.GetComponent<cakeslice.Outline>().enabled = true;
-                    // Adds hex to the list of hilighted
-                    if (!highlighted.Contains(hex))
-                    {
-                        highlighted.Add(hex);
-                    }
+                    OutlineHex(hex, color);
                 }
             }
         }
@@ -1026,16 +1079,8 @@ public class Board : MonoBehaviour
                             {
                                 // Sets current hex to hex to the direction of the past hex
                                 hex = hex.GetComponent<Hex>().neighbors[direction];
-                                // Changes color to one/green
-                                hex.GetComponent<cakeslice.Outline>().color = 1;
-                                // Toggles outline
-                                hex.GetComponent<cakeslice.Outline>().enabled = true;
-                                // Makes sure hex is not in highlighted
-                                if (!highlighted.Contains(hex))
-                                {
-                                    // Add hex to highlighted list
-                                    highlighted.Add(hex);
-                                }
+                                // Outline hex
+                                OutlineHex(hex, 1);
                                 // If there's a piece on the current hex and it is stacked
                                 if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0)
                                 {
@@ -1116,16 +1161,91 @@ public class Board : MonoBehaviour
 
     public void ContiguousMovement()
     {
-        // gsdebug: compare with SingleMovement
         // Make sure that only one hex is selected and we aren't already trying to move
         if (!NothingSelected() && OnlyOneSelected() && NotMoving(4))
         {
-            // Toggles moving and contiguousMoving
-            selectedMoving = true;
-            contiguousMoving = true;
-            ChangeButtons(4, false);
-            // Future code that checks and highlights possible moves
+            // Reset variables
+            contiguousHexes  = new Dictionary<GameObject, List<List<string>>>();
+            contiguousPieces = new List<GameObject>();
+            directionsList   = new List<string>();
+            // Finds contiguous pieces
+            FindContiguous(selected[0]);
+            // Makes sure there are contiguous pieces
+            if (contiguousHexes.Count != 0)
+            {
+                // Toggles moving and contiguousMoving
+                selectedMoving = true;
+                contiguousMoving = true;
+                ChangeButtons(4, false);
+                // Go through every found piece
+                foreach (GameObject hex in contiguousHexes.Keys)
+                {
+                    // If the neighbor doesn't have a piece on it, or if it has a piece of the opposite color, it is valid
+                    if (hex.GetComponent<Hex>().piece == null || hex.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag)
+                    {
+                        // Choose color
+                        int color = 0;
+                        // If there's no piece, green
+                        if (hex.GetComponent<Hex>().piece == null)
+                        {
+                            color = 1;
+                        }
+                        // If there is a piece of opposite color, hit color
+                        else if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag)
+                        {
+                            color = 2;
+                        }
+                        OutlineHex(hex, color);
+                    }
+                }
+            }
+            else
+            {
+                InvalidMovementOptionDisplay("Piece has no contiguous pieces");
+            }
+        }
+    }
 
+    private void FindContiguous(GameObject sourceHex, GameObject previousHex = null)
+    {
+        // Get pieces adjacent to current hex
+        List<GameObject> adjacent = GetAdjacentPieces(sourceHex);
+        // Loops through all found adjacent hexes with pieces
+        foreach (GameObject hex in adjacent)
+        {
+            // If hex is not already found in contiguous pieces or is not the source hex
+            if (hex != previousHex && hex != selected[0])
+            {
+                // Add hex to contiguous pieces
+                contiguousPieces.Add(hex);
+                // Add direction to directions list
+                directionsList.Add(GetDirection(sourceHex, hex, new List<string>(possibleDirections)));
+                
+                // Go through every neighbor of each found contiguous piece
+                foreach (GameObject hexNeighbor in hex.GetComponent<Hex>().neighbors.Values)
+                {
+                    // Add direction to directions list
+                    directionsList.Add(GetDirection(hex, hexNeighbor, new List<string>(possibleDirections)));
+                    // Initialize the list of lists at the key of the hex if not already done
+                    if (!contiguousHexes.ContainsKey(hexNeighbor))
+                    {
+                        contiguousHexes[hexNeighbor] = new List<List<string>>();
+                    }
+                    // Add list of directions to big dictionary of directions for each hex
+                    contiguousHexes[hexNeighbor].Add(new List<string>(directionsList));
+
+                    // Clear this direction from the end of the list
+                    if (directionsList.Count != 0)
+                    {
+                        directionsList.RemoveAt(directionsList.Count - 1);
+                    }
+                }
+                FindContiguous(hex, sourceHex);
+            }
+        }
+        if (directionsList.Count != 0)
+        {
+            directionsList.RemoveAt(directionsList.Count - 1);
         }
     }
     #endregion

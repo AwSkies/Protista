@@ -1447,7 +1447,7 @@ MonoBehaviour:
   columns: 15
   columnSpace: {x: 0, y: 0, z: 4.5}
   rowOffset: {x: 2.5, y: 0, z: 0}
-  pieceNum: 5
+  pieceNum: 15
   pieceVertical: {x: 0, y: 0.6, z: 0}
   movementIconVertical: {x: 0, y: 3.33, z: 0}
   textRescindTime: 100
