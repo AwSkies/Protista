@@ -74,7 +74,7 @@ public class Piece : MonoBehaviour
         // Whether this move is moving multiple spaces like cannon or v movements
         bool multipleHexMove = false,
         // The direction that the multiple hex move is going in
-        string multipleHexDirection = null
+        int multipleHexDirection = 0
     )
     {
         BoardPos newPos = targets[targets.Count - 1];

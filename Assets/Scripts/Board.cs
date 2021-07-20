@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -73,21 +74,19 @@ public class Board : MonoBehaviour
     // The hex hit with a raycast on the previous frame
     private GameObject previousHexHit;
 
-    // List of all the string directions
-    private string[] possibleDirections = {"right", "bottomRight", "bottomLeft", "left", "topLeft", "topRight"};
     // The direction the piece is moving for multiple piece moving
-    private List<string> movementDirections = new List<string>();
+    private List<int> movementDirections = new List<int>();
     // The amount of time left to rescind the invalid movement option text
     private int textRescindCountdown;
 
     #region Variables for contiguous movement
     // The valid hexes and the directions taken to them
     // For each hex there is a list of the lists of directions that it took to get there
-    private Dictionary<GameObject, List<List<string>>> contiguousHexes = new Dictionary<GameObject, List<List<string>>>();
+    private Dictionary<GameObject, List<List<int>>> contiguousHexes = new Dictionary<GameObject, List<List<int>>>();
     // The hexes with pieces visitec
     private List<GameObject> contiguousVisits;
     // The directions it has taken to get to a hex
-    private List<string> directionsList = new List<string>();
+    private List<int> directionsList = new List<int>();
     #endregion
     
     #region Movement option chosen
@@ -245,7 +244,7 @@ public class Board : MonoBehaviour
             // Loop through each hex in each row
             for (int hexX = 0; hexX < hexDex.GetLength(1); hexX++)
             {
-                Dictionary<string, GameObject> neighbors = new Dictionary<string, GameObject>();
+                GameObject[] neighbors = new GameObject[6];
                 hexDex[i, hexX].GetComponent<Hex>().neighbors = neighbors;
                 // Assign for each of the six surrounding hexes
                 for (int iter = 0; iter < 6; iter++)
@@ -253,42 +252,30 @@ public class Board : MonoBehaviour
                     // Say where each hex is in relation to the current hex
                     switch (iter)
                     {
-                        #region Left
-                        case 0:
+                        case (int)Directions.Left:
                             transHoriz = -1;
                             transVert = 0;
                             break;
-                        #endregion
-                        #region Right
-                        case 1:
+                        case (int)Directions.Right:
                             transHoriz = 1;
                             transVert = 0;
                             break;
-                        #endregion
-                        #region Top left
-                        case 2:
+                        case (int)Directions.TopLeft:
                             transHoriz = vertLeft;
                             transVert = 1;
                             break;
-                        #endregion
-                        #region Top right
-                        case 3:
+                        case (int)Directions.TopRight:
                             transHoriz = vertRight;
                             transVert = 1;
                             break;
-                        #endregion
-                        #region Bottom left
-                        case 4:
+                        case (int)Directions.BottomLeft:
                             transHoriz = vertLeft;
                             transVert = -1;
                             break;
-                        #endregion
-                        #region Bottom right
-                        case 5:
+                        case (int)Directions.BottomRight:
                             transHoriz = vertRight;
                             transVert = -1;
                             break;
-                        #endregion
                     }
                     GameObject neighborHex;
                     // Makes sure that hexes on the edge get defined as null
@@ -301,57 +288,7 @@ public class Board : MonoBehaviour
                         neighborHex = null;
                     }
                     // Assigns the neighbor hex if there is one
-                    switch (iter)
-                    {
-                        #region Left
-                        case 0:
-                            if (neighborHex != null)
-                            {
-                                hexDex[i, hexX].GetComponent<Hex>().neighbors["left"] = neighborHex;
-                            }
-                            break;
-                        #endregion
-                        #region Right
-                        case 1:
-                            if (neighborHex != null)
-                            {
-                                hexDex[i, hexX].GetComponent<Hex>().neighbors["right"] = neighborHex;
-                            }
-                            break;
-                        #endregion
-                        #region Top left
-                        case 2:
-                            if (neighborHex != null)
-                            {
-                                hexDex[i, hexX].GetComponent<Hex>().neighbors["topLeft"] = neighborHex;
-                            }
-                            break;
-                        #endregion
-                        #region Top right
-                        case 3:
-                            if (neighborHex != null)
-                            {
-                                hexDex[i, hexX].GetComponent<Hex>().neighbors["topRight"] = neighborHex;
-                            }
-                            break;
-                        #endregion
-                        #region Bottom left
-                        case 4:
-                            if (neighborHex != null)
-                            {
-                                hexDex[i, hexX].GetComponent<Hex>().neighbors["bottomLeft"] = neighborHex;
-                            }
-                            break;
-                        #endregion
-                        #region Bottom right
-                        case 5:
-                            if (neighborHex != null)
-                            {
-                                hexDex[i, hexX].GetComponent<Hex>().neighbors["bottomRight"] = neighborHex;
-                            }
-                            break;
-                        #endregion
-                    }
+                    hexDex[i, hexX].GetComponent<Hex>().neighbors[iter] = neighborHex;
                 }
             }
             
@@ -444,7 +381,7 @@ public class Board : MonoBehaviour
                         // Cache hex
                         GameObject hex = selected[0];
                         // Get direction to put arrows in
-                        string direction = GetDirection(hex, hexHit, movementDirections);
+                        int direction = GetDirection(hex, hexHit, movementDirections.ToArray());
                         // Place arrows up to hit hex
                         do 
                         {
@@ -475,7 +412,7 @@ public class Board : MonoBehaviour
                     else if (contiguousMoving)
                     {
                         // Get shortest list of directions
-                        List<string> directionList = GetDirectionsTo(hexHit);
+                        List<int> directionList = GetDirectionsTo(hexHit);
                         // Go through list of directions and place arrows
                         // Start with selected hex
                         GameObject hex = selected[0];
@@ -485,7 +422,7 @@ public class Board : MonoBehaviour
                             && hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
                             && hexHit.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0))
                         {
-                            foreach (string direction in directionList)
+                            foreach (int direction in directionList)
                             {
                                 // Place arrow
                                 PlaceArrow(hex, hex.GetComponent<Hex>().neighbors[direction]);
@@ -567,12 +504,12 @@ public class Board : MonoBehaviour
                                 MovePiece(
                                     selected[0].GetComponent<Hex>().piece,
                                     new List<BoardPos> { hexPos },
-                                    movementDirection: GetDirection(selected[0], hexHit, movementDirections)
+                                    movementDirection: GetDirection(selected[0], hexHit, movementDirections.ToArray())
                                 );
                                 cannonMoving = false;
                                 ChangeButtons(2, true);
                                 // Reset movement directions
-                                movementDirections = new List<string>();
+                                movementDirections = new List<int>();
                             }
                             else if (vMoving) 
                             {
@@ -584,12 +521,12 @@ public class Board : MonoBehaviour
                             else if (contiguousMoving) 
                             {
                                 // Get smallest directions list
-                                List<string> directionList = GetDirectionsTo(hexHit);
+                                List<int> directionList = GetDirectionsTo(hexHit);
                                 // Start with source hex
                                 GameObject hex = selected[0];
                                 // Initalize targets
                                 List<BoardPos> targets = new List<BoardPos>();
-                                foreach (string direction in directionList)
+                                foreach (int direction in directionList)
                                 {
                                     hex = hex.GetComponent<Hex>().neighbors[direction];
                                     targets.Add(hex.GetComponent<BoardPos>());
@@ -600,9 +537,9 @@ public class Board : MonoBehaviour
                                 contiguousMoving = false;
                                 ChangeButtons(4, true);
                                 // Reset variables
-                                contiguousHexes  = new Dictionary<GameObject, List<List<string>>>();
+                                contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
                                 contiguousVisits = new List<GameObject>();
-                                directionsList   = new List<string>();
+                                directionsList   = new List<int>();
                             }
                             // Turns off moving
                             selectedMoving = false;
@@ -703,20 +640,20 @@ public class Board : MonoBehaviour
     }
 
     // Finds lines of pieces of the same color
-    private Dictionary<string, List<GameObject>> FindLines(BoardPos position)
+    private List<GameObject>[] FindLines(BoardPos position)
     {
         // Initialize variables
         // Lines to return
         // String is the direction the line is in
         // List of GameObjects is the list of hexes in the line
-        Dictionary<string, List<GameObject>> lines = new Dictionary<string, List<GameObject>>();
+        List<GameObject>[] lines = new List<GameObject>[6];
         // Hex that is the source of the line
         Hex sourceHex = hexDex[position.z, position.x].GetComponent<Hex>();
         // Color of the piece which line we want to get
         string color = sourceHex.piece.tag;
 
         // Loop through each neighbor of the original hex
-        foreach (string direction in sourceHex.neighbors.Keys)
+        for (int direction = 0; direction < sourceHex.neighbors.Length; direction++)
         {
             // Set hex to original hex
             GameObject hex = hexDex[position.z, position.x];
@@ -760,15 +697,15 @@ public class Board : MonoBehaviour
     }
 
     // Gets directions that lines are in
-    List<string> GetLineDirections(Dictionary<string, List<GameObject>> lines)
+    List<int> GetLineDirections(List<GameObject>[] lines)
     {
         // List of directions to return
-        List<string> directions = new List<string>();
-        foreach (string direction in lines.Keys)
+        List<int> directions = new List<int>();
+        for (int direction = 0; direction < lines.Length; direction ++)
         {
             // Make sure not to add directions where a piece is in the middle of a line
             // If the line is just one (just the source hex) in one direction and the opposite direction it's more than one
-            if (lines[direction].Count == 1 && lines.ContainsKey(GetOppositeDirection(direction)) && lines[GetOppositeDirection(direction)].Count > 1)
+            if (lines[direction].Count == 1 && lines[GetOppositeDirection(direction)] != null && lines[GetOppositeDirection(direction)].Count > 1)
             {
                 directions.Add(direction);
             }
@@ -778,24 +715,24 @@ public class Board : MonoBehaviour
     }
 
     // Gets direction target hex (not adjacent to source) is in
-    string GetDirection(GameObject source, GameObject target, List<string> directions)
+    int GetDirection(GameObject source, GameObject target, int[] directions)
     {
         // Initialize movement direction
-        string movementDirection = "";
+        int movementDirection = 0;
         // Loop out in the possible directions from the selected hex until we hit the hex we want to move to or run out
         // Then move on or choose that direction
-        foreach (string direction in directions)
+        foreach (int direction in directions)
         {
             // Choose selected hex to start from
             GameObject hex = source;
             // Check if current hex is hex we want to move to
-            while (hex.GetComponent<Hex>().neighbors.ContainsKey(direction) && hex.GetComponent<Hex>().neighbors[direction] != target)
+            while (hex.GetComponent<Hex>().neighbors[direction] != null && hex.GetComponent<Hex>().neighbors[direction] != target)
             {
                 // Set hex to be next
                 hex = hex.GetComponent<Hex>().neighbors[direction];
             }
             // If the next hex existed, then we must have exited the loop because it was the right direction
-            if (hex.GetComponent<Hex>().neighbors.ContainsKey(direction))
+            if (hex.GetComponent<Hex>().neighbors[direction] != null)
             {
                 // Save movement direction
                 movementDirection = direction;
@@ -812,11 +749,11 @@ public class Board : MonoBehaviour
         Vector3 iconPosition = ((hex1.transform.position + hex2.transform.position) / 2) + movementIconVertical;
         // Find multiple of rotation by iterating through and finding which direcion it faces
         int rotation = 0;
-        for (int i = 0; i < possibleDirections.Length; i++)
+        for (int i = 0; i < 6; i++)
         {
             // If the hex in that direction exists and in that direction is the hex we hit
-            if (hex1.GetComponent<Hex>().neighbors.ContainsKey(possibleDirections[i]) 
-                && hex1.GetComponent<Hex>().neighbors[possibleDirections[i]] == hex2)
+            if (hex1.GetComponent<Hex>().neighbors[i] != null
+                && hex1.GetComponent<Hex>().neighbors[i] == hex2)
             {
                 // Save rotation and end search
                 rotation = i;
@@ -843,16 +780,14 @@ public class Board : MonoBehaviour
         );
     }
 
-    public string GetOppositeDirection(string direction) 
+    public int GetOppositeDirection(int direction) 
     {
-        // Get index of direction from possile directions
-        int directionIndex = Array.IndexOf(possibleDirections, direction);
-        // Add 3 to get direction halfway through list from current index
-        directionIndex += 3;
+        // Add 3 to get direction halfway through enum from current direction
+        int oppositeDirection = direction + 3;
         // If direction has overflowed past 6, bring it back
-        if (directionIndex >= 6) { directionIndex -= 6; }
+        if (oppositeDirection >= 6) { oppositeDirection -= 6; }
         // Return direction in new index
-        return possibleDirections[directionIndex];
+        return oppositeDirection;
     }
 
     // Returns adjacent hexes with pieces on them
@@ -861,9 +796,9 @@ public class Board : MonoBehaviour
         // Initialize list of hexes with pieces on them
         List<GameObject> adjacentPieces = new List<GameObject>();
         // Cache neighbors
-        Dictionary<string, GameObject> neighbors = hex.GetComponent<Hex>().neighbors;
+        GameObject[] neighbors = hex.GetComponent<Hex>().neighbors;
         // Loop through directions
-        foreach (string direction in neighbors.Keys)
+        for (int direction = 0; direction < neighbors.Length; direction++)
         {
             // If hex in that direction has a piece on it and that piece is the same color add that hex to the list
             if (neighbors[direction].GetComponent<Hex>().piece != null && neighbors[direction].GetComponent<Hex>().piece.tag == hex.GetComponent<Hex>().piece.tag)
@@ -876,7 +811,7 @@ public class Board : MonoBehaviour
     #endregion
 
     #region Functions for moving
-    private void MovePiece(GameObject piece, List<BoardPos> targets, bool canStack = false, string movementDirection = null)
+    private void MovePiece(GameObject piece, List<BoardPos> targets, bool canStack = false, int movementDirection = 0)
     {
         BoardPos newPos = targets[targets.Count - 1];
         // Initialize stacking variable
@@ -1007,7 +942,7 @@ public class Board : MonoBehaviour
             singleMoving = true;
             ChangeButtons(0, false);
             // Loops through all neighbors and outlines them as valid moves
-            foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors.Values)
+            foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors)
             {
                 // Makes sure there is a hex in the neighbor position
                 if (hex != null)
@@ -1050,11 +985,11 @@ public class Board : MonoBehaviour
             // Hex to perform operations on
             GameObject hex = selected[0];
             // Gets lines from selected
-            Dictionary<string, List<GameObject>> lines = FindLines(hex.GetComponent<BoardPos>());
+            List<GameObject>[] lines = FindLines(hex.GetComponent<BoardPos>());
             // Get directions line go in
-            List<string> directions = GetLineDirections(lines);
+            List<int> directions = GetLineDirections(lines);
             // Cache neighbors
-            Dictionary<string, GameObject> neighbors = hex.GetComponent<Hex>().neighbors;
+            GameObject[] neighbors = hex.GetComponent<Hex>().neighbors;
             #endregion
 
             // Make sure that the piece has at least one line and is not only in the middle of line(s)
@@ -1067,7 +1002,7 @@ public class Board : MonoBehaviour
 
                 // Loop through all directions piece can move
                 // This if for if piece is the end of multiple lines
-                foreach (string direction in directions)
+                foreach (int direction in directions)
                 {
                     hex = selected[0];
                     // Store direction for moving
@@ -1126,28 +1061,34 @@ public class Board : MonoBehaviour
         if (!NothingSelected() && OnlyOneSelected() && NotMoving(3))
         {
             // Lines and directions
-            Dictionary<string, List<GameObject>> lines = FindLines(selected[0].GetComponent<BoardPos>());
-            List<string> directions = GetLineDirections(lines);
+            List<GameObject>[] lines = FindLines(selected[0].GetComponent<BoardPos>());
+            // Find all directions where there is a hex/line
+            List<int> directions = new List<int>();
+            foreach (int direction in Enum.GetValues(typeof(Directions)))
+            {
+                if (lines[direction].Count > 1)
+                {
+                    directions.Add(direction);
+                }
+            }
 
             if (directions.Count >= 2)
             {
                 // Find valid directions
                 // List of pairs of valid directions
-                List<string[]> Vs = new List<string[]>();
-                foreach (string direction in directions)
+                List<int[]> Vs = new List<int[]>();
+                foreach (int direction in Enum.GetValues(typeof(Directions)))
                 {
-                    // String array to store two V pieces
-                    string[] VPieces = new string[2];
-                    // Index of current direction
-                    int index1 = Array.IndexOf(possibleDirections, direction);
+                    // Integer array to store two V pieces
+                    int[] VPieces = new int[2];
                     // Index of current direction +1, or the next consecutive direction
-                    int index2 = index1 + 1;
+                    int direction2 = direction + 1;
                     // Roll back to zero if out of index range
-                    if (index2 >= 6) { index2 -= 6; }
-                    if (directions.Contains(possibleDirections[index2]))
+                    if (direction2 >= 6) { direction2 -= 6; }
+                    if (directions.Contains(direction2))
                     {
                         VPieces[0] = direction;
-                        VPieces[1] = possibleDirections[index2];
+                        VPieces[1] = direction2;
                         Vs.Add(VPieces);
                     }
                 }
@@ -1177,9 +1118,9 @@ public class Board : MonoBehaviour
         if (!NothingSelected() && OnlyOneSelected() && NotMoving(4))
         {
             // Reset variables
-            contiguousHexes  = new Dictionary<GameObject, List<List<string>>>();
+            contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
             contiguousVisits = new List<GameObject>();
-            directionsList   = new List<string>();
+            directionsList   = new List<int>();
             // Finds contiguous pieces
             FindContiguous(selected[0]);
             // Makes sure there are contiguous pieces
@@ -1214,13 +1155,14 @@ public class Board : MonoBehaviour
         }
     }
 
+    #region Contiguous movement utility functions 
     // Returns smallest list of direction to get from the selected hex to the given hex
-    private List<string> GetDirectionsTo(GameObject hex)
+    private List<int> GetDirectionsTo(GameObject hex)
     {
         // Initialize list to store shortest list of directions
-        List<string> directionList = null;
+        List<int> directionList = null;
         // Go through each directions list and find the shortest one
-        foreach (List<string> directions in contiguousHexes[hex])
+        foreach (List<int> directions in contiguousHexes[hex])
         {
             if (directionList == null)
             {
@@ -1247,23 +1189,23 @@ public class Board : MonoBehaviour
                 // Add hex to list of visits
                 contiguousVisits.Add(hex);
                 // Add direction to directions list
-                directionsList.Add(GetDirection(sourceHex, hex, new List<string>(possibleDirections)));
+                directionsList.Add(GetDirection(sourceHex, hex, Enumerable.Range(0, 6).ToArray<int>()));
                 
                 // Go through every neighbor of each found contiguous piece
-                foreach (GameObject hexNeighbor in hex.GetComponent<Hex>().neighbors.Values)
+                foreach (GameObject hexNeighbor in hex.GetComponent<Hex>().neighbors)
                 {
                     // Don't deal with it if it has a piece of the same color on it
                     if (!(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag))
                     {
                         // Add direction to directions list
-                        directionsList.Add(GetDirection(hex, hexNeighbor, new List<string>(possibleDirections)));
+                        directionsList.Add(GetDirection(hex, hexNeighbor, Enumerable.Range(0, 6).ToArray<int>()));
                         // Initialize the list of lists at the key of the hex if not already done
                         if (!contiguousHexes.ContainsKey(hexNeighbor))
                         {
-                            contiguousHexes[hexNeighbor] = new List<List<string>>();
+                            contiguousHexes[hexNeighbor] = new List<List<int>>();
                         }
                         // Add list of directions to big dictionary of directions for each hex
-                        contiguousHexes[hexNeighbor].Add(new List<string>(directionsList));
+                        contiguousHexes[hexNeighbor].Add(new List<int>(directionsList));
 
                         // Clear this direction from the end of the list
                         if (directionsList.Count != 0)
@@ -1283,6 +1225,7 @@ public class Board : MonoBehaviour
             directionsList.RemoveAt(directionsList.Count - 1);
         }
     }
+    #endregion
     #endregion
     #endregion
 }

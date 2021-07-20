@@ -4,6 +4,6 @@ using UnityEngine;
 
 public class Hex : MonoBehaviour
 {
-    public Dictionary<string, GameObject> neighbors;
+    public GameObject[] neighbors = new GameObject[6];
     public GameObject piece;
 }
