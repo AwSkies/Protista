@@ -979,12 +979,33 @@ public class Board : MonoBehaviour
         // Makes sure pieces are selected and we aren't already trying to move
         if (!NothingSelected() && NotMoving((int)Buttons.WaveMovement))
         {
-            // Toggles moving and waveMoving
-            selectedMoving = !selectedMoving;
-            waveMoving = !waveMoving;
-            ChangeButtons((int)Buttons.WaveMovement, !selectedMoving);
-            // Future code that checks and highlights possible moves
+            if (selected.Count >= 3)
+            {
+                // List for storing directions
+                List<int> directions = new List<int>();
+                // Cache neighbors array
+                GameObject[] neighbors = selected[0].GetComponent<Hex>().neighbors;
+                // Loop through each hex in each direction off the first selected hex and get the directions they were in
+                for (int i = 0; i < 6; i++)
+                {
+                    // If there is a piece on the hex, save direction
+                    if (neighbors[i].GetComponent<Hex>().piece != null)
+                    {
+                        directions.Add(i);
+                    }
+                }
 
+                // Toggles moving and waveMoving
+                selectedMoving = !selectedMoving;
+                waveMoving = !waveMoving;
+                ChangeButtons((int)Buttons.WaveMovement, !selectedMoving);
+                // Future code that checks and highlights possible moves
+                
+            }
+            else
+            {
+                InvalidMovementOptionDisplay("Select at least three pieces");
+            }
         }
     }
 
