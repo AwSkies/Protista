@@ -988,8 +988,8 @@ public class Board : MonoBehaviour
                 // Loop through each hex in each direction off the first selected hex and get the directions they were in
                 for (int i = 0; i < 6; i++)
                 {
-                    // If there is a piece on the hex, save direction
-                    if (neighbors[i].GetComponent<Hex>().piece != null)
+                    // If there is a piece on the hex and it is selected, save direction
+                    if (neighbors[i].GetComponent<Hex>().piece != null && selected.Contains(neighbors[i]))
                     {
                         directions.Add(i);
                     }
