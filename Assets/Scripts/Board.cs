@@ -792,16 +792,24 @@ public class Board : MonoBehaviour
         );
     }
 
+    // Returns direction that is offset from the current direction
+    // Giving a positive offset goes 
+    private int CycleDirection(int direction, int offset)
+    {
+        // Get new direction from going offset steps in one direction       
+        int newDirection = direction + offset;
+        // If direction has overflowed over 6 or past 0, bring it back
+        if (newDirection >= 6) { newDirection -= 6; }
+        else if (newDirection < 0) {newDirection += 6; }
+        // Return the new cycled direction
+        return newDirection;
+    }
+    
     public int GetOppositeDirection(int direction) 
     {
-        // Add 3 to get direction halfway through enum from current direction
-        int oppositeDirection = direction + 3;
-        // If direction has overflowed past 6, bring it back
-        if (oppositeDirection >= 6) { oppositeDirection -= 6; }
-        // Return direction in new index
-        return oppositeDirection;
+        return CycleDirection(direction, 3);
     }
-
+    
     // Returns adjacent hexes with pieces on them
     private List<GameObject> GetAdjacentPieces(GameObject hex)
     {
@@ -994,13 +1002,35 @@ public class Board : MonoBehaviour
                         directions.Add(i);
                     }
                 }
-
-                // Toggles moving and waveMoving
-                selectedMoving = !selectedMoving;
-                waveMoving = !waveMoving;
-                ChangeButtons((int)Buttons.WaveMovement, !selectedMoving);
-                // Future code that checks and highlights possible moves
                 
+                // Dictionary containing each valid direction and whether it starts with adding to the direction or 
+                Dictionary<int, int> validDirections = new Dictionary<int, int>;
+                // Loop through each direction and check if it's valid
+                foreach (int direction in direction)
+                {
+                    for (int i = 0; i < 6; i++)
+                    {
+                        // If there is a piece on the hex, it is selected, save direction
+                        if (neighbors[i].GetComponent<Hex>().piece != null && selected.Contains(neighbors[i]) && (CycleDirection(i, 1) == direction || CycleDirection(i, -1) = direction))
+                        {
+                            validDirections.Add(i);
+                        }
+                    }
+                }
+
+                // Check if there are valid directions
+                if (validDirections.Count > 0)
+                {
+                    // Toggles moving and waveMoving
+                    selectedMoving = !selectedMoving;
+                    waveMoving = !waveMoving;
+                    ChangeButtons((int)Buttons.WaveMovement, !selectedMoving);
+                    // Future code that checks and highlights possible moves
+                }
+                else
+                {
+                    InvalidMovementOptionDisplay("Select a wave");
+                }
             }
             else
             {
@@ -1114,10 +1144,8 @@ public class Board : MonoBehaviour
                 {
                     // Integer array to store two V pieces
                     int[] VPieces = new int[2];
-                    // Index of current direction +1, or the next consecutive direction
-                    int direction2 = direction + 1;
-                    // Roll back to zero if out of index range
-                    if (direction2 >= 6) { direction2 -= 6; }
+                    // Next consecutive direction
+                    int direction2 = CycleDirection(direction, 1);
                     if (directions.Contains(direction2))
                     {
                         VPieces[0] = direction;
