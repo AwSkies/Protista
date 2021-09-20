@@ -1003,8 +1003,8 @@ public class Board : MonoBehaviour
                     }
                 }
                 
-                // Dictionary containing each valid direction and whether it starts with adding to the direction or 
-                Dictionary<int, int> validDirections = new Dictionary<int, int>;
+                // Dictionary containing each valid direction and whether it starts with adding to the direction
+                Dictionary<int, int> validDirections = new Dictionary<int, bool>;
                 // Loop through each direction and check if it's valid
                 foreach (int direction in direction)
                 {
@@ -1013,7 +1013,7 @@ public class Board : MonoBehaviour
                         // If there is a piece on the hex, it is selected, save direction
                         if (neighbors[i].GetComponent<Hex>().piece != null && selected.Contains(neighbors[i]) && (CycleDirection(i, 1) == direction || CycleDirection(i, -1) = direction))
                         {
-                            validDirections.Add(i);
+                            validDirections.[i] = CycleDirection(i, 1) == direction;
                         }
                     }
                 }
