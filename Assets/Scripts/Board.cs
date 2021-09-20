@@ -793,7 +793,7 @@ public class Board : MonoBehaviour
     }
 
     // Returns direction that is offset from the current direction
-    // Giving a positive offset goes 
+    // Giving a positive offset goes clockwise and a negative offset goes counterclockwise
     private int CycleDirection(int direction, int offset)
     {
         // Get new direction from going offset steps in one direction       
