@@ -1010,7 +1010,7 @@ public class Board : MonoBehaviour
                 {
                     for (int i = 0; i < 6; i++)
                     {
-                        // If there is a piece on the hex, it is selected, save direction
+                        // If there is a piece on the hex, and it is selected, save direction
                         if (neighbors[i].GetComponent<Hex>().piece != null && selected.Contains(neighbors[i]) && (CycleDirection(i, 1) == direction || CycleDirection(i, -1) = direction))
                         {
                             validDirections.[i] = CycleDirection(i, 1) == direction;
