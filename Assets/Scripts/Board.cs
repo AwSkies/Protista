@@ -1004,7 +1004,7 @@ public class Board : MonoBehaviour
                 }
                 
                 // Dictionary containing each valid direction and whether it starts with adding to the direction
-                Dictionary<int, bool> validDirections = new Dictionary<int, bool>;
+                Dictionary<int, bool> validDirections = new Dictionary<int, bool>();
                 // Loop through each direction and check if it's valid
                 foreach (int direction in direction)
                 {
