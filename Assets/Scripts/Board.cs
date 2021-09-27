@@ -1012,12 +1012,16 @@ public class Board : MonoBehaviour
                     // Loop through every neighbor hex of the original hex in the directions pieces were found
                     for (int i = 0; i < 6; i++)
                     {
-                        // If there is a piece on the hex, and it is selected, save direction
+                        // If there is a piece on the hex
                         if (neighbors[i].GetComponent<Hex>().piece != null
-                            && neighbors[i] != selected[0];
+                            // and the piece is not the hex we came from
+                            && neighbors[i] != selected[0]
+                            // and the piece is selected
                             && selected.Contains(neighbors[i])
+                            // and the piece is either one direction up or one direction down from direction we came from
                             && (CycleDirection(i, 1) == direction || CycleDirection(i, -1) = direction))
                         {
+                            // Add as a valid direction
                             validDirections.[i] = CycleDirection(i, 1) == direction;
                         }
                     }
