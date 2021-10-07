@@ -820,8 +820,10 @@ public class Board : MonoBehaviour
         // Loop through directions
         for (int direction = 0; direction < neighbors.Length; direction++)
         {
-            // If hex in that direction has a piece on it and that piece is the same color add that hex to the list
-            if (neighbors[direction].GetComponent<Hex>().piece != null && neighbors[direction].GetComponent<Hex>().piece.tag == hex.GetComponent<Hex>().piece.tag)
+            // If hex in that direction exists, has a piece on it, and that piece is the same color, add that hex to the list
+            if (neighbors[direction] != null &&
+                neighbors[direction].GetComponent<Hex>().piece != null &&
+                neighbors[direction].GetComponent<Hex>().piece.tag == hex.GetComponent<Hex>().piece.tag)
             {
                 adjacentPieces.Add(neighbors[direction]);
             }
@@ -1019,10 +1021,10 @@ public class Board : MonoBehaviour
                             // and the piece is selected
                             && selected.Contains(neighbors[i])
                             // and the piece is either one direction up or one direction down from direction we came from
-                            && (CycleDirection(i, 1) == direction || CycleDirection(i, -1) = direction))
+                            && (CycleDirection(i, 1) == direction || CycleDirection(i, -1) == direction))
                         {
                             // Add as a valid direction
-                            validDirections.[i] = CycleDirection(i, 1) == direction;
+                            validDirections[i] = CycleDirection(i, 1) == direction;
                         }
                     }
                 }
@@ -1265,7 +1267,8 @@ public class Board : MonoBehaviour
                 foreach (GameObject hexNeighbor in hex.GetComponent<Hex>().neighbors)
                 {
                     // Don't deal with it if it has a piece of the same color on it
-                    if (!(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag))
+                    if (hexNeighbor != null
+                        && !(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag))
                     {
                         // Add direction to directions list
                         directionsList.Add(GetDirection(hex, hexNeighbor, Enumerable.Range(0, 6).ToArray<int>()));
