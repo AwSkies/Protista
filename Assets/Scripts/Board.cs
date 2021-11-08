@@ -92,11 +92,7 @@ public class Board : MonoBehaviour
     #region Movement option chosen
     // Whether a movement option is chosen at all
     private bool selectedMoving = false;
-    private bool singleMoving = false;
-    private bool cannonMoving = false;
-    private bool waveMoving = false;
-    private bool contiguousMoving = false;
-    private bool vMoving = false;
+    private MovementType movementType;
     #endregion
     #endregion
 
@@ -335,7 +331,7 @@ public class Board : MonoBehaviour
                     // Initialize movementIcons and keys
                     movementIcons = emptyMovementIcons;
 
-                    if (singleMoving)
+                    if (movementType == MovementType.Single)
                     {
                         // If there's no piece on moused over hex 
                         if (hexHit.GetComponent<Hex>().piece == null
@@ -376,7 +372,7 @@ public class Board : MonoBehaviour
                             PlaceIcon(hexHit);
                         }
                     }
-                    else if (cannonMoving)
+                    else if (movementType == MovementType.Cannon)
                     {
                         // Cache hex
                         GameObject hex = selected[0];
@@ -405,11 +401,11 @@ public class Board : MonoBehaviour
                         }
                         while (hex != hexHit);
                     }
-                    else if (waveMoving)
+                    else if (movementType == MovementType.Wave)
                     {
                         
                     }
-                    else if (contiguousMoving)
+                    else if (movementType == MovementType.Contiguous)
                     {
                         // Get shortest list of directions
                         List<int> directionList = GetDirectionsTo(hexHit);
@@ -437,7 +433,7 @@ public class Board : MonoBehaviour
                             PlaceIcon(hexHit);
                         }
                     }
-                    else if (vMoving)
+                    else if (movementType == MovementType.V)
                     {
                         
                     }
@@ -483,22 +479,22 @@ public class Board : MonoBehaviour
                         if (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2))
                         {
                             // Checks movement option and executes proper move when clicked
-                            if (singleMoving) 
+                            if (movementType == MovementType.Single) 
                             {
                                 // Moves piece via movepiece function
                                 MovePiece(selected[0].GetComponent<Hex>().piece, new List<BoardPos> { hexPos }, canStack: true);
                                 // Resets moving variable and buttons
-                                singleMoving = false;
-                                ChangeButtons((int)Buttons.SingleMovement, true);
+                                movementType = null;
+                                ChangeButtons(MovementType.Single, true);
                             }
-                            else if (waveMoving) 
+                            else if (movementType == MovementType.Wave) 
                             {
                                 // Future movement code
                                 // Resests moving variable and buttons
-                                waveMoving = false;
-                                ChangeButtons((int)Buttons.WaveMovement, true);
+                                movementType = null;
+                                ChangeButtons(MovementType.Wave, true);
                             }
-                            else if (cannonMoving) 
+                            else if (movementType == MovementType.Cannon) 
                             {
                                 // Move piece via move piece function
                                 MovePiece(
@@ -506,19 +502,19 @@ public class Board : MonoBehaviour
                                     new List<BoardPos> { hexPos },
                                     movementDirection: GetDirection(selected[0], hexHit, movementDirections.ToArray())
                                 );
-                                cannonMoving = false;
-                                ChangeButtons((int)Buttons.CannonMovement, true);
+                                movementType = null;
+                                ChangeButtons(MovementType.Cannon, true);
                                 // Reset movement directions
                                 movementDirections = new List<int>();
                             }
-                            else if (vMoving) 
+                            else if (movementType == MovementType.V) 
                             {
                                 // Future movement code
                                 // Resests moving variable and buttons
-                                vMoving = false;
-                                ChangeButtons((int)Buttons.VMovement, true);
+                                movementType = null;
+                                ChangeButtons(MovementType.V, true);
                             }
-                            else if (contiguousMoving) 
+                            else if (movementType == MovementType.Contiguous) 
                             {
                                 // Get smallest directions list
                                 List<int> directionList = GetDirectionsTo(hexHit);
@@ -534,8 +530,8 @@ public class Board : MonoBehaviour
                                 // Move piece
                                 MovePiece(selected[0].GetComponent<Hex>().piece, targets);
                                 // Resests moving variable and buttons
-                                contiguousMoving = false;
-                                ChangeButtons((int)Buttons.ContiguousMovement, true);
+                                movementType = null;
+                                ChangeButtons(MovementType.Contiguous, true);
                                 // Reset variables
                                 contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
                                 contiguousVisits = new List<GameObject>();
@@ -856,7 +852,7 @@ public class Board : MonoBehaviour
             hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
         }
         // Attacking a stack and multiple hex moving
-        else if (cannonMoving || vMoving)
+        else if (movementType == MovementType.Cannon || movementType == MovementType.V)
         {
             // Make old hex have no pieces
             hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
@@ -876,7 +872,7 @@ public class Board : MonoBehaviour
             stacking: stacking,  
             stackingOnto: hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece,
             bottomPiece: true,
-            multipleHexMove: cannonMoving,
+            multipleHexMove: movementType == MovementType.Cannon,
             multipleHexDirection: movementDirection
         );
     }
@@ -891,11 +887,11 @@ public class Board : MonoBehaviour
     }
     #endregion
 
-    private void ChangeButtons(int buttonNum, bool on)
+    private void ChangeButtons(MovementType button, bool on)
     {
         for (int i = 0; i < buttons.Length; i++)
         {
-            if (i != buttonNum)
+            if (i != (int)button)
             {
                 buttons[i].GetComponent<Button>().interactable = on;
             }
@@ -932,17 +928,13 @@ public class Board : MonoBehaviour
     #endregion
 
     // Saves time looking for and toggling highlights for hexes
-    private bool NotMoving(int buttonNum)
+    private bool NotMoving(MovementType button)
     {
         if (selectedMoving)
         {
-            selectedMoving   = false;
-            singleMoving     = false;
-            cannonMoving     = false;
-            waveMoving       = false;
-            contiguousMoving = false;
-            vMoving          = false;
-            ChangeButtons(buttonNum, true);
+            selectedMoving = false;
+            movementType = null;
+            ChangeButtons(button, true);
             DehighlightAllHexes(true);
             return false;
         }
@@ -957,12 +949,12 @@ public class Board : MonoBehaviour
     public void SingleMovement()
     {
         // Makes sure only one piece is selected and we aren't already trying to move
-        if (!NothingSelected() && OnlyOneSelected() && NotMoving((int)Buttons.SingleMovement))
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.Single))
         {
             // Toggles moving and singleMoving
             selectedMoving = true;
-            singleMoving = true;
-            ChangeButtons((int)Buttons.SingleMovement, false);
+            movementType = MovementType.Single;
+            ChangeButtons(MovementType.Single, false);
             // Loops through all neighbors and outlines them as valid moves
             foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors)
             {
@@ -987,7 +979,7 @@ public class Board : MonoBehaviour
     public void WaveMovement()
     {
         // Makes sure pieces are selected and we aren't already trying to move
-        if (!NothingSelected() && NotMoving((int)Buttons.WaveMovement))
+        if (!NothingSelected() && NotMoving(MovementType.Wave))
         {
             if (selected.Count >= 3)
             {
@@ -1034,8 +1026,8 @@ public class Board : MonoBehaviour
                 {
                     // Toggles moving and waveMoving
                     selectedMoving = !selectedMoving;
-                    waveMoving = !waveMoving;
-                    ChangeButtons((int)Buttons.WaveMovement, !selectedMoving);
+                    movementType = MovementType.Wave;
+                    ChangeButtons(MovementType.Wave, !selectedMoving);
                     // Future code that checks and highlights possible moves
                 }
                 else
@@ -1053,7 +1045,7 @@ public class Board : MonoBehaviour
     public void CannonMovement()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
-        if (!NothingSelected() && OnlyOneSelected() && NotMoving((int)Buttons.CannonMovement))
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.Cannon))
         {
             #region Initialize/Cache variables
             // Hex to perform operations on
@@ -1071,8 +1063,8 @@ public class Board : MonoBehaviour
             {
                 // Toggles moving and cannonMoving
                 selectedMoving = true;
-                cannonMoving = true;
-                ChangeButtons((int)Buttons.CannonMovement, false);
+                movementType = MovementType.Cannon;
+                ChangeButtons(MovementType.Cannon, false);
 
                 // Loop through all directions piece can move
                 // This if for if piece is the end of multiple lines
@@ -1132,7 +1124,7 @@ public class Board : MonoBehaviour
     public void VMovement()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
-        if (!NothingSelected() && OnlyOneSelected() && NotMoving((int)Buttons.VMovement))
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.V))
         {
             // Lines and directions
             List<GameObject>[] lines = FindLines(selected[0].GetComponent<BoardPos>());
@@ -1169,8 +1161,8 @@ public class Board : MonoBehaviour
                 {
                     // Toggles moving and vMoving
                     selectedMoving = true;
-                    vMoving = true;
-                    ChangeButtons((int)Buttons.VMovement, false);
+                    movementType = MovementType.V;
+                    ChangeButtons(MovementType.V, false);
                 }
                 else
                 {
@@ -1187,7 +1179,7 @@ public class Board : MonoBehaviour
     public void ContiguousMovement()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
-        if (!NothingSelected() && OnlyOneSelected() && NotMoving((int)Buttons.ContiguousMovement))
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.Contiguous))
         {
             // Reset variables
             contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
@@ -1200,8 +1192,8 @@ public class Board : MonoBehaviour
             {
                 // Toggles moving and contiguousMoving
                 selectedMoving = true;
-                contiguousMoving = true;
-                ChangeButtons((int)Buttons.ContiguousMovement, false);
+                movementType = MovementType.Contiguous;
+                ChangeButtons(MovementType.Contiguous, false);
                 // Go through every found piece
                 foreach (GameObject hex in contiguousHexes.Keys)
                 {
