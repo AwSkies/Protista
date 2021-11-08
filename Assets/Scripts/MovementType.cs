@@ -1,8 +1,8 @@
 enum MovementType
 {
     Single,
-    Cannon,
     Wave,
-    Contiguous,
-    V
+    Cannon,
+    V,
+    Contiguous
 }
