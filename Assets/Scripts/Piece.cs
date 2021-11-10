@@ -22,12 +22,12 @@ public class Piece : MonoBehaviour
     // The position that the piece needs to move to
     private List<Vector3> targets = new List<Vector3>();
     // Game manager
-    private Board gameManager;
+    private GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
-        gameManager = GameObject.FindObjectOfType<Board>();
+        gameManager = GameObject.FindObjectOfType<GameManager>();
     }
     
     // Update is called once per frame
@@ -80,10 +80,10 @@ public class Piece : MonoBehaviour
         BoardPos newPos = targets[targets.Count - 1];
 
         // Reassign board position if this piece is not attacking a stack or doing a multiple hex movement and bouncing off
-        if (gameManager.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0 
+        if (gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0 
             || stacking 
-            || gameManager.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Contains(gameObject)
-            || gameManager.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == gameObject)
+            || gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Contains(gameObject)
+            || gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == gameObject)
         {
             // Reassign the piece's x and z values
             GetComponent<BoardPos>().z = newPos.z;
@@ -94,14 +94,14 @@ public class Piece : MonoBehaviour
         {
             // Reassign position to one hex short of the target
             BoardPos bouncingOnto;
-            bouncingOnto = gameManager.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[gameManager.GetOppositeDirection(multipleHexDirection)].GetComponent<BoardPos>();
+            bouncingOnto = gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[gameManager.GetOppositeDirection(multipleHexDirection)].GetComponent<BoardPos>();
             GetComponent<BoardPos>().x = bouncingOnto.x;
             GetComponent<BoardPos>().z = bouncingOnto.z;
         }
 
         foreach (BoardPos target in targets)
         {
-            this.targets.Add(gameManager.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
+            this.targets.Add(gameManager.board.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
         }
 
         // Set last position
@@ -111,7 +111,7 @@ public class Piece : MonoBehaviour
         }
         else
         {
-            lastPosition = gameManager.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[gameManager.GetOppositeDirection(multipleHexDirection)].transform.position + new Vector3(0f, transform.position.y, 0f);
+            lastPosition = gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[gameManager.GetOppositeDirection(multipleHexDirection)].transform.position + new Vector3(0f, transform.position.y, 0f);
         }
 
         // Whether this is the bottom piece of a stack that is being moved onto another piece
