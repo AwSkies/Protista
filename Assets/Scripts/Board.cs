@@ -483,15 +483,11 @@ public class Board : MonoBehaviour
                             {
                                 // Moves piece via movepiece function
                                 MovePiece(selected[0].GetComponent<Hex>().piece, new List<BoardPos> { hexPos }, canStack: true);
-                                // Resets moving variable and buttons
-                                movementType = null;
                                 ChangeButtons(MovementType.Single, true);
                             }
                             else if (movementType == MovementType.Wave) 
                             {
                                 // Future movement code
-                                // Resests moving variable and buttons
-                                movementType = null;
                                 ChangeButtons(MovementType.Wave, true);
                             }
                             else if (movementType == MovementType.Cannon) 
@@ -502,7 +498,6 @@ public class Board : MonoBehaviour
                                     new List<BoardPos> { hexPos },
                                     movementDirection: GetDirection(selected[0], hexHit, movementDirections.ToArray())
                                 );
-                                movementType = null;
                                 ChangeButtons(MovementType.Cannon, true);
                                 // Reset movement directions
                                 movementDirections = new List<int>();
@@ -510,8 +505,6 @@ public class Board : MonoBehaviour
                             else if (movementType == MovementType.V) 
                             {
                                 // Future movement code
-                                // Resests moving variable and buttons
-                                movementType = null;
                                 ChangeButtons(MovementType.V, true);
                             }
                             else if (movementType == MovementType.Contiguous) 
@@ -529,8 +522,6 @@ public class Board : MonoBehaviour
                                 }
                                 // Move piece
                                 MovePiece(selected[0].GetComponent<Hex>().piece, targets);
-                                // Resests moving variable and buttons
-                                movementType = null;
                                 ChangeButtons(MovementType.Contiguous, true);
                                 // Reset variables
                                 contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
@@ -566,7 +557,7 @@ public class Board : MonoBehaviour
                 {
                     if (buttons[i].GetComponent<Button>().interactable)
                     {
-                        NotMoving(i);
+                        NotMoving((MovementType) i);
                     }
                 }
             }
@@ -933,7 +924,6 @@ public class Board : MonoBehaviour
         if (selectedMoving)
         {
             selectedMoving = false;
-            movementType = null;
             ChangeButtons(button, true);
             DehighlightAllHexes(true);
             return false;
