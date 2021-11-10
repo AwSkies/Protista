@@ -545,6 +545,12 @@ public class GameManager : MonoBehaviour
             // Set hex hit this frame to hex hit previous frame
             previousHexHit = hexHit;
         }
+        // Get rid of movement icons if nothing is hit on this frame
+        else
+        {
+            KillAllMovementIcons();
+        }
+
         // Deselect all hexes or movement option with right click
         if (Input.GetMouseButton(1))
         {
