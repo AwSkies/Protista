@@ -248,27 +248,27 @@ public class Board : MonoBehaviour
                     // Say where each hex is in relation to the current hex
                     switch (iter)
                     {
-                        case (int)Directions.Left:
+                        case (int)Direction.Left:
                             transHoriz = -1;
                             transVert = 0;
                             break;
-                        case (int)Directions.Right:
+                        case (int)Direction.Right:
                             transHoriz = 1;
                             transVert = 0;
                             break;
-                        case (int)Directions.TopLeft:
+                        case (int)Direction.TopLeft:
                             transHoriz = vertLeft;
                             transVert = 1;
                             break;
-                        case (int)Directions.TopRight:
+                        case (int)Direction.TopRight:
                             transHoriz = vertRight;
                             transVert = 1;
                             break;
-                        case (int)Directions.BottomLeft:
+                        case (int)Direction.BottomLeft:
                             transHoriz = vertLeft;
                             transVert = -1;
                             break;
-                        case (int)Directions.BottomRight:
+                        case (int)Direction.BottomRight:
                             transHoriz = vertRight;
                             transVert = -1;
                             break;
@@ -1120,7 +1120,7 @@ public class Board : MonoBehaviour
             List<GameObject>[] lines = FindLines(selected[0].GetComponent<BoardPos>());
             // Find all directions where there is a hex/line
             List<int> directions = new List<int>();
-            foreach (int direction in Enum.GetValues(typeof(Directions)))
+            foreach (int direction in Enum.GetValues(typeof(Direction)))
             {
                 if (lines[direction].Count > 1)
                 {
@@ -1133,7 +1133,7 @@ public class Board : MonoBehaviour
                 // Find valid directions
                 // List of pairs of valid directions
                 List<int[]> Vs = new List<int[]>();
-                foreach (int direction in Enum.GetValues(typeof(Directions)))
+                foreach (int direction in Enum.GetValues(typeof(Direction)))
                 {
                     // Integer array to store two V pieces
                     int[] VPieces = new int[2];
