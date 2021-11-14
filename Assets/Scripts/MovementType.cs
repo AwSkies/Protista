@@ -1,4 +1,4 @@
-enum MovementType
+public enum MovementType
 {
     Single,
     Wave,

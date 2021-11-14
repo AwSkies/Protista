@@ -1,4 +1,4 @@
-﻿enum Direction
+﻿public enum Direction
 {
     Right,
     BottomRight,
