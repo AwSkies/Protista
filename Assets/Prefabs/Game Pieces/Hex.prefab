@@ -13,8 +13,8 @@ GameObject:
   - component: {fileID: 5659409032909746123}
   - component: {fileID: 6163949011894488608}
   - component: {fileID: 4844445421440173697}
-  - component: {fileID: 8156663011264477198}
   - component: {fileID: 9140533967591426704}
+  - component: {fileID: 3422317125779235280}
   m_Layer: 0
   m_Name: Hex
   m_TagString: hex
@@ -114,7 +114,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   color: 0
   eraseRenderer: 0
---- !u!114 &8156663011264477198
+--- !u!114 &9140533967591426704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6163949011894488606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 918ff94c730cdf94fba7883c803f19c1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  neighbors:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  piece: {fileID: 0}
+--- !u!114 &3422317125779235280
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -128,23 +148,3 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   x: 0
   z: 0
---- !u!114 &9140533967591426704
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6163949011894488606}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 918ff94c730cdf94fba7883c803f19c1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  right: {fileID: 0}
-  left: {fileID: 0}
-  topRight: {fileID: 0}
-  topLeft: {fileID: 0}
-  bottomLeft: {fileID: 0}
-  bottomRight: {fileID: 0}
-  all: []
-  piece: {fileID: 0}

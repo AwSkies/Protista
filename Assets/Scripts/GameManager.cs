@@ -174,8 +174,8 @@ public class GameManager : MonoBehaviour
                 if (objHexes[i, hexX]) { hexToPlace = objHexPrefab; } else { hexToPlace = hexPrefab; }
                 // Spawn hex, add correct board position, and add to Hex object
                 GameObject hexSpawned = Instantiate(hexToPlace, lastPosition, Quaternion.Euler(0f, 30f, 0f));
-                hexSpawned.GetComponent<BoardPos>().x = hexX;
-                hexSpawned.GetComponent<BoardPos>().z = i;
+                hexSpawned.GetComponent<BoardPosition>().x = hexX;
+                hexSpawned.GetComponent<BoardPosition>().z = i;
                 board.hexDex[i, hexX] = hexSpawned;
                 #endregion
 
@@ -188,8 +188,8 @@ public class GameManager : MonoBehaviour
                     if (i < halfBoard) { pieceToPlace = whitePiecePrefab; } else { pieceToPlace = blackPiecePrefab; }
                     // Spawn piece above hex, add correct board position, and place in hexDex
                     GameObject pieceSpawned = Instantiate(pieceToPlace, lastPosition + pieceVertical, Quaternion.identity);
-                    pieceSpawned.GetComponent<BoardPos>().x = hexX;
-                    pieceSpawned.GetComponent<BoardPos>().z = i;
+                    pieceSpawned.GetComponent<BoardPosition>().x = hexX;
+                    pieceSpawned.GetComponent<BoardPosition>().z = i;
                     board.hexDex[i, hexX].GetComponent<Hex>().piece = pieceSpawned;
                 }
                 #endregion
@@ -307,7 +307,7 @@ public class GameManager : MonoBehaviour
         if (hit.collider != null)
         {
             // Cache board position
-            BoardPos hexPos = hit.transform.gameObject.GetComponent<BoardPos>();
+            BoardPosition hexPos = hit.transform.gameObject.GetComponent<BoardPosition>();
             // Get hex hit
             GameObject hexHit = board.hexDex[hexPos.z, hexPos.x];
 
@@ -479,7 +479,7 @@ public class GameManager : MonoBehaviour
                             if (movementType == MovementType.Single) 
                             {
                                 // Move piece and reset buttons
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(new List<BoardPos> {hexPos}, MovementType.Single, canStack: true);
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(new List<BoardPosition> {hexPos}, MovementType.Single, canStack: true);
                                 ChangeButtons(MovementType.Single, true);
                             }
                             else if (movementType == MovementType.Wave) 
@@ -491,7 +491,7 @@ public class GameManager : MonoBehaviour
                             {
                                 // Move piece and reset buttons
                                 selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(
-                                    new List<BoardPos> {hexPos},
+                                    new List<BoardPosition> {hexPos},
                                     MovementType.Cannon,
                                     movementDirection: (Direction) board.GetDirection(selected[0], hexHit, movementDirections.ToArray())
                                 );
@@ -511,11 +511,11 @@ public class GameManager : MonoBehaviour
                                 // Start with source hex
                                 GameObject hex = selected[0];
                                 // Initalize targets
-                                List<BoardPos> targets = new List<BoardPos>();
+                                List<BoardPosition> targets = new List<BoardPosition>();
                                 foreach (int direction in directionList)
                                 {
                                     hex = hex.GetComponent<Hex>().neighbors[direction];
-                                    targets.Add(hex.GetComponent<BoardPos>());
+                                    targets.Add(hex.GetComponent<BoardPosition>());
                                 }
                                 // Move piece
                                 // Move piece and reset buttons
@@ -823,7 +823,7 @@ public class GameManager : MonoBehaviour
             // Hex to perform operations on
             GameObject hex = selected[0];
             // Gets lines from selected
-            List<GameObject>[] lines = board.FindLines(hex.GetComponent<BoardPos>());
+            List<GameObject>[] lines = board.FindLines(hex.GetComponent<BoardPosition>());
             // Get directions line go in
             List<int> directions = board.GetLineDirections(lines);
             // Cache neighbors
@@ -899,7 +899,7 @@ public class GameManager : MonoBehaviour
         if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.V))
         {
             // Lines and directions
-            List<GameObject>[] lines = board.FindLines(selected[0].GetComponent<BoardPos>());
+            List<GameObject>[] lines = board.FindLines(selected[0].GetComponent<BoardPosition>());
             // Find all directions where there is a hex/line
             List<int> directions = new List<int>();
             foreach (int direction in Enum.GetValues(typeof(Direction)))

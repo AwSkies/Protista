@@ -70,7 +70,7 @@ public class Board : MonoBehaviour
     /// <returns>An array of lists of hexes, each index of the array corresponding to a certain direction 
     /// and each list containing the hexes that have pieces in an unbroken line in that direction (the first 
     /// index of each list in each direction is always the source gex)</returns>
-    public List<GameObject>[] FindLines(BoardPos position)
+    public List<GameObject>[] FindLines(BoardPosition position)
     {
         // Initialize variables
         // Lines to return

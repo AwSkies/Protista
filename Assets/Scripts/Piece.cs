@@ -67,9 +67,9 @@ public class Piece : MonoBehaviour
                     // Reassign board position for all stacked pieces
                     foreach (Transform piece in stackedPieces)
                     {
-                        BoardPos piecePos = piece.gameObject.GetComponent<BoardPos>();
-                        piecePos.x = GetComponent<BoardPos>().x;
-                        piecePos.z = GetComponent<BoardPos>().z;
+                        BoardPosition piecePos = piece.gameObject.GetComponent<BoardPosition>();
+                        piecePos.x = GetComponent<BoardPosition>().x;
+                        piecePos.z = GetComponent<BoardPosition>().z;
                     }
 
                     // Correctly parent and reassign BoardPos of stacked pieces to piece/coordinates newly stacked on (if applicable)
@@ -102,7 +102,7 @@ public class Piece : MonoBehaviour
     /// <param name = "movementDirection">the direction the piece is moving if the piece is moving multiple hexes at a time in a straight line</param>
     public void Move(
         // List of targets to move to
-        List<BoardPos> targets,
+        List<BoardPosition> targets,
         // Movement type
         MovementType movementType,
         // Whether or not the piece is allowed to stack during this movement
@@ -112,7 +112,7 @@ public class Piece : MonoBehaviour
     )
     {
         // The new position should be at the final target position
-        BoardPos newPos = targets[targets.Count - 1];
+        BoardPosition newPos = targets[targets.Count - 1];
         // Initialize stacking variable
         bool stacking = false;
 
@@ -122,7 +122,7 @@ public class Piece : MonoBehaviour
         {
             stacking = true;
             // Make old hex have no pieces
-            board.hexDex[GetComponent<BoardPos>().z, GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+            board.hexDex[GetComponent<BoardPosition>().z, GetComponent<BoardPosition>().x].GetComponent<Hex>().piece = null;
         }
         // Normal movement or attacking a single piece (not stacking or attacking a stack) case
         // If there's no piece or the piece on the hex has no pieces stacked on it
@@ -132,7 +132,7 @@ public class Piece : MonoBehaviour
             // Assign this piece to new hex
             board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
             // Make old hex have no pieces
-            board.hexDex[GetComponent<BoardPos>().z, GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+            board.hexDex[GetComponent<BoardPosition>().z, GetComponent<BoardPosition>().x].GetComponent<Hex>().piece = null;
         }
         // Attacking a stack and multiple hex moving
         else if (movementType == MovementType.Cannon || movementType == MovementType.V)
@@ -140,7 +140,7 @@ public class Piece : MonoBehaviour
             // Assign this piece to new hex
             board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].GetComponent<Hex>().piece = gameObject;
             // Make old hex have no pieces
-            board.hexDex[GetComponent<BoardPos>().z, GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+            board.hexDex[GetComponent<BoardPosition>().z, GetComponent<BoardPosition>().x].GetComponent<Hex>().piece = null;
             stacking = false;
         }
 
@@ -151,20 +151,20 @@ public class Piece : MonoBehaviour
             || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == gameObject)
         {
             // Reassign the piece's x and z values
-            GetComponent<BoardPos>().z = newPos.z;
-            GetComponent<BoardPos>().x = newPos.x;
+            GetComponent<BoardPosition>().z = newPos.z;
+            GetComponent<BoardPosition>().x = newPos.x;
         }
         // If the piece is attacking a stack, is it doing a multiple hex move?
         else if (movementType == MovementType.Cannon || movementType == MovementType.V)
         {
             // Reassign position to one hex short of the target
-            BoardPos bouncingOnto;
-            bouncingOnto = board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].GetComponent<BoardPos>();
-            GetComponent<BoardPos>().x = bouncingOnto.x;
-            GetComponent<BoardPos>().z = bouncingOnto.z;
+            BoardPosition bouncingOnto;
+            bouncingOnto = board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].GetComponent<BoardPosition>();
+            GetComponent<BoardPosition>().x = bouncingOnto.x;
+            GetComponent<BoardPosition>().z = bouncingOnto.z;
         }
 
-        foreach (BoardPos target in targets)
+        foreach (BoardPosition target in targets)
         {
             this.targets.Add(board.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
         }
