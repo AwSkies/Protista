@@ -334,7 +334,7 @@ public class GameManager : MonoBehaviour
                         if (hexHit.GetComponent<Hex>().piece == null
                             // Or if the piece on the moused over hex is the opposite color and not stacked
                             || (hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
-                                && hexHit.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0)
+                                && hexHit.GetComponent<Hex>().piece.transform.childCount <= 1)
                             // Or if the piece on the moused over hex is the same color as the selected piece
                             || hexHit.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag)
                         // Otherwise display only movement icon
@@ -388,7 +388,7 @@ public class GameManager : MonoBehaviour
                                 // Add attack icon
                                 PlaceIcon(hex);
                                 // If the pieces on this hex are stacked then don't place arrow
-                                if (hexComponent.piece.GetComponent<Piece>().stackedPieces.Count != 0)
+                                if (hexComponent.piece.transform.childCount > 1)
                                 {
                                     break;
                                 }
@@ -413,7 +413,7 @@ public class GameManager : MonoBehaviour
                         // Should only trigger for last hex in the list
                         if (!(hexHit.GetComponent<Hex>().piece != null
                             && hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
-                            && hexHit.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0))
+                            && hexHit.GetComponent<Hex>().piece.transform.childCount > 1))
                         {
                             foreach (int direction in directionList)
                             {
@@ -478,8 +478,8 @@ public class GameManager : MonoBehaviour
                             // Checks movement option and executes proper move when clicked
                             if (movementType == MovementType.Single) 
                             {
-                                // Moves piece via movepiece function
-                                MovePiece(selected[0].GetComponent<Hex>().piece, new List<BoardPos> { hexPos }, canStack: true);
+                                // Move piece and reset buttons
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(new List<BoardPos> {hexPos}, MovementType.Single, canStack: true);
                                 ChangeButtons(MovementType.Single, true);
                             }
                             else if (movementType == MovementType.Wave) 
@@ -489,11 +489,11 @@ public class GameManager : MonoBehaviour
                             }
                             else if (movementType == MovementType.Cannon) 
                             {
-                                // Move piece via move piece function
-                                MovePiece(
-                                    selected[0].GetComponent<Hex>().piece,
-                                    new List<BoardPos> { hexPos },
-                                    movementDirection: GetDirection(selected[0], hexHit, movementDirections.ToArray())
+                                // Move piece and reset buttons
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(
+                                    new List<BoardPos> {hexPos},
+                                    MovementType.Cannon,
+                                    movementDirection: (Direction) board.GetDirection(selected[0], hexHit, movementDirections.ToArray())
                                 );
                                 ChangeButtons(MovementType.Cannon, true);
                                 // Reset movement directions
@@ -518,7 +518,8 @@ public class GameManager : MonoBehaviour
                                     targets.Add(hex.GetComponent<BoardPos>());
                                 }
                                 // Move piece
-                                MovePiece(selected[0].GetComponent<Hex>().piece, targets);
+                                // Move piece and reset buttons
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(targets, MovementType.Contiguous);
                                 ChangeButtons(MovementType.Contiguous, true);
                                 // Reset variables
                                 contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
@@ -651,54 +652,6 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Functions for moving
-    private void MovePiece(GameObject piece, List<BoardPos> targets, bool canStack = false, int movementDirection = 0)
-    {
-        BoardPos newPos = targets[targets.Count - 1];
-        // Initialize stacking variable
-        bool stacking;
-
-        // Reassign the pieces on the hexes if the piece is not stacking
-        // Stacking case
-        if (canStack && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece != null && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.tag == piece.tag)
-        {
-            stacking = true;
-            // Make old hex have no pieces
-            board.hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
-        }
-        // Not stacking or attacking a stack case
-        else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0)
-        {
-            stacking = false;
-            board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = piece;
-            // Make old hex have no pieces
-            board.hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
-        }
-        // Attacking a stack and multiple hex moving
-        else if (movementType == MovementType.Cannon || movementType == MovementType.V)
-        {
-            // Make old hex have no pieces
-            board.hexDex[piece.GetComponent<BoardPos>().z, piece.GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
-            // Assign piece to new hex
-            board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[GetOppositeDirection(movementDirection)].GetComponent<Hex>().piece = piece;
-            stacking = false;
-        }
-        // Attacking a stack case
-        else
-        {
-            stacking = false;
-        }
-
-        // Move piece
-        piece.GetComponent<Piece>().Move(
-            targets,
-            stacking: stacking,  
-            stackingOnto: board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece,
-            bottomPiece: true,
-            multipleHexMove: movementType == MovementType.Cannon,
-            multipleHexDirection: movementDirection
-        );
-    }
-
     #region Moving buttons
     private void InvalidMovementOptionDisplay(string error = "Invalid Movement Option")
     {
@@ -914,7 +867,7 @@ public class GameManager : MonoBehaviour
                                 // Outline hex
                                 board.OutlineHex(hex, 1);
                                 // If there's a piece on the current hex and it is stacked
-                                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0)
+                                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.transform.childCount > 1)
                                 {
                                     hex.GetComponent<cakeslice.Outline>().color = 2;
                                     break;

@@ -113,11 +113,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92571ce4cf2cae74cbbd8451231d8ce0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  stackedPieces: []
+  gameManager: {fileID: 0}
+  board: {fileID: 0}
+  canvas: {fileID: 8028237853948780453}
   speed: 10
   moving: 0
   stackingHeight: {x: 0, y: 0.4, z: 0}
-  goingToUpdateStack: 0
   lastPosition: {x: 0, y: 0, z: 0}
 --- !u!95 &5728499200041975217
 Animator:
