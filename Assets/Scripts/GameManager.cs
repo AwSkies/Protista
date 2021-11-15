@@ -334,7 +334,7 @@ public class GameManager : MonoBehaviour
                         if (hexHit.GetComponent<Hex>().piece == null
                             // Or if the piece on the moused over hex is the opposite color and not stacked
                             || (hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
-                                && hexHit.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0)
+                                && hexHit.GetComponent<Hex>().piece.transform.childCount == 0)
                             // Or if the piece on the moused over hex is the same color as the selected piece
                             || hexHit.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag)
                         // Otherwise display only movement icon
@@ -388,7 +388,7 @@ public class GameManager : MonoBehaviour
                                 // Add attack icon
                                 PlaceIcon(hex);
                                 // If the pieces on this hex are stacked then don't place arrow
-                                if (hexComponent.piece.GetComponent<Piece>().stackedPieces.Count != 0)
+                                if (hexComponent.piece.transform.childCount != 0)
                                 {
                                     break;
                                 }
@@ -413,7 +413,7 @@ public class GameManager : MonoBehaviour
                         // Should only trigger for last hex in the list
                         if (!(hexHit.GetComponent<Hex>().piece != null
                             && hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
-                            && hexHit.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0))
+                            && hexHit.GetComponent<Hex>().piece.transform.childCount != 0))
                         {
                             foreach (int direction in directionList)
                             {
@@ -867,7 +867,7 @@ public class GameManager : MonoBehaviour
                                 // Outline hex
                                 board.OutlineHex(hex, 1);
                                 // If there's a piece on the current hex and it is stacked
-                                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0)
+                                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.transform.childCount != 0)
                                 {
                                     hex.GetComponent<cakeslice.Outline>().color = 2;
                                     break;

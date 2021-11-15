@@ -11,8 +11,6 @@ public class Piece : MonoBehaviour
     public Board board;
     #endregion
 
-    // List of stacked pieces
-    public List<GameObject> stackedPieces;
     // Variables for moving animation
     public float speed;
     // Whether the piece is moving
@@ -99,7 +97,7 @@ public class Piece : MonoBehaviour
             board.hexDex[GetComponent<BoardPos>().z, GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
         }
         // Normal movement or attacking a single piece (not stacking or attacking a stack) case
-        else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().GetComponent<Piece>().stackedPieces.Count == 0)
+        else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount == 0)
         {
             stacking = false;
             // Assign this piece to new hex
@@ -118,9 +116,9 @@ public class Piece : MonoBehaviour
         }
 
         // Reassign board position if this piece is not attacking a stack or doing a multiple hex movement and bouncing off
-        if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0 
+        if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount == 0 
             || stacking 
-            || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Contains(gameObject)
+            || transform.IsChildOf(board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform)
             || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == gameObject)
         {
             // Reassign the piece's x and z values
@@ -163,7 +161,7 @@ public class Piece : MonoBehaviour
         if (stacking)
         {
             // Checks if the piece this piece is stacking onto has pieces stacked onto it
-            if (stackingOnto.GetComponent<Piece>().stackedPieces.Count != 0)
+            if (stackingOnto.transform.childCount != 0)
             {
                 // Sets the original stack count if this piece is in a stack or the first piece in a stack
                 if (stackingAStack)
@@ -172,7 +170,7 @@ public class Piece : MonoBehaviour
                 }
                 else
                 {
-                    stackCount = stackingOnto.GetComponent<Piece>().stackedPieces.Count;
+                    stackCount = stackingOnto.transform.childCount;
                 }
             }
             else
@@ -189,7 +187,7 @@ public class Piece : MonoBehaviour
 
             // Checks if this piece has stacked pieces and is not a piece in the middle of a stack
             // Begins a stack if so, doesn't if not
-            if (stackedPieces.Count != 0 && !stackingAStack)
+            if (transform.childCount != 0 && !stackingAStack)
             {
                 startingStackingAStack = true;
             }
@@ -198,8 +196,8 @@ public class Piece : MonoBehaviour
                 startingStackingAStack = false;
             }
 
-            // Add piece to the list of stacked pieces on the piece it's being stacked on
-            stackingOnto.GetComponent<Piece>().stackedPieces.Add(gameObject);
+            // Parent piece to the piece it's being stacked on
+            transform.SetParent(stackingOnto, true);
 
             // Assign target position based on the height of the stack the piece is moving onto
             // Since this method is recursive, every time it goes through each stacked piece, target gets added to each time 
@@ -221,26 +219,6 @@ public class Piece : MonoBehaviour
         // Piece can damage other pieces
         canHit = true;
 
-        // Repeats this for all stacked pieces
-        foreach (GameObject piece in stackedPieces)
-        {
-            piece.GetComponent<Piece>().Move
-            (
-                targets,
-                movementType,
-                stackingAStack: startingStackingAStack, 
-                origStackCount: stackCount,
-                bottomPiece: false
-            );
-        }
-
-        // Things to do if this is the first piece in a stack that's moving
-        if (startingStackingAStack)
-        {
-            // Reset list to empty
-            stackedPieces = new List<GameObject>();
-        }
-
         if (bottomPiece && stacking)
         {
             stackingOnto.GetComponent<Piece>().goingToUpdateStack = true;
@@ -256,7 +234,7 @@ public class Piece : MonoBehaviour
             // and that piece is not moving (to prevent both pieces calling this function at the same and destroying each other at the same time)
             && !otherPiece.moving
             // and this piece the bottom of a stack or has no pieces on top of it
-            && (stackedPieces.Count != 0 || transform.position.y == gameManager.pieceVertical.y)
+            && (transform.childCount != 0 || transform.position.y == gameManager.pieceVertical.y)
             // and this is the final position the piece is going to go in
             && targets.Count == 1
             // and the piece can damage other pieces
@@ -265,22 +243,17 @@ public class Piece : MonoBehaviour
         {
             GameObject pieceToDestroy;
             // If attacking a stack
-            if (otherPiece.stackedPieces.Count != 0)
+            if (otherPiece.transform.childCount != 0)
             {
                 // Set pieceToDestroy
-                pieceToDestroy = otherPiece.stackedPieces[otherPiece.stackedPieces.Count - 1];
-                // Remove pieceToDestroy from list of stacked pieces to prevent missing GameObjects in the list
-                otherPiece.stackedPieces.Remove(pieceToDestroy);
+                pieceToDestroy = otherPiece.transform.GetChild(otherPiece.transform.childCount - 1);
                 // Updates stack count for one less piece
                 otherPiece.UpdateStackCount();
                 // Update target to last position
                 targets[0] = lastPosition; 
                 // Piece cannot damage other pieces while moving back to last position
                 canHit = false;
-                foreach (GameObject piece in stackedPieces)
-                {
-                    piece.GetComponent<Piece>().targets[0] = piece.GetComponent<Piece>().lastPosition;
-                }
+                targets[0] = lastPosition;
             }
             // If attacking a single piece
             else
@@ -297,7 +270,7 @@ public class Piece : MonoBehaviour
     public void UpdateStackCount()
     {
         List<bool> stackMoving = new List<bool>();
-        foreach (GameObject piece in stackedPieces)
+        foreach (Tranform piece in transform)
         {
             bool otherPieceMoving = piece.GetComponent<Piece>().moving;
             if (otherPieceMoving)
@@ -309,9 +282,9 @@ public class Piece : MonoBehaviour
         {
             // Get canvas
             GameObject canvas;
-            if (stackedPieces.Count != 0) 
+            if (transform.childCount != 0) 
             {
-                canvas = stackedPieces[stackedPieces.Count - 1].transform.GetChild(0).gameObject;
+                canvas = transform.GetChild(transform.childCount - 1).transform.GetChild(0).gameObject;
             }
             else
             {
@@ -322,16 +295,16 @@ public class Piece : MonoBehaviour
             TextMeshProUGUI text = canvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
 
             // Hide all the number for pieces that are stacked 
-            foreach (GameObject piece in stackedPieces)
+            foreach (Tranform piece in transform)
             {
                 // Hide canvas
                 piece.transform.GetChild(0).gameObject.SetActive(false);
             }
 
-            if (stackedPieces.Count != 0)
+            if (transform.childCount != 0)
             {
                 canvas.SetActive(true);
-                text.text = (stackedPieces.Count + 1).ToString();
+                text.text = (transform.childCount + 1).ToString();
             }
             else
             {
