@@ -75,12 +75,6 @@ public class Piece : MonoBehaviour
         bool canStack = false,
         // The direction that the multiple hex move (if there is one) is going in
         Direction movementDirection = 0,
-        // Whether this piece is in a stack that is being added onto another piece or stack
-        bool stackingAStack = false, 
-        // Whether this piece is the only, or bottom piece in a stack
-        bool bottomPiece = true, 
-        // The original (before moving pieces on this stack into it) amount of pieces in the stack that this piece is moving onto
-        int origStackCount = 0
     )
     {
         // The new position should be at the final target position
@@ -97,6 +91,7 @@ public class Piece : MonoBehaviour
             board.hexDex[GetComponent<BoardPos>().z, GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
         }
         // Normal movement or attacking a single piece (not stacking or attacking a stack) case
+        // If there's no piece or the piece on the hex has no pieces stacked on it
         else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount == 0)
         {
             stacking = false;
@@ -150,33 +145,13 @@ public class Piece : MonoBehaviour
             lastPosition = gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].transform.position + new Vector3(0f, transform.position.y, 0f);
         }
 
-        // Whether this is the bottom piece of a stack that is being moved onto another piece
-        bool startingStackingAStack;
-        // How high offset the bottom stacking piece needs to be in the piece its moving onto is stacked
-        int stackCount;
-        // The piece this piece is stacking onto (if applicable)
-        GameObject stackingOnto = stacking ? board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece : null;
-
         // Stacking 
         if (stacking)
         {
-            // Checks if the piece this piece is stacking onto has pieces stacked onto it
-            if (stackingOnto.transform.childCount != 0)
-            {
-                // Sets the original stack count if this piece is in a stack or the first piece in a stack
-                if (stackingAStack)
-                {
-                    stackCount = origStackCount;
-                }
-                else
-                {
-                    stackCount = stackingOnto.transform.childCount;
-                }
-            }
-            else
-            {
-                stackCount = 0;
-            }
+            // The piece this piece is stacking onto
+            GameObject stackingOnto = board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece;
+            // How high offset the bottom stacking piece needs to be in the piece its moving onto is stacked
+            int stackCount = stackingOnto.transform.childCount;
 
             // Make stack offset for stacking on a stack
             Vector3 stackOffset = stackingHeight * stackCount;
@@ -185,19 +160,15 @@ public class Piece : MonoBehaviour
                 this.targets[i] += stackOffset;
             }
 
-            // Checks if this piece has stacked pieces and is not a piece in the middle of a stack
-            // Begins a stack if so, doesn't if not
-            if (transform.childCount != 0 && !stackingAStack)
-            {
-                startingStackingAStack = true;
-            }
-            else
-            {
-                startingStackingAStack = false;
-            }
-
             // Parent piece to the piece it's being stacked on
             transform.SetParent(stackingOnto, true);
+            // Unparent all pieces stacked on this piece and parent them to the piece being stacked onto
+            foreach (Tranform piece in transform)
+            {
+                piece.SetParent(stackingOnto.transform);
+            }
+            // Update stack count of being being stacked onto
+            stackingOnto.GetComponent<Piece>().goingToUpdateStack = true;
 
             // Assign target position based on the height of the stack the piece is moving onto
             // Since this method is recursive, every time it goes through each stacked piece, target gets added to each time 
@@ -207,22 +178,11 @@ public class Piece : MonoBehaviour
                 this.targets[i] += stackingHeight;
             }
         }
-        else
-        {
-            // Make sure startingStackingAStack doesn't go unassigned
-            startingStackingAStack = false;
-            stackCount = 0;
-        }
 
         // Piece is now moving to its next position
         moving = true;
         // Piece can damage other pieces
         canHit = true;
-
-        if (bottomPiece && stacking)
-        {
-            stackingOnto.GetComponent<Piece>().goingToUpdateStack = true;
-        }
     }
 
     void OnCollisionEnter(Collision otherObj)
@@ -269,45 +229,51 @@ public class Piece : MonoBehaviour
     /// <summary>Updates the stack number (stack count) displayed above a piece</summary>
     public void UpdateStackCount()
     {
+        // Since stacked pieces are parented in the Move function we need to check 
+        // if any of those pieces are still moving before updating the stack count
+        // Make a list that contains the moving values of all stacked pieces
         List<bool> stackMoving = new List<bool>();
         foreach (Tranform piece in transform)
         {
-            bool otherPieceMoving = piece.GetComponent<Piece>().moving;
-            if (otherPieceMoving)
-            {
-                stackMoving.Add(otherPieceMoving);
-            }
+            stackMoving.Add(piece.GetComponent<Piece>().moving);
         }
+        // If none of the stacked pieces are moving, update stack count
         if (!stackMoving.Contains(true))
         {
             // Get canvas
             GameObject canvas;
+            // If there are any stacked pieces
             if (transform.childCount != 0) 
             {
+                // Get canvas from highest stacked piece
                 canvas = transform.GetChild(transform.childCount - 1).transform.GetChild(0).gameObject;
             }
             else
             {
+                // Get canvas from current piece
                 canvas = transform.GetChild(0).gameObject;
             }
 
             // Get text
             TextMeshProUGUI text = canvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
 
-            // Hide all the number for pieces that are stacked 
+            // Hide the numbers for all pieces that are stacked 
             foreach (Tranform piece in transform)
             {
                 // Hide canvas
                 piece.transform.GetChild(0).gameObject.SetActive(false);
             }
 
+            // If there are any stacked pieces on this piece
             if (transform.childCount != 0)
             {
+                // Show counter on highest stacked piece
                 canvas.SetActive(true);
                 text.text = (transform.childCount + 1).ToString();
             }
             else
             {
+                // Hide canvas (there is only one piece so it doesn't need a stack counter)
                 canvas.SetActive(false);
             }
 
