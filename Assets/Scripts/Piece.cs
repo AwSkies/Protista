@@ -9,6 +9,7 @@ public class Piece : MonoBehaviour
     #region Prefabs and scene references
     public GameManager gameManager;
     public Board board;
+    public GameObject canvas;
     #endregion
 
     // Variables for moving animation
@@ -23,6 +24,8 @@ public class Piece : MonoBehaviour
     public Vector3 lastPosition;
     // The position that the piece needs to move to
     private List<Vector3> targets = new List<Vector3>();
+    // The piece this piece is stacking onto (if applicable)
+    private GameObject stackingOnto;
 
     // Start is called before the first frame update
     void Start()
@@ -49,14 +52,44 @@ public class Piece : MonoBehaviour
                 {
                     // Stop piece
                     moving = false;
-                    // If this piece just stacked onto another piece
-                    // (This should not be repeated every move because stacked pieces are not
-                    // moved they're just parented and remain stationary relative to the parent)
-                    if (transform.parent != null)
+
+                    #region Stacking stuff
+                    // The pieces currently stacked on this piece
+                    List<Transform> stackedPieces = new List<Transform>();
+                    // Get all pieces currently stacked
+                    foreach (Transform piece in transform)
                     {
+                        stackedPieces.Add(piece);
+                    }
+                    // Remove the first element of the list (should always be canvas)
+                    stackedPieces.RemoveAt(0);
+
+                    // Reassign board position for all stacked pieces
+                    foreach (Transform piece in stackedPieces)
+                    {
+                        BoardPos piecePos = piece.gameObject.GetComponent<BoardPos>();
+                        piecePos.x = GetComponent<BoardPos>().x;
+                        piecePos.z = GetComponent<BoardPos>().z;
+                    }
+
+                    // Correctly parent and reassign BoardPos of stacked pieces to piece/coordinates newly stacked on (if applicable)
+                    if (stackingOnto != null)
+                    {   
+                        // Parent piece to the piece it's being stacked on
+                        ParentTo(stackingOnto.transform);
+                        // Repeat for all pieces currently stacked on this piece
+                        foreach (Transform piece in stackedPieces)
+                        {
+                            // Remove pieces from being parented to current hex and parent to new hex
+                            piece.SetParent(null, true);
+                            piece.gameObject.GetComponent<Piece>().ParentTo(stackingOnto.transform);
+                        }
                         // Update the stack count for the parent piece
                         transform.parent.gameObject.GetComponent<Piece>().UpdateStackCount();
+                        // Nullify stackingOnto
+                        stackingOnto = null;
                     }
+                    #endregion
                 }
             }
         }
@@ -75,7 +108,7 @@ public class Piece : MonoBehaviour
         // Whether or not the piece is allowed to stack during this movement
         bool canStack = false,
         // The direction that the multiple hex move (if there is one) is going in
-        Direction movementDirection = 0,
+        Direction movementDirection = 0
     )
     {
         // The new position should be at the final target position
@@ -93,7 +126,7 @@ public class Piece : MonoBehaviour
         }
         // Normal movement or attacking a single piece (not stacking or attacking a stack) case
         // If there's no piece or the piece on the hex has no pieces stacked on it
-        else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount == 0)
+        else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount <= 1)
         {
             stacking = false;
             // Assign this piece to new hex
@@ -112,7 +145,7 @@ public class Piece : MonoBehaviour
         }
 
         // Reassign board position if this piece is not attacking a stack or doing a multiple hex movement and bouncing off
-        if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount == 0 
+        if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount <= 1 
             || stacking 
             || transform.IsChildOf(board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform)
             || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == gameObject)
@@ -150,7 +183,7 @@ public class Piece : MonoBehaviour
         if (stacking)
         {
             // The piece this piece is stacking onto
-            GameObject stackingOnto = board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece;
+            stackingOnto = board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece;
             // How high offset the bottom stacking piece needs to be in the piece its moving onto is stacked
             int stackCount = stackingOnto.transform.childCount;
 
@@ -159,22 +192,6 @@ public class Piece : MonoBehaviour
             for (int i = 0; i < this.targets.Count; i++)
             {
                 this.targets[i] += stackOffset;
-            }
-
-            // Parent piece to the piece it's being stacked on
-            transform.SetParent(stackingOnto, true);
-            // Unparent all pieces stacked on this piece and parent them to the piece being stacked onto
-            foreach (Tranform piece in transform)
-            {
-                piece.SetParent(stackingOnto.transform);
-            }
-
-            // Assign target position based on the height of the stack the piece is moving onto
-            // Since this method is recursive, every time it goes through each stacked piece, target gets added to each time 
-            // It gets offset by stackingHeight each time
-            for (int i = 0; i < this.targets.Count; i++)
-            {
-                this.targets[i] += stackingHeight;
             }
         }
 
@@ -193,7 +210,7 @@ public class Piece : MonoBehaviour
             // and that piece is not moving (to prevent both pieces calling this function at the same and destroying each other at the same time)
             && !otherPiece.moving
             // and this piece the bottom of a stack or has no pieces on top of it
-            && (transform.childCount != 0 || transform.position.y == gameManager.pieceVertical.y)
+            && (transform.childCount > 1 || transform.position.y == gameManager.pieceVertical.y)
             // and this is the final position the piece is going to go in
             && targets.Count == 1
             // and the piece can damage other pieces
@@ -202,10 +219,10 @@ public class Piece : MonoBehaviour
         {
             GameObject pieceToDestroy;
             // If attacking a stack
-            if (otherPiece.transform.childCount != 0)
+            if (otherPiece.transform.childCount > 1)
             {
                 // Set pieceToDestroy
-                pieceToDestroy = otherPiece.transform.GetChild(otherPiece.transform.childCount - 1);
+                pieceToDestroy = otherPiece.transform.GetChild(otherPiece.transform.childCount - 1).gameObject;
                 // Updates stack count for one less piece
                 otherPiece.UpdateStackCount();
                 // Update target to last position
@@ -228,41 +245,52 @@ public class Piece : MonoBehaviour
     /// <summary>Updates the stack number (stack count) displayed above a piece</summary>
     public void UpdateStackCount()
     {
-        // Get canvas
-        GameObject canvas;
+        // Declare canvas
+        GameObject topCanvas;
         // If there are any stacked pieces
-        if (transform.childCount != 0) 
+        if (transform.childCount > 1) 
         {
             // Get canvas from highest stacked piece
-            canvas = transform.GetChild(transform.childCount - 1).transform.GetChild(0).gameObject;
+            topCanvas = transform.GetChild(transform.childCount - 1).GetComponent<Piece>().canvas;
         }
         else
         {
             // Get canvas from current piece
-            canvas = transform.GetChild(0).gameObject;
+            topCanvas = canvas;
         }
 
         // Get text
-        TextMeshProUGUI text = canvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI text = topCanvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
 
         // Hide the numbers for all pieces that are stacked 
-        foreach (Tranform piece in transform)
+        foreach (Transform piece in transform)
         {
             // Hide canvas
             piece.transform.GetChild(0).gameObject.SetActive(false);
         }
 
         // If there are any stacked pieces on this piece
-        if (transform.childCount != 0)
+        if (transform.childCount > 1)
         {
             // Show counter on highest stacked piece
-            canvas.SetActive(true);
-            text.text = (transform.childCount + 1).ToString();
+            topCanvas.SetActive(true);
+            // Do not add one to child count because the first child of every piece should be their canvas
+            text.text = (transform.childCount).ToString();
         }
         else
         {
             // Hide canvas (there is only one piece so it doesn't need a stack counter)
-            canvas.SetActive(false);
+            topCanvas.SetActive(false);
         }
+    }
+
+    /// <summary>Parents piece to another piece</summary>
+    private void ParentTo(Transform parent)
+    {
+        // Parent piece to the piece it's being stacked on
+        transform.SetParent(parent, true);
+        // Set this piece's canvas to current piece (for some reason if you don't do this the canvas 
+        // gets set as a child of the piece you're setting this piece to be a child of)
+        canvas.transform.SetParent(transform, true);
     }
 }
