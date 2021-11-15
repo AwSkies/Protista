@@ -19,8 +19,6 @@ public class Piece : MonoBehaviour
     private bool canHit;
     // The height of a piece, how high each piece should stack
     public Vector3 stackingHeight;
-    // Whether the piece is going to update its stack count once it stops moving
-    public bool goingToUpdateStack;
     // The last position of the piece
     public Vector3 lastPosition;
     // The position that the piece needs to move to
@@ -51,13 +49,16 @@ public class Piece : MonoBehaviour
                 {
                     // Stop piece
                     moving = false;
+                    // If this piece just stacked onto another piece
+                    // (This should not be repeated every move because stacked pieces are not
+                    // moved they're just parented and remain stationary relative to the parent)
+                    if (transform.parent != null)
+                    {
+                        // Update the stack count for the parent piece
+                        transform.parent.gameObject.GetComponent<Piece>().UpdateStackCount();
+                    }
                 }
             }
-        }
-        
-        if (goingToUpdateStack)
-        {
-            UpdateStackCount();
         }
     }
 
@@ -167,8 +168,6 @@ public class Piece : MonoBehaviour
             {
                 piece.SetParent(stackingOnto.transform);
             }
-            // Update stack count of being being stacked onto
-            stackingOnto.GetComponent<Piece>().goingToUpdateStack = true;
 
             // Assign target position based on the height of the stack the piece is moving onto
             // Since this method is recursive, every time it goes through each stacked piece, target gets added to each time 
@@ -229,55 +228,41 @@ public class Piece : MonoBehaviour
     /// <summary>Updates the stack number (stack count) displayed above a piece</summary>
     public void UpdateStackCount()
     {
-        // Since stacked pieces are parented in the Move function we need to check 
-        // if any of those pieces are still moving before updating the stack count
-        // Make a list that contains the moving values of all stacked pieces
-        List<bool> stackMoving = new List<bool>();
+        // Get canvas
+        GameObject canvas;
+        // If there are any stacked pieces
+        if (transform.childCount != 0) 
+        {
+            // Get canvas from highest stacked piece
+            canvas = transform.GetChild(transform.childCount - 1).transform.GetChild(0).gameObject;
+        }
+        else
+        {
+            // Get canvas from current piece
+            canvas = transform.GetChild(0).gameObject;
+        }
+
+        // Get text
+        TextMeshProUGUI text = canvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
+
+        // Hide the numbers for all pieces that are stacked 
         foreach (Tranform piece in transform)
         {
-            stackMoving.Add(piece.GetComponent<Piece>().moving);
+            // Hide canvas
+            piece.transform.GetChild(0).gameObject.SetActive(false);
         }
-        // If none of the stacked pieces are moving, update stack count
-        if (!stackMoving.Contains(true))
+
+        // If there are any stacked pieces on this piece
+        if (transform.childCount != 0)
         {
-            // Get canvas
-            GameObject canvas;
-            // If there are any stacked pieces
-            if (transform.childCount != 0) 
-            {
-                // Get canvas from highest stacked piece
-                canvas = transform.GetChild(transform.childCount - 1).transform.GetChild(0).gameObject;
-            }
-            else
-            {
-                // Get canvas from current piece
-                canvas = transform.GetChild(0).gameObject;
-            }
-
-            // Get text
-            TextMeshProUGUI text = canvas.transform.GetChild(0).gameObject.GetComponent<TextMeshProUGUI>();
-
-            // Hide the numbers for all pieces that are stacked 
-            foreach (Tranform piece in transform)
-            {
-                // Hide canvas
-                piece.transform.GetChild(0).gameObject.SetActive(false);
-            }
-
-            // If there are any stacked pieces on this piece
-            if (transform.childCount != 0)
-            {
-                // Show counter on highest stacked piece
-                canvas.SetActive(true);
-                text.text = (transform.childCount + 1).ToString();
-            }
-            else
-            {
-                // Hide canvas (there is only one piece so it doesn't need a stack counter)
-                canvas.SetActive(false);
-            }
-
-            goingToUpdateStack = false;
+            // Show counter on highest stacked piece
+            canvas.SetActive(true);
+            text.text = (transform.childCount + 1).ToString();
+        }
+        else
+        {
+            // Hide canvas (there is only one piece so it doesn't need a stack counter)
+            canvas.SetActive(false);
         }
     }
 }
