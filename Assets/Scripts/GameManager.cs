@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -58,8 +57,6 @@ public class GameManager : MonoBehaviour
     #region Variables for use during generation and gameplay
     // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
-    // Highlighted hexes
-    private List<GameObject> highlighted = new List<GameObject>();
     // Whether the player clicked the previous frame
     private bool clickedLastFrame = false;
 
@@ -377,7 +374,7 @@ public class GameManager : MonoBehaviour
                         // Cache hex
                         GameObject hex = selected[0];
                         // Get direction to put arrows in
-                        int direction = GetDirection(hex, hexHit, movementDirections.ToArray());
+                        int direction = board.GetDirection(hex, hexHit, movementDirections.ToArray());
                         // Place arrows up to hit hex
                         do 
                         {
@@ -397,7 +394,7 @@ public class GameManager : MonoBehaviour
                                 }
                             }
                             // Place arrow between current and previous hex
-                            PlaceArrow(hex.GetComponent<Hex>().neighbors[GetOppositeDirection(direction)], hex);
+                            PlaceArrow(hex.GetComponent<Hex>().neighbors[board.GetOppositeDirection(direction)], hex);
                         }
                         while (hex != hexHit);
                     }
@@ -531,7 +528,7 @@ public class GameManager : MonoBehaviour
                             // Turns off moving
                             selectedMoving = false;
                             // Unoutlines and deselects all
-                            DehighlightAllHexes();
+                            board.DehighlightAllHexes();
                             DeselectAllHexes();
                         }
                     }
@@ -599,7 +596,6 @@ public class GameManager : MonoBehaviour
         }
     }  
 
-    #region Deselect and dehighlight selected or highlighted hexes
     private void DeselectAllHexes()
     {
         // Iterate through each selected hex
@@ -610,140 +606,6 @@ public class GameManager : MonoBehaviour
         }
         // Resets selected back to empty list
         selected = new List<GameObject>();
-    }
-
-    private void DehighlightAllHexes(bool excludeSelected = false)
-    {
-        // Iterate through each highlighted hex
-        foreach (GameObject hex in highlighted)
-        {
-            // If not exclude selected or exclude selected and this hex isn't selected
-            if (!excludeSelected || (excludeSelected && !selected.Contains(hex)))
-            {
-                // Turn off outline
-                hex.GetComponent<cakeslice.Outline>().enabled = false;
-            }
-        }
-        // Resets highlighted back to empty list
-        highlighted = new List<GameObject>();
-    }
-    #endregion
-
-    private void OutlineHex(GameObject hex, int color)
-    {
-        // Cache outline component
-        cakeslice.Outline outline = hex.GetComponent<cakeslice.Outline>();
-        // Changes outline color
-        outline.color = color;
-        // Setting the value to singleMoving makes it so if we're selecting the single movement movement option, it turns on, but turns off if deselecting
-        outline.enabled = true;
-        // Adds hex to the list of hilighted
-        if (!highlighted.Contains(hex))
-        {
-            highlighted.Add(hex);
-        }
-    }
-
-    // Finds lines of pieces of the same color
-    private List<GameObject>[] FindLines(BoardPos position)
-    {
-        // Initialize variables
-        // Lines to return
-        // String is the direction the line is in
-        // List of GameObjects is the list of hexes in the line
-        List<GameObject>[] lines = new List<GameObject>[6];
-        // Hex that is the source of the line
-        Hex sourceHex = board.hexDex[position.z, position.x].GetComponent<Hex>();
-        // Color of the piece which line we want to get
-        string color = sourceHex.piece.tag;
-
-        // Loop through each neighbor of the original hex
-        for (int direction = 0; direction < sourceHex.neighbors.Length; direction++)
-        {
-            // Set hex to original hex
-            GameObject hex = board.hexDex[position.z, position.x];
-            // Initialize list in this direction as empty list
-            lines[direction] = new List<GameObject>();
-            // Add source hex (for seeing if line is selected)
-            lines[direction].Add(hex);
-
-            // Loop infinitely in the same direction
-            while (true)
-            {
-                // Make sure key is assigned
-                GameObject nextHex;
-                try
-                {
-                    // Get next hex in the line
-                    nextHex = hex.GetComponent<Hex>().neighbors[direction];
-                }
-                catch (KeyNotFoundException)
-                {
-                    break;
-                }
-
-                // Add piece to line if there's a piece of the same color in the same direction
-                if (nextHex != null && nextHex.GetComponent<Hex>().piece != null && nextHex.GetComponent<Hex>().piece.tag == color)
-                {
-                    lines[direction].Add(nextHex);
-                }
-                // Break the loop if the line ends
-                else
-                {
-                    break;
-                }
-
-                // Set up the next hex for the next time through the loop
-                hex = nextHex;
-            }
-        }
-
-        return lines;
-    }
-
-    // Gets directions that lines are in
-    List<int> GetLineDirections(List<GameObject>[] lines)
-    {
-        // List of directions to return
-        List<int> directions = new List<int>();
-        for (int direction = 0; direction < lines.Length; direction ++)
-        {
-            // Make sure not to add directions where a piece is in the middle of a line
-            // If the line is just one (just the source hex) in one direction and the opposite direction it's more than one
-            if (lines[direction].Count == 1 && lines[GetOppositeDirection(direction)] != null && lines[GetOppositeDirection(direction)].Count > 1)
-            {
-                directions.Add(direction);
-            }
-        }
-
-        return directions;
-    }
-
-    // Gets direction target hex (not adjacent to source) is in
-    int GetDirection(GameObject source, GameObject target, int[] directions)
-    {
-        // Initialize movement direction
-        int movementDirection = 0;
-        // Loop out in the possible directions from the selected hex until we hit the hex we want to move to or run out
-        // Then move on or choose that direction
-        foreach (int direction in directions)
-        {
-            // Choose selected hex to start from
-            GameObject hex = source;
-            // Check if current hex is hex we want to move to
-            while (hex.GetComponent<Hex>().neighbors[direction] != null && hex.GetComponent<Hex>().neighbors[direction] != target)
-            {
-                // Set hex to be next
-                hex = hex.GetComponent<Hex>().neighbors[direction];
-            }
-            // If the next hex existed, then we must have exited the loop because it was the right direction
-            if (hex.GetComponent<Hex>().neighbors[direction] != null)
-            {
-                // Save movement direction
-                movementDirection = direction;
-            }
-        }
-        return movementDirection;
     }
 
     // Place movement arrows from hex1 to hex2
@@ -785,44 +647,7 @@ public class GameManager : MonoBehaviour
         );
     }
 
-    // Returns direction that is offset from the current direction
-    // Giving a positive offset goes clockwise and a negative offset goes counterclockwise
-    private int CycleDirection(int direction, int offset)
-    {
-        // Get new direction from going offset steps in one direction       
-        int newDirection = direction + offset;
-        // If direction has overflowed over 6 or past 0, bring it back
-        if (newDirection >= 6) { newDirection -= 6; }
-        else if (newDirection < 0) {newDirection += 6; }
-        // Return the new cycled direction
-        return newDirection;
-    }
-    
-    public int GetOppositeDirection(int direction) 
-    {
-        return CycleDirection(direction, 3);
-    }
-    
-    // Returns adjacent hexes with pieces on them
-    private List<GameObject> GetAdjacentPieces(GameObject hex)
-    {
-        // Initialize list of hexes with pieces on them
-        List<GameObject> adjacentPieces = new List<GameObject>();
-        // Cache neighbors
-        GameObject[] neighbors = hex.GetComponent<Hex>().neighbors;
-        // Loop through directions
-        for (int direction = 0; direction < neighbors.Length; direction++)
-        {
-            // If hex in that direction exists, has a piece on it, and that piece is the same color, add that hex to the list
-            if (neighbors[direction] != null &&
-                neighbors[direction].GetComponent<Hex>().piece != null &&
-                neighbors[direction].GetComponent<Hex>().piece.tag == hex.GetComponent<Hex>().piece.tag)
-            {
-                adjacentPieces.Add(neighbors[direction]);
-            }
-        }
-        return adjacentPieces;
-    }
+
     #endregion
 
     #region Functions for moving
@@ -875,14 +700,12 @@ public class GameManager : MonoBehaviour
     }
 
     #region Moving buttons
-    #region Invalid movement option display and rescind
     private void InvalidMovementOptionDisplay(string error = "Invalid Movement Option")
     {
         invalidMovementOptionText.SetText(error);
         invalidMovementOptionText.enabled = true;
         textRescindCountdown = textRescindTime;
     }
-    #endregion
 
     private void ChangeButtons(MovementType button, bool on)
     {
@@ -931,7 +754,7 @@ public class GameManager : MonoBehaviour
         {
             selectedMoving = false;
             ChangeButtons(button, true);
-            DehighlightAllHexes(true);
+            board.DehighlightAllHexes(selected);
             return false;
         }
         else
@@ -966,7 +789,7 @@ public class GameManager : MonoBehaviour
                     {
                         color = 2;
                     }
-                    OutlineHex(hex, color);
+                    board.OutlineHex(hex, color);
                 }
             }
         }
@@ -1009,10 +832,10 @@ public class GameManager : MonoBehaviour
                             // and the piece is selected
                             && selected.Contains(neighbors[i])
                             // and the piece is either one direction up or one direction down from direction we came from
-                            && (CycleDirection(i, 1) == direction || CycleDirection(i, -1) == direction))
+                            && (board.CycleDirection(i, 1) == direction || board.CycleDirection(i, -1) == direction))
                         {
                             // Add as a valid direction
-                            validDirections[i] = CycleDirection(i, 1) == direction;
+                            validDirections[i] = board.CycleDirection(i, 1) == direction;
                         }
                     }
                 }
@@ -1047,9 +870,9 @@ public class GameManager : MonoBehaviour
             // Hex to perform operations on
             GameObject hex = selected[0];
             // Gets lines from selected
-            List<GameObject>[] lines = FindLines(hex.GetComponent<BoardPos>());
+            List<GameObject>[] lines = board.FindLines(hex.GetComponent<BoardPos>());
             // Get directions line go in
-            List<int> directions = GetLineDirections(lines);
+            List<int> directions = board.GetLineDirections(lines);
             // Cache neighbors
             GameObject[] neighbors = hex.GetComponent<Hex>().neighbors;
             #endregion
@@ -1071,7 +894,7 @@ public class GameManager : MonoBehaviour
                     movementDirections.Add(direction);
 
                     // Highlight possible moves
-                    for (int i = 0; i < lines[GetOppositeDirection(direction)].Count; i++)
+                    for (int i = 0; i < lines[board.GetOppositeDirection(direction)].Count; i++)
                     {
                         // Makes sure the hexes down the board exist
                         try
@@ -1089,7 +912,7 @@ public class GameManager : MonoBehaviour
                                 // Sets current hex to hex to the direction of the past hex
                                 hex = hex.GetComponent<Hex>().neighbors[direction];
                                 // Outline hex
-                                OutlineHex(hex, 1);
+                                board.OutlineHex(hex, 1);
                                 // If there's a piece on the current hex and it is stacked
                                 if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count != 0)
                                 {
@@ -1123,7 +946,7 @@ public class GameManager : MonoBehaviour
         if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.V))
         {
             // Lines and directions
-            List<GameObject>[] lines = FindLines(selected[0].GetComponent<BoardPos>());
+            List<GameObject>[] lines = board.FindLines(selected[0].GetComponent<BoardPos>());
             // Find all directions where there is a hex/line
             List<int> directions = new List<int>();
             foreach (int direction in Enum.GetValues(typeof(Direction)))
@@ -1144,7 +967,7 @@ public class GameManager : MonoBehaviour
                     // Integer array to store two V pieces
                     int[] VPieces = new int[2];
                     // Next consecutive direction
-                    int direction2 = CycleDirection(direction, 1);
+                    int direction2 = board.CycleDirection(direction, 1);
                     if (directions.Contains(direction2))
                     {
                         VPieces[0] = direction;
@@ -1205,7 +1028,7 @@ public class GameManager : MonoBehaviour
                     {
                         color = 2;
                     }
-                    OutlineHex(hex, color);
+                    board.OutlineHex(hex, color);
                 }
             }
             else
@@ -1239,7 +1062,7 @@ public class GameManager : MonoBehaviour
     private void FindContiguous(GameObject sourceHex)
     {
         // Get pieces adjacent to current hex
-        List<GameObject> adjacent = GetAdjacentPieces(sourceHex);
+        List<GameObject> adjacent = board.GetAdjacentPieces(sourceHex);
         // Loops through all found adjacent hexes with pieces
         foreach (GameObject hex in adjacent)
         {
@@ -1249,7 +1072,7 @@ public class GameManager : MonoBehaviour
                 // Add hex to list of visits
                 contiguousVisits.Add(hex);
                 // Add direction to directions list
-                directionsList.Add(GetDirection(sourceHex, hex, Enumerable.Range(0, 6).ToArray<int>()));
+                directionsList.Add(board.GetDirection(sourceHex, hex));
                 
                 // Go through every neighbor of each found contiguous piece
                 foreach (GameObject hexNeighbor in hex.GetComponent<Hex>().neighbors)
@@ -1259,7 +1082,7 @@ public class GameManager : MonoBehaviour
                         && !(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag))
                     {
                         // Add direction to directions list
-                        directionsList.Add(GetDirection(hex, hexNeighbor, Enumerable.Range(0, 6).ToArray<int>()));
+                        directionsList.Add(board.GetDirection(hex, hexNeighbor));
                         // Initialize the list of lists at the key of the hex if not already done
                         if (!contiguousHexes.ContainsKey(hexNeighbor))
                         {
