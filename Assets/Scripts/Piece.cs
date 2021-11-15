@@ -3,8 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
+/// <summary>Class <c>Piece</c> contains information about pieces and methods for interacting with and modifying pieces' states</summary> 
 public class Piece : MonoBehaviour
 {
+    #region Prefabs and scene references
+    public GameManager gameManager;
+    public Board board;
+    #endregion
+
     // List of stacked pieces
     public List<GameObject> stackedPieces;
     // Variables for moving animation
@@ -21,13 +27,12 @@ public class Piece : MonoBehaviour
     public Vector3 lastPosition;
     // The position that the piece needs to move to
     private List<Vector3> targets = new List<Vector3>();
-    // Game manager
-    private GameManager gameManager;
 
     // Start is called before the first frame update
     void Start()
     {
         gameManager = GameObject.FindObjectOfType<GameManager>();
+        board = GameObject.FindObjectOfType<Board>();
     }
     
     // Update is called once per frame
@@ -58,66 +63,101 @@ public class Piece : MonoBehaviour
         }
     }
 
+    /// <summary>Moves a piece to a new location</summary>
+    /// <param name = "targets">list of hexes to travel by, final location should be last element in the list</param>
+    /// <param name = "movementType">the type of movement</param>
+    /// <param name = "canStack">whether or not the piece can stack during this movement</param>
+    /// <param name = "movementDirection">the direction the piece is moving if the piece is moving multiple hexes at a time in a straight line</param>
     public void Move(
         // List of targets to move to
         List<BoardPos> targets,
-        // Whether the piece is stacking onto another piece during this movement
-        bool stacking = false, 
-        // The piece this piece is stacking onto
-        GameObject stackingOnto = null, 
+        // Movement type
+        MovementType movementType,
+        // Whether or not the piece is allowed to stack during this movement
+        bool canStack = false,
+        // The direction that the multiple hex move (if there is one) is going in
+        Direction movementDirection = 0,
         // Whether this piece is in a stack that is being added onto another piece or stack
         bool stackingAStack = false, 
         // Whether this piece is the only, or bottom piece in a stack
-        bool bottomPiece = false, 
+        bool bottomPiece = true, 
         // The original (before moving pieces on this stack into it) amount of pieces in the stack that this piece is moving onto
-        int origStackCount = 0,
-        // Whether this move is moving multiple spaces like cannon or v movements
-        bool multipleHexMove = false,
-        // The direction that the multiple hex move is going in
-        int multipleHexDirection = 0
+        int origStackCount = 0
     )
     {
+        // The new position should be at the final target position
         BoardPos newPos = targets[targets.Count - 1];
+        // Initialize stacking variable
+        bool stacking = false;
+
+        // Reassign the pieces on the hexes if the piece is not stacking
+        // Stacking case
+        if (canStack && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece != null && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.tag == tag)
+        {
+            stacking = true;
+            // Make old hex have no pieces
+            board.hexDex[GetComponent<BoardPos>().z, GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+        }
+        // Normal movement or attacking a single piece (not stacking or attacking a stack) case
+        else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().GetComponent<Piece>().stackedPieces.Count == 0)
+        {
+            stacking = false;
+            // Assign this piece to new hex
+            board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
+            // Make old hex have no pieces
+            board.hexDex[GetComponent<BoardPos>().z, GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+        }
+        // Attacking a stack and multiple hex moving
+        else if (movementType == MovementType.Cannon || movementType == MovementType.V)
+        {
+            // Assign this piece to new hex
+            board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].GetComponent<Hex>().piece = gameObject;
+            // Make old hex have no pieces
+            board.hexDex[GetComponent<BoardPos>().z, GetComponent<BoardPos>().x].GetComponent<Hex>().piece = null;
+            stacking = false;
+        }
 
         // Reassign board position if this piece is not attacking a stack or doing a multiple hex movement and bouncing off
-        if (gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0 
+        if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Count == 0 
             || stacking 
-            || gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Contains(gameObject)
-            || gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == gameObject)
+            || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.GetComponent<Piece>().stackedPieces.Contains(gameObject)
+            || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == gameObject)
         {
             // Reassign the piece's x and z values
             GetComponent<BoardPos>().z = newPos.z;
             GetComponent<BoardPos>().x = newPos.x;
         }
         // If the piece is attacking a stack, is it doing a multiple hex move?
-        else if (multipleHexMove)
+        else if (movementType == MovementType.Cannon || movementType == MovementType.V)
         {
             // Reassign position to one hex short of the target
             BoardPos bouncingOnto;
-            bouncingOnto = gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[gameManager.GetOppositeDirection(multipleHexDirection)].GetComponent<BoardPos>();
+            bouncingOnto = board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].GetComponent<BoardPos>();
             GetComponent<BoardPos>().x = bouncingOnto.x;
             GetComponent<BoardPos>().z = bouncingOnto.z;
         }
 
         foreach (BoardPos target in targets)
         {
-            this.targets.Add(gameManager.board.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
+            this.targets.Add(board.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
         }
 
         // Set last position
-        if (!multipleHexMove)
+        if (!(movementType == MovementType.Cannon || movementType == MovementType.V))
         {
             lastPosition = transform.position;
         }
         else
         {
-            lastPosition = gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[gameManager.GetOppositeDirection(multipleHexDirection)].transform.position + new Vector3(0f, transform.position.y, 0f);
+            lastPosition = gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].transform.position + new Vector3(0f, transform.position.y, 0f);
         }
 
         // Whether this is the bottom piece of a stack that is being moved onto another piece
         bool startingStackingAStack;
         // How high offset the bottom stacking piece needs to be in the piece its moving onto is stacked
         int stackCount;
+        // The piece this piece is stacking onto (if applicable)
+        GameObject stackingOnto = stacking ? board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece : null;
 
         // Stacking 
         if (stacking)
@@ -187,11 +227,10 @@ public class Piece : MonoBehaviour
             piece.GetComponent<Piece>().Move
             (
                 targets,
-                stacking: startingStackingAStack, 
-                stackingOnto: stackingOnto, 
-                stackingAStack: 
-                startingStackingAStack, 
-                origStackCount: stackCount
+                movementType,
+                stackingAStack: startingStackingAStack, 
+                origStackCount: stackCount,
+                bottomPiece: false
             );
         }
 
@@ -254,6 +293,7 @@ public class Piece : MonoBehaviour
         }
     }
 
+    /// <summary>Updates the stack number (stack count) displayed above a piece</summary>
     public void UpdateStackCount()
     {
         List<bool> stackMoving = new List<bool>();
