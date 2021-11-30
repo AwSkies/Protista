@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BoardPos : MonoBehaviour
+public class BoardPosition : MonoBehaviour
 {
     public int x;
     public int z;
