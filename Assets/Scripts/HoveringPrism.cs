@@ -27,12 +27,17 @@ public class HoveringPrism : MonoBehaviour
     {
         // Determine number of pieces stacked on hex
         int pieceNum = 0;
+        Vector3 canvas = new Vector3(0, 0, 0);
         if (board.hexDex[boardPosition.z, boardPosition.x].GetComponent<Hex>().piece != null)
         {
             pieceNum = board.hexDex[boardPosition.z, boardPosition.x].GetComponent<Hex>().piece.transform.childCount;
         }
+        if (pieceNum > 1)
+        {
+            canvas = canvasOffset;
+        }
         // Set position
-        transform.position = board.hexDex[boardPosition.z, boardPosition.x].transform.position + verticalOffset + canvasOffset + (pieceOffset * pieceNum);
+        transform.position = board.hexDex[boardPosition.z, boardPosition.x].transform.position + verticalOffset + canvas + (pieceOffset * pieceNum);
         // Set visible
         gameObject.SetActive(true);
     }

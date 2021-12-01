@@ -1492,8 +1492,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   board: {fileID: 1568063595}
   verticalOffset: {x: 0, y: 2, z: 0}
-  pieceOffset: {x: 0, y: 0.25, z: 0}
-  canvasOffset: {x: 0, y: 1, z: 0}
+  pieceOffset: {x: 0, y: 0.45, z: 0}
+  canvasOffset: {x: 0, y: 2, z: 0}
 --- !u!1 &1549433161 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4757419627870318915, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
