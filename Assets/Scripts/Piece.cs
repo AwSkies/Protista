@@ -223,13 +223,12 @@ public class Piece : MonoBehaviour
             {
                 // Set pieceToDestroy
                 pieceToDestroy = otherPiece.transform.GetChild(otherPiece.transform.childCount - 1).gameObject;
-                // Updates stack count for one less piece
-                otherPiece.UpdateStackCount();
+                // Unparent piece from stack to prevent a deleted object from being referenced
+                pieceToDestroy.transform.SetParent(null);
                 // Update target to last position
                 targets[0] = lastPosition; 
                 // Piece cannot damage other pieces while moving back to last position
                 canHit = false;
-                targets[0] = lastPosition;
             }
             // If attacking a single piece
             else
@@ -239,6 +238,11 @@ public class Piece : MonoBehaviour
             }
             // Destroy piece
             Destroy(pieceToDestroy);
+            // Updates stack count for one less piece (only if the bottom piece still exists since it was a stack)
+            if (otherPiece != null)
+            {
+                otherPiece.UpdateStackCount();
+            }
         }
     }
 
@@ -274,8 +278,9 @@ public class Piece : MonoBehaviour
         {
             // Show counter on highest stacked piece
             topCanvas.SetActive(true);
+            topCanvas.transform.GetChild(0).gameObject.SetActive(true);
             // Do not add one to child count because the first child of every piece should be their canvas
-            text.text = (transform.childCount).ToString();
+            text.text = transform.childCount.ToString();
         }
         else
         {
