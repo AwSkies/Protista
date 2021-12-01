@@ -15,14 +15,17 @@ public class GameManager : MonoBehaviour
     public GameObject blackPiecePrefab;
     #endregion
 
-    #region Movement icons
+    #region Icons
     public GameObject curledMovementArrow;
     public GameObject attackIcon;
     public GameObject stackIcon;
+    public GameObject hoveringPrism;
     #endregion
 
+    #region UI
     public TextMeshProUGUI invalidMovementOptionText;
     public GameObject[] buttons;
+    #endregion
 
     public Board board;
     #endregion
@@ -46,8 +49,6 @@ public class GameManager : MonoBehaviour
     public Vector3 pieceVertical;
     // Vertical offset of the movement arrows
     public Vector3 movementIconVertical;
-    // The number of times a contiguous piece can be visited
-    public int maxContiguousVisits;
 
     // The amount of time it takes to rescind the invalid movement option text
     // Since the project's fixed timeskip is probably set to 0.02 or 1/50th it should be 100
@@ -441,6 +442,12 @@ public class GameManager : MonoBehaviour
                 KillAllMovementIcons();
             }
 
+            // Place hovering prism if a different hex was hit than last frame or there is no current one
+            if (!hoveringPrism.activeSelf || hexHit != previousHexHit)
+            {
+                hoveringPrism.GetComponent<HoveringPrism>().SetPosition(hexPos);
+            }
+
             // If clicked
             if (Input.GetMouseButton(0))
             {
@@ -543,10 +550,11 @@ public class GameManager : MonoBehaviour
             // Set hex hit this frame to hex hit previous frame
             previousHexHit = hexHit;
         }
-        // Get rid of movement icons if nothing is hit on this frame
+        // Get rid of icons if nothing is hit on this frame
         else
         {
             KillAllMovementIcons();
+            hoveringPrism.SetActive(false);
         }
 
         // Deselect all hexes or movement option with right click

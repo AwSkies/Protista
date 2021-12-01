@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: d373550bab5ec7946b1aaf432a922462
+guid: 4d51341190b7a41468643a297ce93ee4
 ModelImporter:
   serializedVersion: 20101
   internalIDToNameTable:
@@ -38,8 +38,8 @@ ModelImporter:
       name: Bobbing
       takeName: Take 001
       internalID: 0
-      firstFrame: 1
-      lastFrame: 96
+      firstFrame: 0
+      lastFrame: 240
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -62,7 +62,7 @@ ModelImporter:
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
-      additiveReferencePoseFrame: 1
+      additiveReferencePoseFrame: 0
     isReadable: 0
   meshes:
     lODScreenPercentages: []

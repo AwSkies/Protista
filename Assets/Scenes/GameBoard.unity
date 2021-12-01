@@ -1472,12 +1472,28 @@ Animator:
   m_Controller: {fileID: 9100000, guid: 82b96a25d229a3d4eadece3579112e25, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
-  m_ApplyRootMotion: 0
+  m_ApplyRootMotion: 1
   m_LinearVelocityBlending: 0
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &1478239921
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478239916}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 576e117a2a54cfa47bbe184bf2796ed1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  board: {fileID: 1568063595}
+  verticalOffset: {x: 0, y: 2, z: 0}
+  pieceOffset: {x: 0, y: 0.25, z: 0}
+  canvasOffset: {x: 0, y: 1, z: 0}
 --- !u!1 &1549433161 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4757419627870318915, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
@@ -1534,6 +1550,7 @@ MonoBehaviour:
     type: 3}
   stackIcon: {fileID: 3376229391487544894, guid: 1446ec7153f3ce44c91957fa78952733,
     type: 3}
+  hoveringPrism: {fileID: 1478239916}
   invalidMovementOptionText: {fileID: 748715328}
   buttons:
   - {fileID: 1549433161}
@@ -1551,7 +1568,6 @@ MonoBehaviour:
   pieceNum: 15
   pieceVertical: {x: 0, y: 0.6, z: 0}
   movementIconVertical: {x: 0, y: 3.33, z: 0}
-  maxContiguousVisits: 5
   textRescindTime: 100
 --- !u!4 &1568063594
 Transform:
