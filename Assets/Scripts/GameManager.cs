@@ -7,53 +7,77 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    #region Prefabs & scene objects
-    #region Game pieces
-    public GameObject hexPrefab;
-    public GameObject objHexPrefab;
-    public GameObject whitePiecePrefab;
-    public GameObject blackPiecePrefab;
-    #endregion
-
-    #region Icons
-    public GameObject curledMovementArrow;
-    public GameObject attackIcon;
-    public GameObject stackIcon;
-    public GameObject hoveringPrism;
-    #endregion
-
-    #region UI
-    public TextMeshProUGUI invalidMovementOptionText;
-    public GameObject[] buttons;
-    #endregion
-
+    [SerializeField]
     public Board board;
-    #endregion
 
-    #region Game behavior variables for tweaking
+    [Header("Game Pieces")]
+    [SerializeField]
+    private GameObject whiteHexPrefab;
+    [SerializeField]
+    private GameObject blackHexPrefab;
+    [SerializeField]
+    private GameObject whiteObjectiveHexPrefab;
+    [SerializeField]
+    private GameObject blackObjectiveHexPrefab;
+    [SerializeField]
+    private GameObject neutralHexPrefab;
+    // First dimension is color, second is hex type (normal/objective)
+    // 0 = white, 1 = black, 2 = neutral
+    // 0 = normal, 1 = objective
+    private GameObject[,] hexPrefabs = new GameObject[3, 2];
+    [SerializeField]
+    private GameObject whitePiecePrefab;
+    [SerializeField]
+    private GameObject blackPiecePrefab;
+
+    [Header("Icons")]
+    [SerializeField]
+    private GameObject curledMovementArrow;
+    [SerializeField]
+    private GameObject attackIcon;
+    [SerializeField]
+    private GameObject stackIcon;
+    [SerializeField]
+    private GameObject hoveringPrism;
+
+    [Header("UI")]
+    [SerializeField]
+    private TextMeshProUGUI invalidMovementOptionText;
+    [SerializeField]
+    private GameObject[] buttons;
+
+    [Header("Game behavior variables for tweaking")]
+    [SerializeField]
     // Number of objective hexes for each player
-    public int objHexNum;
+    private int objHexNum;
+    [SerializeField]
     // Hexes between each player's side
-    public int rows;
+    private int rows;
+    [SerializeField]
     // The way/distance hexes are tiled from left to right
-    public Vector3 rowSpace;
+    private Vector3 rowSpace;
+    [SerializeField]
     // Hexes to the right and left of player
-    public int columns;
+    private int columns;
+    [SerializeField]
     // The horizontal/z offset when hexes are tiled from top to bottom
-    public Vector3 columnSpace;
+    private Vector3 columnSpace;
+    [SerializeField]
     // The offset of every other row
-    public Vector3 rowOffset;
+    private Vector3 rowOffset;
+    [SerializeField]
     // Number of pieces for each player
-    public int pieceNum;
+    private int pieceNum;
+    [SerializeField]
     // Vertical offset of each piece
     public Vector3 pieceVertical;
+    [SerializeField]
     // Vertical offset of the movement arrows
-    public Vector3 movementIconVertical;
-
+    private Vector3 movementIconVertical;
+    [SerializeField]
     // The amount of time it takes to rescind the invalid movement option text
     // Since the project's fixed timeskip is probably set to 0.02 or 1/50th it should be 100
-    public int textRescindTime;
-    #endregion
+    private int textRescindTime;
 
     #region Variables for use during generation and gameplay
     // Selected hexes
@@ -99,6 +123,13 @@ public class GameManager : MonoBehaviour
     {
         // Initialize hexDex as 2D array with size of rows and columns specified
         board.hexDex = new GameObject[rows, columns];
+
+        // Set up hex prefab array
+        hexPrefabs[0, 0] = whiteHexPrefab;
+        hexPrefabs[0, 1] = blackObjectiveHexPrefab;
+        hexPrefabs[1, 0] = blackHexPrefab;
+        hexPrefabs[1, 1] = whiteObjectiveHexPrefab;
+        hexPrefabs[2, 0] = neutralHexPrefab;
 
         // halfBoard = the number of rows that make up half the board, minus the middle row 
         int halfBoard = rows / 2;
@@ -164,36 +195,78 @@ public class GameManager : MonoBehaviour
         bool lastWentRight = true;
         // Loop through each row and hex in each row
         // Dimension 1
-        for (int i = 0; i < board.hexDex.GetLength(0); i++)
+        for (int z = 0; z < rows; z++)
         {
             // Dimension 2
-            for (int hexX = 0; hexX < board.hexDex.GetLength(1); hexX++)
+            for (int x = 0; x < columns; x++)
             {
-                #region Spawn hexes
-                // Choose to place normal or objective hex based on earlier generation
+                // Hex and piece that are going to be placed
                 GameObject hexToPlace;
-                if (objHexes[i, hexX]) { hexToPlace = objHexPrefab; } else { hexToPlace = hexPrefab; }
-                // Spawn hex, add correct board position, and add to Hex object
-                GameObject hexSpawned = Instantiate(hexToPlace, lastPosition, Quaternion.Euler(0f, 30f, 0f));
-                hexSpawned.GetComponent<BoardPosition>().x = hexX;
-                hexSpawned.GetComponent<BoardPosition>().z = i;
-                board.hexDex[i, hexX] = hexSpawned;
+                GameObject pieceToPlace;
+
+                #region Choose colors
+                // Color for top of hex
+                int color;
+                // Color on base of hex
+                int type;
+                
+                // If on the first half
+                // Color is white
+                if (z < halfBoard)
+                {
+                    color = 0;
+                    pieceToPlace = whitePiecePrefab;
+                }
+                // If z is one more than half the board and the number of rows is odd
+                // Color is neutral
+                else if (z == halfBoard && rows % 2 == 1)
+                {
+                    color = 2;
+                    pieceToPlace = null;
+                }
+                // If on the second half
+                // Color is black
+                else
+                {
+                    color = 1;
+                    pieceToPlace = blackPiecePrefab;
+                }
+                
+                // Choose to place normal or objective hex based on earlier generation
+                if (objHexes[z, x])
+                {
+                    type = 1;
+                }
+                else
+                {
+                    type = 0;
+                }
+                // Choose hex to place from color and type
+                hexToPlace = hexPrefabs[color, type];
                 #endregion
 
-                #region Spawn pieces
+                #region Spawn hexes
+                // Spawn hex, add correct board position, and add to Hex object
+                GameObject hexSpawned = Instantiate(hexToPlace, lastPosition, Quaternion.Euler(0f, 30f, 0f));
+                // Cache board position
+                BoardPosition hexPosition = hexSpawned.GetComponent<BoardPosition>();
+                hexPosition.x = x;
+                hexPosition.z = z;
+                board.hexDex[z, x] = hexSpawned;
+                #endregion
+
+
                 // Choose whether or not to spawn pieces based on earlier generation
-                if (pieces[i, hexX])
+                if (pieces[z, x])
                 {
-                    // Choose to place black or white piece depending on position in the board
-                    GameObject pieceToPlace;
-                    if (i < halfBoard) { pieceToPlace = whitePiecePrefab; } else { pieceToPlace = blackPiecePrefab; }
                     // Spawn piece above hex, add correct board position, and place in hexDex
                     GameObject pieceSpawned = Instantiate(pieceToPlace, lastPosition + pieceVertical, Quaternion.identity);
-                    pieceSpawned.GetComponent<BoardPosition>().x = hexX;
-                    pieceSpawned.GetComponent<BoardPosition>().z = i;
-                    board.hexDex[i, hexX].GetComponent<Hex>().piece = pieceSpawned;
+                    // Cache board position
+                    BoardPosition piecePosition = pieceSpawned.GetComponent<BoardPosition>();
+                    piecePosition.x = x;
+                    piecePosition.z = z;
+                    board.hexDex[z, x].GetComponent<Hex>().piece = pieceSpawned;
                 }
-                #endregion
 
                 // Offets next hex position (for next time through loop)
                 lastPosition += rowSpace;

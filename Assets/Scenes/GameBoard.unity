@@ -1094,7 +1094,7 @@ Transform:
   m_Children:
   - {fileID: 1754419913}
   m_Father: {fileID: 0}
-  m_RootOrder: 1
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 72.255005, y: 0, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
@@ -1389,7 +1389,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: d6ab8bf4cd8645e4e850e67187dac519,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d6ab8bf4cd8645e4e850e67187dac519,
         type: 3}
@@ -1536,13 +1536,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf7d3cb1d65cfa849b5e776c2254db5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hexPrefab: {fileID: 6163949011894488606, guid: 3bab5edc8446e1e4791b765dbbd4a2fc,
+  board: {fileID: 1568063595}
+  whiteHexPrefab: {fileID: 6875158853326186902, guid: abc65ae3664fdf7418a5fab6f38b2cc5,
     type: 3}
-  objHexPrefab: {fileID: 7856227418265277864, guid: 8a624b6f7b15bf34cb08e379950ac0f5,
+  blackHexPrefab: {fileID: 609660583736529081, guid: 463032061f0bcb347bedac2be0ae405d,
     type: 3}
-  whitePiecePrefab: {fileID: 4465150969597023528, guid: 0cda7aac825ba254188d62247e09c597,
+  whiteObjectiveHexPrefab: {fileID: 228829843533436264, guid: 44b3c7b01e704f348807bcb72b73dbfd,
     type: 3}
-  blackPiecePrefab: {fileID: 1198216280521353497, guid: 445642dfdd0261d45ac669eb9702590d,
+  blackObjectiveHexPrefab: {fileID: 9003924074321125651, guid: 6435796eeb428bb4d8709ac539a27788,
+    type: 3}
+  neutralHexPrefab: {fileID: 6032079895773726788, guid: e0069b5aa707e2e4188d9e8a993dcf00,
+    type: 3}
+  whitePiecePrefab: {fileID: 1651993582932762526, guid: 0cda7aac825ba254188d62247e09c597,
+    type: 3}
+  blackPiecePrefab: {fileID: 8913953455632071212, guid: f648bf6a8ceb9b4429f89ea1ca13fd62,
     type: 3}
   curledMovementArrow: {fileID: 5140502486064010207, guid: 81980a41d0ec3e6418940f6d31bf1970,
     type: 3}
@@ -1558,7 +1565,6 @@ MonoBehaviour:
   - {fileID: 1872925436}
   - {fileID: 18959123}
   - {fileID: 45441342}
-  board: {fileID: 1568063595}
   objHexNum: 3
   rows: 19
   rowSpace: {x: 5, y: 0, z: 0}
