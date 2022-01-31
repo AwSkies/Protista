@@ -105,7 +105,7 @@ public class GameManager : MonoBehaviour
     // The valid hexes and the directions taken to them
     // For each hex there is a list of the lists of directions that it took to get there
     private Dictionary<GameObject, List<List<int>>> contiguousHexes = new Dictionary<GameObject, List<List<int>>>();
-    // The hexes with pieces visitec
+    // The hexes with pieces visited
     private List<GameObject> contiguousVisits;
     // The directions it has taken to get to a hex
     private List<int> directionsList = new List<int>();
@@ -663,6 +663,7 @@ public class GameManager : MonoBehaviour
     }
 
     #region Functions for utility
+    /// <summary>Destroys all movement icon <c>GameObject</c>s currently in scene</summary>
     private void KillAllMovementIcons()
     {
         if (movementIcons != null)
@@ -678,6 +679,7 @@ public class GameManager : MonoBehaviour
         }
     }  
 
+    /// <summary>Deselects all hexes currently selected</summary>
     private void DeselectAllHexes()
     {
         // Iterate through each selected hex
@@ -690,7 +692,9 @@ public class GameManager : MonoBehaviour
         selected = new List<GameObject>();
     }
 
-    // Place movement arrows from hex1 to hex2
+    /// <summary>Place movement arrow from <paramref>hex1</paramref> to <paramref>hex2</paramref></summary>
+    /// <param name = "hex1">the hex the arrow will point from</param>
+    /// <param name = "hex2">the hex the arrow will point to</param>
     private void PlaceArrow(GameObject hex1, GameObject hex2)
     {
         // Get the position the arrow will be in
@@ -713,6 +717,9 @@ public class GameManager : MonoBehaviour
         movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60))));
     }
 
+    /// <summary>Places a movement icon above a hex</summary>
+    /// <param name = "hex">the hex to place the movement icon above</param>
+    /// <param name = "key">the type of movement icon to place; can be either <c>"attack"</c> (default value) for the attacking icon or <c>"stack"</c> for the stacking icon</param>
     private void PlaceIcon(GameObject hex, string key = "attack")
     {
         GameObject icon = null;
@@ -734,6 +741,8 @@ public class GameManager : MonoBehaviour
 
     #region Functions for moving
     #region Moving buttons
+    /// <summary>Displays text when a movement option is invalid</summary>
+    /// <param name = "error">the text (which should be a description of the error) to display; default value is <c>"Invalid Movement Option"</c></param>
     private void InvalidMovementOptionDisplay(string error = "Invalid Movement Option")
     {
         invalidMovementOptionText.SetText(error);
@@ -741,6 +750,9 @@ public class GameManager : MonoBehaviour
         textRescindCountdown = textRescindTime;
     }
 
+    /// <summary>Changes clickable status of every movement button except for the one specified</summary>
+    /// <param name = "button">movement button to not change the status of</param>
+    /// <param name = "on">whether to turn the buttons on or off; <c>true</c> corresponds to on and <c>false</c> corresponds to off</param>
     private void ChangeButtons(MovementType button, bool on)
     {
         for (int i = 0; i < buttons.Length; i++)
@@ -754,6 +766,8 @@ public class GameManager : MonoBehaviour
 
     #region Functions to check at the beginning of movement buttons
     #region Functions to check number of pieces selected and display errors
+    /// <summary>Checks if no pieces are selected and displays <c>"No pieces selected"</c> if true</summary>
+    /// <returns><c>true</c> if no pieces are selected, <c>false</c> if any pieces are selected</returns>
     private bool NothingSelected()
     {
         if (selected.Count == 0)
@@ -767,6 +781,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    /// <summary>Checks if only one piece is selected and displays <c>"Select only one piece"</c> if false</summary>
+    /// <returns><c>true</c> if only one piece is selected, <c>false</c> if any other number is</returns>
     private bool OnlyOneSelected()
     {
         if (selected.Count == 1)
@@ -781,7 +797,9 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    // Saves time looking for and toggling highlights for hexes
+    /// <summary>Determines if a move is being selected and stops the piece being selected if true; 
+    /// should be used at the beginning of a movement button method to stop movement selection if button is pressed again</summary>
+    /// <returns><c>true</c> if a move is being selected, <c>false</c> if not</returns>
     private bool NotMoving(MovementType button)
     {
         if (selectedMoving)
@@ -798,7 +816,6 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
-    // When pressed, they enable moving and update hilighting
     public void SingleMovement()
     {
         // Makes sure only one piece is selected and we aren't already trying to move
@@ -1073,7 +1090,8 @@ public class GameManager : MonoBehaviour
     }
 
     #region Contiguous movement utility functions 
-    // Returns smallest list of direction to get from the selected hex to the given hex
+    /// <summary>Finds shortest path from the selected hex to the given hex</summary>
+    /// <returns>smallest list of directions to get from the selected hex to the given hex</returns>
     private List<int> GetDirectionsTo(GameObject hex)
     {
         // Initialize list to store shortest list of directions
@@ -1093,6 +1111,8 @@ public class GameManager : MonoBehaviour
         return directionList;
     }
 
+    /// <summary>Find hexes contiguous to the given hex and creates a list of directions it took to get there from the given hex</summary>
+    /// <param name = "sourceHex">the hex to find hexes contiguous to</param>
     private void FindContiguous(GameObject sourceHex)
     {
         // Get pieces adjacent to current hex
