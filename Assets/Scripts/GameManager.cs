@@ -309,23 +309,23 @@ public class GameManager : MonoBehaviour
                 for (int direction = 0; direction < 6; direction++)
                 {
                     // Assign a vertical translation based on top or bottom position
-                    if (board.directionIsBottom(direction))
+                    if (board.DirectionIsBottom(direction))
                     {
                         transVert = -1;
                     }
-                    else if (board.directionIsMiddle(direction))
+                    else if (board.DirectionIsMiddle(direction))
                     {
                         transVert = 0;
                     }
-                    else if (board.directionIsTop(direction))
+                    else if (board.DirectionIsTop(direction))
                     {
                         transVert = 1;
                     }
 
                     // Assign a horizontal translation based on if we're moving up or not and whether we're moving left or right
-                    if (board.directionIsBottom(direction) || board.directionIsTop(direction))
+                    if (board.DirectionIsBottom(direction) || board.DirectionIsTop(direction))
                     {
-                        if (board.directionIsRight(direction))
+                        if (board.DirectionIsRight(direction))
                         {
                             transHoriz = vertRight;
                         }
@@ -336,7 +336,7 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        if (board.directionIsRight(direction))
+                        if (board.DirectionIsRight(direction))
                         {
                             transHoriz = 1;
                         }
@@ -1032,10 +1032,65 @@ public class GameManager : MonoBehaviour
                 // If any valid Vs are found
                 if (Vs.Count != 0)
                 {
-                    // Toggles moving and vMoving
+                    // Toggles moving and sets movement type
                     selectedMoving = true;
                     movementType = MovementType.V;
                     ChangeButtons(MovementType.V, false);
+
+                    // Loops through each V and reverses its direction (since Vs point away from direction they should be firing)
+                    for (int i = 0; i < Vs.Count; i++)
+                    {
+                        for (int j = 0; j < 2; j++)
+                        {
+                            Vs[i][j] = board.GetOppositeDirection(Vs[i][j]);
+                        }
+                    }
+                    
+                    // Loops through each V
+                    foreach (int[] V in Vs)
+                    {
+                        BoardPosition position = selected[0].GetComponent<BoardPosition>();
+                        int z = position.z;
+                        int x = position.x;
+                        // Loops as many times as the smallest amount of pieces in either part of the V
+                        for (int i = 0; i < Math.Min(lines[V[0]].Count, lines[V[1]].Count); i++)
+                        {
+                            // If V is pointing straight up
+                            if (board.DirectionIsTop(V[0]) && board.DirectionIsTop(V[1]))
+                            {
+                                z += 2;
+                            }
+                            // If V is pointing straight down
+                            else if (board.DirectionIsBottom(V[0]) && board.DirectionIsBottom(V[1]))
+                            {
+                                z -= 2;
+                            }
+                            else
+                            {
+                                // If either direction of the V is up, then it will be pointing up
+                                if (board.DirectionIsTop(V[0]) || board.DirectionIsTop(V[1]))
+                                {
+                                    z++;
+                                }
+                                else
+                                {
+                                    z--;
+                                }
+                                // If either direction of the V is left, then it will be pointing left
+                                // <probablywrong>
+                                if (board.DirectionIsLeft(V[0]))
+                                {
+                                    x -= 1 + z % 2;
+                                }
+                                else
+                                {
+                                    x += 1 + z % 2;
+                                }
+                                // </probablywrong>
+                            }
+                            board.OutlineHex(board.hexDex[z, x], 0);
+                        }
+                    }
                 }
                 else
                 {
