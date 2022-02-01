@@ -23,9 +23,21 @@ public class Board : MonoBehaviour
         // Return the new cycled direction
         return newDirection;
     }
+
+    /// <summary>Returns direction that is offset from the current direction. Giving a positive offset goes clockwise and a negative offset goes counterclockwise.</summary>
+    public Direction CycleDirection(Direction direction, int offset)
+    {
+        return (Direction)CycleDirection((int)direction, offset);
+    }
     
     /// <summary>Returns the opposite direction</summary>
     public int GetOppositeDirection(int direction) 
+    {
+        return CycleDirection(direction, 3);
+    }
+
+    /// <summary>Returns the opposite direction</summary>
+    public Direction GetOppositeDirection(Direction direction) 
     {
         return CycleDirection(direction, 3);
     }
@@ -62,6 +74,70 @@ public class Board : MonoBehaviour
         }
         return movementDirection;
     }
+
+    #region Methods about determining which ways directions go
+    #region Left or right semicircle
+    /// <summary>Determines if a direction is in the left semicircle</summary>
+    public bool directionIsLeft(int direction)
+    {
+        return direction >= 2 && direction <= 4;
+    }
+
+    /// <summary>Determines if a direction is in the left semicircle</summary>
+    public bool directionIsLeft(Direction direction)
+    {
+        return directionIsLeft((int)direction);
+    }
+
+    /// <summary>Determines if a direction is in the right semicircle</summary>
+    public bool directionIsRight(int direction)
+    {
+        return !directionIsLeft(direction);
+    }
+
+    public bool directionIsRight(Direction direction)
+    {
+        return !directionIsLeft(direction);
+    }
+    #endregion
+    #region Top, bottom, or middle
+    /// <summary>Determines if a direction is at the top</summary>
+    public bool directionIsTop(int direction)
+    {
+        return direction == 4 || direction == 5;
+    }
+
+    /// <summary>Determines if a direction is at the top</summary>
+    public bool directionIsTop(Direction direction)
+    {
+        return directionIsTop((int)direction);
+    }
+
+    /// <summary>Determines if a direction is in the middle</summary>
+    public bool directionIsMiddle(int direction)
+    {
+        return direction == 0 || direction == 3;
+    }
+
+    /// <summary>Determines if a direction is in the middle</summary>
+    public bool directionIsMiddle(Direction direction)
+    {
+        return directionIsMiddle((int)direction);
+    }
+
+    /// <summary>Determines if a direction is at the bottom</summary>
+    public bool directionIsBottom(int direction)
+    {
+        return direction == 1 || direction == 2;
+    }
+    
+    /// <summary>Determines if a direction is at the bottom</summary>
+    public bool directionIsBottom(Direction direction)
+    {
+        return directionIsBottom((int)direction);
+    }
+    #endregion
+    #endregion
     #endregion
 
     #region Utility functions for lines

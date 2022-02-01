@@ -294,68 +294,69 @@ public class GameManager : MonoBehaviour
         int transVert = 0;
         int transHoriz = 0;
         // Loop through each row
-        for (int i = 0; i < board.hexDex.GetLength(0); i++)
+        for (int z = 0; z < board.hexDex.GetLength(0); z++)
         {
             // Determine what top left and top right are based on whether it's an odd or even row
-            if (i % 2 == 0)
-            {
-                vertLeft = -1;
-                vertRight = 0;
-            }
-            else
-            {
-                vertLeft = 0;
-                vertRight = 1;
-            }
+            vertLeft = -1 + z % 2;
+            vertRight = 0 + z % 2;
 
             // Loop through each hex in each row
-            for (int hexX = 0; hexX < board.hexDex.GetLength(1); hexX++)
+            for (int x = 0; x < board.hexDex.GetLength(1); x++)
             {
                 GameObject[] neighbors = new GameObject[6];
-                board.hexDex[i, hexX].GetComponent<Hex>().neighbors = neighbors;
+                board.hexDex[z, x].GetComponent<Hex>().neighbors = neighbors;
                 // Assign for each of the six surrounding hexes
-                for (int iter = 0; iter < 6; iter++)
+                for (int direction = 0; direction < 6; direction++)
                 {
-                    // Say where each hex is in relation to the current hex
-                    switch (iter)
+                    // Assign a vertical translation based on top or bottom position
+                    if (board.directionIsBottom(direction))
                     {
-                        case (int)Direction.Left:
-                            transHoriz = -1;
-                            transVert = 0;
-                            break;
-                        case (int)Direction.Right:
+                        transVert = -1;
+                    }
+                    else if (board.directionIsMiddle(direction))
+                    {
+                        transVert = 0;
+                    }
+                    else if (board.directionIsTop(direction))
+                    {
+                        transVert = 1;
+                    }
+
+                    // Assign a horizontal translation based on if we're moving up or not and whether we're moving left or right
+                    if (board.directionIsBottom(direction) || board.directionIsTop(direction))
+                    {
+                        if (board.directionIsRight(direction))
+                        {
+                            transHoriz = vertRight;
+                        }
+                        else
+                        {
+                            transHoriz = vertLeft;
+                        }
+                    }
+                    else
+                    {
+                        if (board.directionIsRight(direction))
+                        {
                             transHoriz = 1;
-                            transVert = 0;
-                            break;
-                        case (int)Direction.TopLeft:
-                            transHoriz = vertLeft;
-                            transVert = 1;
-                            break;
-                        case (int)Direction.TopRight:
-                            transHoriz = vertRight;
-                            transVert = 1;
-                            break;
-                        case (int)Direction.BottomLeft:
-                            transHoriz = vertLeft;
-                            transVert = -1;
-                            break;
-                        case (int)Direction.BottomRight:
-                            transHoriz = vertRight;
-                            transVert = -1;
-                            break;
+                        }
+                        else
+                        {
+                            transHoriz = -1;
+                        }
                     }
                     GameObject neighborHex;
                     // Makes sure that hexes on the edge get defined as null
-                    if (!((hexX + transHoriz < 0 || hexX + transHoriz >= columns) || (i + transVert < 0 || i + transVert >= rows)))
+                    if (!((x + transHoriz < 0 || x + transHoriz >= columns) || (z + transVert < 0 || z + transVert >= rows)))
                     {
-                        neighborHex = board.hexDex[i + transVert, hexX + transHoriz];
+                        neighborHex = board.hexDex[z + transVert, x + transHoriz];
                     }
                     else
                     {
                         neighborHex = null;
                     }
                     // Assigns the neighbor hex if there is one
-                    board.hexDex[i, hexX].GetComponent<Hex>().neighbors[iter] = neighborHex;
+                    board.hexDex[z, x].GetComponent<Hex>().neighbors[direction] = neighborHex;
                 }
             }
             
@@ -821,7 +822,7 @@ public class GameManager : MonoBehaviour
         // Makes sure only one piece is selected and we aren't already trying to move
         if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.Single))
         {
-            // Toggles moving and singleMoving
+            // Toggles moving and sets movement type
             selectedMoving = true;
             movementType = MovementType.Single;
             ChangeButtons(MovementType.Single, false);
@@ -894,7 +895,7 @@ public class GameManager : MonoBehaviour
                 // Check if there are valid directions
                 if (validDirections.Count > 0)
                 {
-                    // Toggles moving and waveMoving
+                    // Toggles moving and sets movement type
                     selectedMoving = !selectedMoving;
                     movementType = MovementType.Wave;
                     ChangeButtons(MovementType.Wave, !selectedMoving);
@@ -931,7 +932,7 @@ public class GameManager : MonoBehaviour
             // Make sure that the piece has at least one line and is not only in the middle of line(s)
             if (directions.Count != 0)
             {
-                // Toggles moving and cannonMoving
+                // Toggles moving and sets movement type
                 selectedMoving = true;
                 movementType = MovementType.Cannon;
                 ChangeButtons(MovementType.Cannon, false);
@@ -1062,7 +1063,7 @@ public class GameManager : MonoBehaviour
             // Makes sure there are contiguous pieces
             if (contiguousHexes.Count != 0)
             {
-                // Toggles moving and contiguousMoving
+                // Toggles moving and sets movement type
                 selectedMoving = true;
                 movementType = MovementType.Contiguous;
                 ChangeButtons(MovementType.Contiguous, false);
