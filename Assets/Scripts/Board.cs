@@ -78,63 +78,63 @@ public class Board : MonoBehaviour
     #region Methods about determining which ways directions go
     #region Left or right semicircle
     /// <summary>Determines if a direction is in the left semicircle</summary>
-    public bool directionIsLeft(int direction)
+    public bool DirectionIsLeft(int direction)
     {
         return direction >= 2 && direction <= 4;
     }
 
     /// <summary>Determines if a direction is in the left semicircle</summary>
-    public bool directionIsLeft(Direction direction)
+    public bool DirectionIsLeft(Direction direction)
     {
-        return directionIsLeft((int)direction);
+        return DirectionIsLeft((int)direction);
     }
 
     /// <summary>Determines if a direction is in the right semicircle</summary>
-    public bool directionIsRight(int direction)
+    public bool DirectionIsRight(int direction)
     {
-        return !directionIsLeft(direction);
+        return !DirectionIsLeft(direction);
     }
 
-    public bool directionIsRight(Direction direction)
+    public bool DirectionIsRight(Direction direction)
     {
-        return !directionIsLeft(direction);
+        return !DirectionIsLeft(direction);
     }
     #endregion
     #region Top, bottom, or middle
     /// <summary>Determines if a direction is at the top</summary>
-    public bool directionIsTop(int direction)
+    public bool DirectionIsTop(int direction)
     {
         return direction == 4 || direction == 5;
     }
 
     /// <summary>Determines if a direction is at the top</summary>
-    public bool directionIsTop(Direction direction)
+    public bool DirectionIsTop(Direction direction)
     {
-        return directionIsTop((int)direction);
+        return DirectionIsTop((int)direction);
     }
 
     /// <summary>Determines if a direction is in the middle</summary>
-    public bool directionIsMiddle(int direction)
+    public bool DirectionIsMiddle(int direction)
     {
         return direction == 0 || direction == 3;
     }
 
     /// <summary>Determines if a direction is in the middle</summary>
-    public bool directionIsMiddle(Direction direction)
+    public bool DirectionIsMiddle(Direction direction)
     {
-        return directionIsMiddle((int)direction);
+        return DirectionIsMiddle((int)direction);
     }
 
     /// <summary>Determines if a direction is at the bottom</summary>
-    public bool directionIsBottom(int direction)
+    public bool DirectionIsBottom(int direction)
     {
         return direction == 1 || direction == 2;
     }
     
     /// <summary>Determines if a direction is at the bottom</summary>
-    public bool directionIsBottom(Direction direction)
+    public bool DirectionIsBottom(Direction direction)
     {
-        return directionIsBottom((int)direction);
+        return DirectionIsBottom((int)direction);
     }
     #endregion
     #endregion
