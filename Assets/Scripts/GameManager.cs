@@ -1077,16 +1077,14 @@ public class GameManager : MonoBehaviour
                                     z--;
                                 }
                                 // If either direction of the V is left, then it will be pointing left
-                                // <probablywrong>
                                 if (board.DirectionIsLeft(V[0]))
                                 {
-                                    x -= 1 + z % 2;
+                                    x -= 2 - z % 2;
                                 }
                                 else
                                 {
                                     x += 1 + z % 2;
                                 }
-                                // </probablywrong>
                             }
                             board.OutlineHex(board.hexDex[z, x], 0);
                         }
