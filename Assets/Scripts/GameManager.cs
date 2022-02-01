@@ -385,10 +385,10 @@ public class GameManager : MonoBehaviour
             BoardPosition hexPos = hit.transform.gameObject.GetComponent<BoardPosition>();
             // Get hex hit
             GameObject hexHit = board.hexDex[hexPos.z, hexPos.x];
-
             // Cache color
             int color = hexHit.GetComponent<cakeslice.Outline>().color;
-            // Movement icons case
+
+            // Movement icons
             // If we're selecting a move and the hex hit is highlighted a valid color or there is already a movement icon
             if (selectedMoving && (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2)))
             {
@@ -582,7 +582,7 @@ public class GameManager : MonoBehaviour
                             }
                             else if (movementType == MovementType.V) 
                             {
-                                // Future movement code
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(new List<BoardPosition> {hexPos}, MovementType.V);
                                 ChangeButtons(MovementType.V, true);
                             }
                             else if (movementType == MovementType.Contiguous) 
