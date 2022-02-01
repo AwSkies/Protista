@@ -1013,17 +1013,19 @@ public class GameManager : MonoBehaviour
                 // Find valid directions
                 // List of pairs of valid directions
                 List<int[]> Vs = new List<int[]>();
-                foreach (int direction in Enum.GetValues(typeof(Direction)))
+                // Loop through all directions of lines found
+                foreach (int direction in directions)
                 {
-                    // Integer array to store two V pieces
-                    int[] VPieces = new int[2];
+                    // The two directions off the selected hex that the V goes in
+                    int[] VDirections = new int[2];
                     // Next consecutive direction
                     int direction2 = board.CycleDirection(direction, 1);
+                    // If direction and the next direction clockwise have lines going in those directions, add the V going in those two directions to the list of Vs
                     if (directions.Contains(direction2))
                     {
-                        VPieces[0] = direction;
-                        VPieces[1] = direction2;
-                        Vs.Add(VPieces);
+                        VDirections[0] = direction;
+                        VDirections[1] = direction2;
+                        Vs.Add(VDirections);
                     }
                 }
                 // If any valid Vs are found
