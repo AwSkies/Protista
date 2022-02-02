@@ -1049,6 +1049,15 @@ public class GameManager : MonoBehaviour
                             }
                             else
                             {
+                                // If either direction of the V is left, then it will be pointing left
+                                if (board.DirectionIsLeft(V[0]))
+                                {
+                                    x -= 2 - z % 2;
+                                }
+                                else
+                                {
+                                    x += 1 + z % 2;
+                                }
                                 // If either direction of the V is up, then it will be pointing up
                                 if (board.DirectionIsTop(V[0]) || board.DirectionIsTop(V[1]))
                                 {
@@ -1057,15 +1066,6 @@ public class GameManager : MonoBehaviour
                                 else
                                 {
                                     z--;
-                                }
-                                // If either direction of the V is left, then it will be pointing left
-                                if (board.DirectionIsLeft(V[0]))
-                                {
-                                    x -= 1 + z % 2;
-                                }
-                                else
-                                {
-                                    x += 2 - z % 2;
                                 }
                             }
                             // Make sure we don't go over the edge of the board
