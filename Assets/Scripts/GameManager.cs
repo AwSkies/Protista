@@ -798,7 +798,7 @@ public class GameManager : MonoBehaviour
     /// <summary>Determines if a move is being selected and stops the piece being selected if true; 
     /// should be used at the beginning of a movement button method to stop movement selection if button is pressed again</summary>
     /// <returns><c>true</c> if a move is being selected, <c>false</c> if not</returns>
-    private bool NotMoving(MovementType button)
+    private bool NotMoving()
     {
         if (selectedMoving)
         {
@@ -815,7 +815,7 @@ public class GameManager : MonoBehaviour
     public void SingleMovement()
     {
         // Makes sure only one piece is selected and we aren't already trying to move
-        if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.Single))
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving())
         {
             StartMove(MovementType.Single);
             // Loops through all neighbors and outlines them as valid moves
@@ -842,7 +842,7 @@ public class GameManager : MonoBehaviour
     public void WaveMovement()
     {
         // Makes sure pieces are selected and we aren't already trying to move
-        if (!NothingSelected() && NotMoving(MovementType.Wave))
+        if (!NothingSelected() && NotMoving())
         {
             if (selected.Count >= 3)
             {
@@ -905,7 +905,7 @@ public class GameManager : MonoBehaviour
     public void CannonMovement()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
-        if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.Cannon))
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving())
         {
             #region Initialize/Cache variables
             // Hex to perform operations on
@@ -980,7 +980,7 @@ public class GameManager : MonoBehaviour
     public void VMovement()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
-        if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.V))
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving())
         {
             // Lines and directions
             List<GameObject>[] lines = board.FindLines(selected[0].GetComponent<BoardPosition>());
@@ -1079,12 +1079,6 @@ public class GameManager : MonoBehaviour
                             }
                         }
                     }
-
-                    if (board.highlighted.Count == 1)
-                    {
-                        InvalidMovementOptionDisplay("No valid places to move");
-                        EndMove();
-                    }
                 }
                 else
                 {
@@ -1101,7 +1095,7 @@ public class GameManager : MonoBehaviour
     public void ContiguousMovement()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
-        if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.Contiguous))
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving())
         {
             // Reset variables
             contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
