@@ -1061,15 +1061,29 @@ public class GameManager : MonoBehaviour
                                 // If either direction of the V is left, then it will be pointing left
                                 if (board.DirectionIsLeft(V[0]))
                                 {
-                                    x -= 2 - z % 2;
+                                    x -= 1 + z % 2;
                                 }
                                 else
                                 {
-                                    x += 1 + z % 2;
+                                    x += 2 - z % 2;
                                 }
                             }
-                            board.OutlineHex(board.hexDex[z, x], 0);
+                            // Make sure we don't go over the edge of the board
+                            try
+                            {
+                                board.OutlineHex(board.hexDex[z, x], 1);
                             }
+                            catch (IndexOutOfRangeException)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    if (board.highlighted.Count == 1)
+                    {
+                        InvalidMovementOptionDisplay("No valid places to move");
+                        EndMove();
                     }
                 }
                 else
