@@ -98,6 +98,8 @@ public class GameManager : MonoBehaviour
 
     // The direction the piece is moving for multiple piece moving
     private List<int> movementDirections = new List<int>();
+    // The hexes that a move would take a piece along if it were to move to a certain hex
+    private Dictionary<GameObject, List<BoardPosition>> stepsTo = new Dictionary<GameObject, List<BoardPosition>>();
     // The amount of time left to rescind the invalid movement option text
     private int textRescindCountdown;
 
@@ -560,7 +562,7 @@ public class GameManager : MonoBehaviour
                             if (movementType == MovementType.Single) 
                             {
                                 // Move piece and reset buttons
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(new List<BoardPosition> {hexPos}, MovementType.Single, canStack: true);
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], MovementType.Single);
                             }
                             else if (movementType == MovementType.Wave) 
                             {
@@ -569,17 +571,13 @@ public class GameManager : MonoBehaviour
                             else if (movementType == MovementType.Cannon) 
                             {
                                 // Move piece and reset buttons
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(
-                                    new List<BoardPosition> {hexPos},
-                                    MovementType.Cannon,
-                                    movementDirection: (Direction) board.GetDirection(selected[0], hexHit, movementDirections.ToArray())
-                                );
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], MovementType.Cannon);
                                 // Reset movement directions
                                 movementDirections = new List<int>();
                             }
                             else if (movementType == MovementType.V) 
                             {
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(new List<BoardPosition> {hexPos}, MovementType.V);
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], MovementType.V);
                             }
                             else if (movementType == MovementType.Contiguous) 
                             {
@@ -730,9 +728,10 @@ public class GameManager : MonoBehaviour
     {
         // Turns off moving
         selectedMoving = false;
-        // Unoutlines and deselects all
+        // Unoutlines and deselects all hexes
         board.DehighlightAllHexes();
         DeselectAllHexes();
+        stepsTo = new Dictionary<GameObject, List<BoardPosition>>();
         // Resets all buttons to interactable
         ChangeButtons(true);
     }
@@ -834,6 +833,7 @@ public class GameManager : MonoBehaviour
                         color = 2;
                     }
                     board.OutlineHex(hex, color);
+                    stepsTo[hex] = new List<BoardPosition> {hex.GetComponent<BoardPosition>()};
                 }
             }
         }
@@ -926,6 +926,7 @@ public class GameManager : MonoBehaviour
                 // This if for if piece is the end of multiple lines
                 foreach (int direction in directions)
                 {
+                    List<BoardPosition> steps = new List<BoardPosition>();
                     hex = selected[0];
                     // Store direction for moving
                     movementDirections.Add(direction);
@@ -948,6 +949,10 @@ public class GameManager : MonoBehaviour
                             {
                                 // Sets current hex to hex to the direction of the past hex
                                 hex = hex.GetComponent<Hex>().neighbors[direction];
+                                // Adds current hex to steps
+                                steps.Add(hex.GetComponent<BoardPosition>());
+                                // Set steps to current hex
+                                stepsTo[hex] = new List<BoardPosition>(steps);
                                 // Outline hex
                                 board.OutlineHex(hex, 1);
                                 // If there's a piece on the current hex and it is stacked
@@ -1030,9 +1035,14 @@ public class GameManager : MonoBehaviour
                     // Loops through each V
                     foreach (int[] V in Vs)
                     {
+                        // Get starting BoardPosition
                         BoardPosition position = selected[0].GetComponent<BoardPosition>();
                         int z = position.z;
                         int x = position.x;
+
+                        // List of steps taken
+                        List<BoardPosition> steps = new List<BoardPosition>();
+
                         // Loops as many times as the smallest amount of pieces in either part of the V
                         // Since we revered the direction earlier we need to re-reverse it
                         for (int i = 0; i < Math.Min(lines[board.GetOppositeDirection(V[0])].Count, lines[board.GetOppositeDirection(V[1])].Count); i++)
@@ -1071,6 +1081,8 @@ public class GameManager : MonoBehaviour
                             // Make sure we don't go over the edge of the board
                             try
                             {
+                                steps.Add(board.hexDex[z, x].GetComponent<BoardPosition>());
+                                stepsTo[board.hexDex[z, x]] = new List<BoardPosition>(steps);
                                 board.OutlineHex(board.hexDex[z, x], 1);
                             }
                             catch (IndexOutOfRangeException)

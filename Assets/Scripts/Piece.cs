@@ -20,8 +20,6 @@ public class Piece : MonoBehaviour
     private bool canHit;
     // The height of a piece, how high each piece should stack
     public Vector3 stackingHeight;
-    // The last position of the piece
-    public Vector3 lastPosition;
     // The position that the piece needs to move to
     private List<Vector3> targets = new List<Vector3>();
     // The piece this piece is stacking onto (if applicable)
@@ -95,30 +93,25 @@ public class Piece : MonoBehaviour
         }
     }
 
-    /// <summary>Moves a piece to a new location</summary>
-    /// <param name = "targets">list of hexes to travel by, final location should be last element in the list</param>
-    /// <param name = "movementType">the type of movement</param>
-    /// <param name = "canStack">whether or not the piece can stack during this movement</param>
-    /// <param name = "movementDirection">the direction the piece is moving if the piece is moving multiple hexes at a time in a straight line</param>
+    /// <summary>Moves a piece to a new location.</summary>
+    /// <param name = "steps">List of hexes to travel by. The final location should be last element in the list, and if the piece bounces off of a stack, it will be 
+    /// second to last.</param>
+    /// <param name = "movementType">The type of movement.</param>
     public void Move(
         // List of targets to move to
-        List<BoardPosition> targets,
+        List<BoardPosition> steps,
         // Movement type
-        MovementType movementType,
-        // Whether or not the piece is allowed to stack during this movement
-        bool canStack = false,
-        // The direction that the multiple hex move (if there is one) is going in
-        Direction movementDirection = 0
+        MovementType movementType
     )
     {
         // The new position should be at the final target position
-        BoardPosition newPos = targets[targets.Count - 1];
+        BoardPosition newPos = steps[steps.Count - 1];
         // Initialize stacking variable
         bool stacking = false;
 
         // Reassign the pieces on the hexes if the piece is not stacking
         // Stacking case
-        if (canStack && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece != null && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.tag == tag)
+        if (movementType == MovementType.Single && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece != null && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.tag == tag)
         {
             stacking = true;
             // Make old hex have no pieces
@@ -137,46 +130,22 @@ public class Piece : MonoBehaviour
         // Attacking a stack and multiple hex moving
         else if (movementType == MovementType.Cannon || movementType == MovementType.V)
         {
+            // newPos should be the second to last position since it is bouncing off
+            newPos = steps[steps.Count - 2];
             // Assign this piece to new hex
-            board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].GetComponent<Hex>().piece = gameObject;
+            board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
             // Make old hex have no pieces
             board.hexDex[GetComponent<BoardPosition>().z, GetComponent<BoardPosition>().x].GetComponent<Hex>().piece = null;
             stacking = false;
         }
 
-        // Reassign board position if this piece is not attacking a stack or doing a multiple hex movement and bouncing off
-        if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount <= 1 
-            || stacking 
-            || transform.IsChildOf(board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform)
-            || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == gameObject)
-        {
-            // Reassign the piece's x and z values
-            GetComponent<BoardPosition>().z = newPos.z;
-            GetComponent<BoardPosition>().x = newPos.x;
-        }
-        // If the piece is attacking a stack, is it doing a multiple hex move?
-        else if (movementType == MovementType.Cannon || movementType == MovementType.V)
-        {
-            // Reassign position to one hex short of the target
-            BoardPosition bouncingOnto;
-            bouncingOnto = board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].GetComponent<BoardPosition>();
-            GetComponent<BoardPosition>().x = bouncingOnto.x;
-            GetComponent<BoardPosition>().z = bouncingOnto.z;
-        }
+        // Reassign the piece's x and z values
+        GetComponent<BoardPosition>().z = newPos.z;
+        GetComponent<BoardPosition>().x = newPos.x;
 
-        foreach (BoardPosition target in targets)
+        foreach (BoardPosition target in steps)
         {
             this.targets.Add(board.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
-        }
-
-        // Set last position
-        if (!(movementType == MovementType.Cannon || movementType == MovementType.V))
-        {
-            lastPosition = transform.position;
-        }
-        else
-        {
-            lastPosition = gameManager.board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().neighbors[board.GetOppositeDirection((int) movementDirection)].transform.position + new Vector3(0f, transform.position.y, 0f);
         }
 
         // Stacking 
@@ -225,8 +194,9 @@ public class Piece : MonoBehaviour
                 pieceToDestroy = otherPiece.transform.GetChild(otherPiece.transform.childCount - 1).gameObject;
                 // Unparent piece from stack to prevent a deleted object from being referenced
                 pieceToDestroy.transform.SetParent(null);
-                // Update target to last position
-                targets[0] = lastPosition; 
+                // Update target to proper position
+                BoardPosition properPos = GetComponent<BoardPosition>();
+                targets[0] = board.hexDex[properPos.z, properPos.x].transform.position + new Vector3(0f, transform.position.y, 0f); 
                 // Piece cannot damage other pieces while moving back to last position
                 canHit = false;
             }
