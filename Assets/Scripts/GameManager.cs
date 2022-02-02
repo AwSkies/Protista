@@ -561,12 +561,10 @@ public class GameManager : MonoBehaviour
                             {
                                 // Move piece and reset buttons
                                 selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(new List<BoardPosition> {hexPos}, MovementType.Single, canStack: true);
-                                ChangeButtons(MovementType.Single, true);
                             }
                             else if (movementType == MovementType.Wave) 
                             {
                                 // Future movement code
-                                ChangeButtons(MovementType.Wave, true);
                             }
                             else if (movementType == MovementType.Cannon) 
                             {
@@ -576,14 +574,12 @@ public class GameManager : MonoBehaviour
                                     MovementType.Cannon,
                                     movementDirection: (Direction) board.GetDirection(selected[0], hexHit, movementDirections.ToArray())
                                 );
-                                ChangeButtons(MovementType.Cannon, true);
                                 // Reset movement directions
                                 movementDirections = new List<int>();
                             }
                             else if (movementType == MovementType.V) 
                             {
                                 selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(new List<BoardPosition> {hexPos}, MovementType.V);
-                                ChangeButtons(MovementType.V, true);
                             }
                             else if (movementType == MovementType.Contiguous) 
                             {
@@ -601,17 +597,12 @@ public class GameManager : MonoBehaviour
                                 // Move piece
                                 // Move piece and reset buttons
                                 selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(targets, MovementType.Contiguous);
-                                ChangeButtons(MovementType.Contiguous, true);
                                 // Reset variables
                                 contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
                                 contiguousVisits = new List<GameObject>();
                                 directionsList   = new List<int>();
                             }
-                            // Turns off moving
-                            selectedMoving = false;
-                            // Unoutlines and deselects all
-                            board.DehighlightAllHexes();
-                            DeselectAllHexes();
+                            EndMove();
                         }
                     }
                 }
@@ -634,19 +625,7 @@ public class GameManager : MonoBehaviour
         // Deselect all hexes or movement option with right click
         if (Input.GetMouseButton(1))
         {
-            DeselectAllHexes();
-            // Cancel movement option without clicking button
-            if (selectedMoving)
-            {
-                // Find button still interactable and reset buttons
-                for (int i = 0; i < buttons.Length; i++)
-                {
-                    if (buttons[i].GetComponent<Button>().interactable)
-                    {
-                        NotMoving((MovementType) i);
-                    }
-                }
-            }
+            EndMove();
         }
     }
 
@@ -737,11 +716,29 @@ public class GameManager : MonoBehaviour
         );
     }
 
+    /// <summary>Starts a move of the specified type by setting buttons and variables</summary>
+    private void StartMove(MovementType movementT)
+    {
+        // Toggles moving and sets movement type
+        selectedMoving = true;
+        movementType = movementT;
+        ChangeButtons(false, movementT);
+    }
 
+    /// <summary>Ends a move and resets selections, highlights, and variables.</summary>
+    public void EndMove()
+    {
+        // Turns off moving
+        selectedMoving = false;
+        // Unoutlines and deselects all
+        board.DehighlightAllHexes();
+        DeselectAllHexes();
+        // Resets all buttons to interactable
+        ChangeButtons(true);
+    }
     #endregion
 
     #region Functions for moving
-    #region Moving buttons
     /// <summary>Displays text when a movement option is invalid</summary>
     /// <param name = "error">the text (which should be a description of the error) to display; default value is <c>"Invalid Movement Option"</c></param>
     private void InvalidMovementOptionDisplay(string error = "Invalid Movement Option")
@@ -754,7 +751,7 @@ public class GameManager : MonoBehaviour
     /// <summary>Changes clickable status of every movement button except for the one specified</summary>
     /// <param name = "button">movement button to not change the status of</param>
     /// <param name = "on">whether to turn the buttons on or off; <c>true</c> corresponds to on and <c>false</c> corresponds to off</param>
-    private void ChangeButtons(MovementType button, bool on)
+    private void ChangeButtons(bool on, MovementType button = (MovementType)(-1))
     {
         for (int i = 0; i < buttons.Length; i++)
         {
@@ -805,9 +802,7 @@ public class GameManager : MonoBehaviour
     {
         if (selectedMoving)
         {
-            selectedMoving = false;
-            ChangeButtons(button, true);
-            board.DehighlightAllHexes(selected);
+            EndMove();
             return false;
         }
         else
@@ -822,10 +817,7 @@ public class GameManager : MonoBehaviour
         // Makes sure only one piece is selected and we aren't already trying to move
         if (!NothingSelected() && OnlyOneSelected() && NotMoving(MovementType.Single))
         {
-            // Toggles moving and sets movement type
-            selectedMoving = true;
-            movementType = MovementType.Single;
-            ChangeButtons(MovementType.Single, false);
+            StartMove(MovementType.Single);
             // Loops through all neighbors and outlines them as valid moves
             foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors)
             {
@@ -895,10 +887,7 @@ public class GameManager : MonoBehaviour
                 // Check if there are valid directions
                 if (validDirections.Count > 0)
                 {
-                    // Toggles moving and sets movement type
-                    selectedMoving = !selectedMoving;
-                    movementType = MovementType.Wave;
-                    ChangeButtons(MovementType.Wave, !selectedMoving);
+                    StartMove(MovementType.Wave);
                     // Future code that checks and highlights possible moves
                 }
                 else
@@ -932,11 +921,7 @@ public class GameManager : MonoBehaviour
             // Make sure that the piece has at least one line and is not only in the middle of line(s)
             if (directions.Count != 0)
             {
-                // Toggles moving and sets movement type
-                selectedMoving = true;
-                movementType = MovementType.Cannon;
-                ChangeButtons(MovementType.Cannon, false);
-
+                StartMove(MovementType.Cannon);
                 // Loop through all directions piece can move
                 // This if for if piece is the end of multiple lines
                 foreach (int direction in directions)
@@ -1032,11 +1017,7 @@ public class GameManager : MonoBehaviour
                 // If any valid Vs are found
                 if (Vs.Count != 0)
                 {
-                    // Toggles moving and sets movement type
-                    selectedMoving = true;
-                    movementType = MovementType.V;
-                    ChangeButtons(MovementType.V, false);
-
+                    StartMove(MovementType.V);
                     // Loops through each V and reverses its direction (since Vs point away from direction they should be firing)
                     for (int i = 0; i < Vs.Count; i++)
                     {
@@ -1053,7 +1034,8 @@ public class GameManager : MonoBehaviour
                         int z = position.z;
                         int x = position.x;
                         // Loops as many times as the smallest amount of pieces in either part of the V
-                        for (int i = 0; i < Math.Min(lines[V[0]].Count, lines[V[1]].Count); i++)
+                        // Since we revered the direction earlier we need to re-reverse it
+                        for (int i = 0; i < Math.Min(lines[board.GetOppositeDirection(V[0])].Count, lines[board.GetOppositeDirection(V[1])].Count); i++)
                         {
                             // If V is pointing straight up
                             if (board.DirectionIsTop(V[0]) && board.DirectionIsTop(V[1]))
@@ -1087,7 +1069,7 @@ public class GameManager : MonoBehaviour
                                 }
                             }
                             board.OutlineHex(board.hexDex[z, x], 0);
-                        }
+                            }
                     }
                 }
                 else
@@ -1116,10 +1098,7 @@ public class GameManager : MonoBehaviour
             // Makes sure there are contiguous pieces
             if (contiguousHexes.Count != 0)
             {
-                // Toggles moving and sets movement type
-                selectedMoving = true;
-                movementType = MovementType.Contiguous;
-                ChangeButtons(MovementType.Contiguous, false);
+                StartMove(MovementType.Contiguous);
                 // Go through every found piece
                 foreach (GameObject hex in contiguousHexes.Keys)
                 {
@@ -1219,7 +1198,6 @@ public class GameManager : MonoBehaviour
             directionsList.RemoveAt(directionsList.Count - 1);
         }
     }
-    #endregion
     #endregion
     #endregion
 }
