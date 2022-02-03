@@ -7,9 +7,10 @@ using TMPro;
 public class Piece : MonoBehaviour
 {
     #region Prefabs and scene references
-    public GameManager gameManager;
-    public Board board;
-    public GameObject canvas;
+    private GameManager gameManager;
+    private Board board;
+    [SerializeField]
+    private GameObject canvas;
     #endregion
 
     // Variables for moving animation
@@ -106,6 +107,8 @@ public class Piece : MonoBehaviour
     {
         // The new position should be at the final target position
         BoardPosition newPos = steps[steps.Count - 1];
+        // Cache current position
+        BoardPosition currentPos = GetComponent<BoardPosition>();
         // Initialize stacking variable
         bool stacking = false;
 
@@ -115,37 +118,49 @@ public class Piece : MonoBehaviour
         {
             stacking = true;
             // Make old hex have no pieces
-            board.hexDex[GetComponent<BoardPosition>().z, GetComponent<BoardPosition>().x].GetComponent<Hex>().piece = null;
+            board.hexDex[currentPos.z, currentPos.x].GetComponent<Hex>().piece = null;
         }
         // Normal movement or attacking a single piece (not stacking or attacking a stack) case
         // If there's no piece or the piece on the hex has no pieces stacked on it
         else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount <= 1)
         {
-            stacking = false;
             // Assign this piece to new hex
             board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
             // Make old hex have no pieces
-            board.hexDex[GetComponent<BoardPosition>().z, GetComponent<BoardPosition>().x].GetComponent<Hex>().piece = null;
+            board.hexDex[currentPos.z, currentPos.x].GetComponent<Hex>().piece = null;
         }
         // Attacking a stack and multiple hex moving
         else if (movementType == MovementType.Cannon || movementType == MovementType.V)
         {
-            // newPos should be the second to last position since it is bouncing off
-            newPos = steps[steps.Count - 2];
-            // Assign this piece to new hex
-            board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
-            // Make old hex have no pieces
-            board.hexDex[GetComponent<BoardPosition>().z, GetComponent<BoardPosition>().x].GetComponent<Hex>().piece = null;
-            stacking = false;
+            // If this piece is attacking a stacked piece more than one step away
+            if (steps.Count > 1) 
+            {
+                // newPos should be the second to last position since it is bouncing off
+                newPos = steps[steps.Count - 2];
+                // Assign this piece to new hex
+                board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
+                // Make old hex have no pieces
+                board.hexDex[currentPos.z, currentPos.x].GetComponent<Hex>().piece = null;
+            }
+            else
+            {
+                // The piece is just bouncing back to where it already was
+                newPos = currentPos;
+            }
+        }
+        // Attacking a stack and moving normally
+        else
+        {
+            newPos = currentPos;
         }
 
         // Reassign the piece's x and z values
-        GetComponent<BoardPosition>().z = newPos.z;
-        GetComponent<BoardPosition>().x = newPos.x;
+        currentPos.z = newPos.z;
+        currentPos.x = newPos.x;
 
         foreach (BoardPosition target in steps)
         {
-            this.targets.Add(board.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
+            targets.Add(board.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
         }
 
         // Stacking 
@@ -158,9 +173,9 @@ public class Piece : MonoBehaviour
 
             // Make stack offset for stacking on a stack
             Vector3 stackOffset = stackingHeight * stackCount;
-            for (int i = 0; i < this.targets.Count; i++)
+            for (int i = 0; i < targets.Count; i++)
             {
-                this.targets[i] += stackOffset;
+                targets[i] += stackOffset;
             }
         }
 
@@ -184,6 +199,8 @@ public class Piece : MonoBehaviour
             && targets.Count == 1
             // and the piece can damage other pieces
             && canHit
+            // and the piece hit can be damaged
+            // && otherPiece.damageable
         )
         {
             GameObject pieceToDestroy;

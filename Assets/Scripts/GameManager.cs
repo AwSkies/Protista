@@ -561,7 +561,7 @@ public class GameManager : MonoBehaviour
                             // Checks movement option and executes proper move when clicked
                             if (movementType == MovementType.Single) 
                             {
-                                // Move piece and reset buttons
+                                // Move piece
                                 selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], MovementType.Single);
                             }
                             else if (movementType == MovementType.Wave) 
@@ -570,7 +570,7 @@ public class GameManager : MonoBehaviour
                             }
                             else if (movementType == MovementType.Cannon) 
                             {
-                                // Move piece and reset buttons
+                                // Move piece
                                 selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], MovementType.Cannon);
                                 // Reset movement directions
                                 movementDirections = new List<int>();
@@ -593,7 +593,6 @@ public class GameManager : MonoBehaviour
                                     targets.Add(hex.GetComponent<BoardPosition>());
                                 }
                                 // Move piece
-                                // Move piece and reset buttons
                                 selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(targets, MovementType.Contiguous);
                                 // Reset variables
                                 contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
