@@ -195,12 +195,8 @@ public class Piece : MonoBehaviour
             && !otherPiece.moving
             // and this piece the bottom of a stack or has no pieces on top of it
             && (transform.childCount > 1 || transform.position.y == gameManager.pieceVertical.y)
-            // and this is the final position the piece is going to go in
-            && targets.Count == 1
             // and the piece can damage other pieces
             && canHit
-            // and the piece hit can be damaged
-            // && otherPiece.damageable
         )
         {
             GameObject pieceToDestroy;
