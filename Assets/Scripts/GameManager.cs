@@ -696,7 +696,8 @@ public class GameManager : MonoBehaviour
 
     /// <summary>Places a movement icon above a hex</summary>
     /// <param name = "hex">the hex to place the movement icon above</param>
-    /// <param name = "key">the type of movement icon to place; can be either <c>"attack"</c> (default value) for the attacking icon or <c>"stack"</c> for the stacking icon</param>
+    /// <param name = "key">the type of movement icon to place; can be either <c>"attack"</c> (default value) for the attacking icon or 
+    /// <c>"stack"</c> for the stacking icon</param>
     private void PlaceIcon(GameObject hex, string key = "attack")
     {
         GameObject icon = null;
