@@ -715,7 +715,7 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>Ends a move and resets selections, highlights, and variables.</summary>
-    public void EndMove()
+    private void EndMove()
     {
         // Turns off moving
         selectedMoving = false;
