@@ -446,15 +446,13 @@ public class GameManager : MonoBehaviour
                             PlaceIcon(hexHit);
                         }
                     }
-                    else if (movementType == MovementType.Cannon)
+                    else if (movementType == MovementType.Cannon || movementType == MovementType.V)
                     {
-                        // Get direction to put arrows in
-                        int direction = board.GetDirection(hex, hexHit, movementDirections.ToArray());
                         // Place arrows up to hit hex
-                        foreach (BoardPosition step in stepsTo[hexHit])
+                        for (int i = 0; i < stepsTo[hexHit].Count - 1; i++)
                         {
                             // Get hex
-                            GameObject hex = board.hexDex[step.z, step.x];
+                            GameObject hex = board.hexDex[stepsTo[hexHit][i].z, stepsTo[hexHit][i].x];
                             // Cache hex component
                             Hex hexComponent = hex.GetComponent<Hex>();
                             // If there are pieces on this hex add attack icon
@@ -468,8 +466,8 @@ public class GameManager : MonoBehaviour
                                     break;
                                 }
                             }
-                            // Place arrow between current and previous hex
-                            PlaceArrow(hex.GetComponent<Hex>().neighbors[board.GetOppositeDirection(direction)], hex);
+                            // Place arrow between current and next hex
+                            PlaceArrow(hex, board.hexDex[stepsTo[hexHit][i + 1].z, stepsTo[hexHit][i + 1].x]);
                         }
                     }
                     else if (movementType == MovementType.Wave)
@@ -503,10 +501,6 @@ public class GameManager : MonoBehaviour
                         {
                             PlaceIcon(hexHit);
                         }
-                    }
-                    else if (movementType == MovementType.V)
-                    {
-                        
                     }
                 }
             }
