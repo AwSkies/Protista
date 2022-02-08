@@ -674,20 +674,20 @@ public class GameManager : MonoBehaviour
 
     /// <summary>Places a movement icon above a hex</summary>
     /// <param name = "hex">the hex to place the movement icon above</param>
-    /// <param name = "key">the type of movement icon to place; can be either <c>"attack"</c> (default value) for the attacking icon or 
+    /// <param name = "type">the type of movement icon to place; can be either <c>"attack"</c> (default value) for the attacking icon or 
     /// <c>"stack"</c> for the stacking icon</param>
-    private void PlaceIcon(GameObject hex, string key = "attack")
+    private void PlaceIcon(GameObject hex, string type = "attack")
     {
         GameObject icon = null;
-        if (key == "attack")
+        if (type == "attack")
         {
             icon = attackIcon;
         }
-        else if (key == "stack")
+        else if (type == "stack")
         {
             icon = stackIcon;
         }
-        movementIcons[key].Add(
+        movementIcons[type].Add(
             Instantiate(icon, movementIconVertical + hex.GetComponent<Hex>().piece.transform.position, Quaternion.identity)
         );
     }
