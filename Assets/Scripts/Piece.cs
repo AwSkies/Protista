@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -110,11 +111,11 @@ public class Piece : MonoBehaviour
             // If a piece collides with another piece of the opposite color 
             (otherObj.gameObject.tag == "black" || otherObj.gameObject.tag == "white") && otherObj.gameObject.tag != tag
             // and this piece is not stacked
-            && transform.parent == null;
+            && transform.parent == null
             // and the piece can damage other pieces
             && canHit
             // and piece hit can be damaged (all highlighted pieces are the in path that the piece can travel and are able to be damaged)
-            && board.highlighted.Contains(hexDex[position.z, position.x])
+            && board.highlighted.Contains(board.hexDex[position.z, position.x])
         )
         {
             GameObject pieceToDestroy;
@@ -228,7 +229,7 @@ public class Piece : MonoBehaviour
         }
 
         // Calculate a speed for this movement
-        speed = baseSpeed * steps.Count * (Math.pow(2.0, -(steps.Count - 2)) + 1);
+        speed = (float) (baseSpeed * steps.Count * (Math.Pow(2.0, -(steps.Count - 2)) + 1));
         // Piece is now moving to its next position
         moving = true;
         // Piece can damage other pieces
