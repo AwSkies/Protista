@@ -937,29 +937,31 @@ public class GameManager : MonoBehaviour
                         // Makes sure the hexes down the board exist
                         try
                         {
+                            // Cache hex component
+                            Hex hexComponent = hex.GetComponent<Hex>();
                             // Checks and highlights valid moves
                             // Make sure the hex down the board exists
-                            if (hex.GetComponent<Hex>().neighbors[direction] != null
-                                // Makes sure no pieces of the same color are blocking the way
-                                // Checks if there's a piece on the hex
-                                && !(hex.GetComponent<Hex>().neighbors[direction].GetComponent<Hex>().piece != null 
-                                    // Checks if the piece on hex is the same color as the first piece in the line
-                                    && hex.GetComponent<Hex>().neighbors[direction].GetComponent<Hex>().piece.tag 
-                                        == lines[direction][0].GetComponent<Hex>().piece.tag))
+                            if (hexComponent.neighbors[direction] != null)
                             {
-                                // Sets current hex to hex to the direction of the past hex
-                                hex = hex.GetComponent<Hex>().neighbors[direction];
-                                // Adds current hex to steps
-                                steps.Add(hex.GetComponent<BoardPosition>());
-                                // Set steps to current hex
-                                stepsTo[hex] = new List<BoardPosition>(steps);
-                                // Outline hex
-                                board.OutlineHex(hex, 1);
-                                // If there's a piece on the current hex and it is stacked
-                                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.transform.childCount > 1)
+                                int positionStatus = selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().CanMoveThrough(hexComponent.neighbors[direction].GetComponent<BoardPosition>());
+                                // Checks if the hex can move through the position
+                                if (positionStatus != 0)
                                 {
-                                    hex.GetComponent<cakeslice.Outline>().color = 2;
-                                    break;
+                                    // Sets current hex to hex to the direction of the past hex
+                                    hex = hexComponent.neighbors[direction];
+                                    hexComponent = hex.GetComponent<Hex>();
+                                    // Adds current hex to steps
+                                    steps.Add(hex.GetComponent<BoardPosition>());
+                                    // Set steps to current hex
+                                    stepsTo[hex] = new List<BoardPosition>(steps);
+                                    // Outline hex
+                                    board.OutlineHex(hex, 1);
+                                    // If there's a piece on the current hex and it is stacked
+                                    if (positionStatus == 1)
+                                    {
+                                        hex.GetComponent<cakeslice.Outline>().color = 2;
+                                        break;
+                                    }
                                 }
                             }
                             // Stop the highlighting, make all moves down the line invalid
@@ -1078,12 +1080,26 @@ public class GameManager : MonoBehaviour
                                     z--;
                                 }
                             }
+                            // Cache hex component
+                            Hex hex = board.hexDex[z, x].GetComponent<Hex>();
                             // Make sure we don't go over the edge of the board
                             try
                             {
-                                steps.Add(board.hexDex[z, x].GetComponent<BoardPosition>());
-                                stepsTo[board.hexDex[z, x]] = new List<BoardPosition>(steps);
-                                board.OutlineHex(board.hexDex[z, x], 1);
+                                int positionStatus = selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().CanMoveThrough(z, x);
+                                // If piece can move through position
+                                if (positionStatus != 0)
+                                {
+                                    // Set steps and outline hex
+                                    steps.Add(board.hexDex[z, x].GetComponent<BoardPosition>());
+                                    stepsTo[board.hexDex[z, x]] = new List<BoardPosition>(steps);
+                                    board.OutlineHex(board.hexDex[z, x], 1);
+                                    // If there's a piece on the current hex and it is stacked
+                                    if (positionStatus == 1)
+                                    {
+                                        hex.GetComponent<cakeslice.Outline>().color = 2;
+                                        break;
+                                    }
+                                }
                             }
                             catch (IndexOutOfRangeException)
                             {
