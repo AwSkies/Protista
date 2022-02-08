@@ -13,14 +13,21 @@ public class Piece : MonoBehaviour
     private GameObject canvas;
     #endregion
 
-    // Variables for moving animation
-    public float speed;
+    #region Constants for editor
+    // Base speed
+    [SerializeField]
+    private float baseSpeed;
+    // The height of a piece, how high each piece should stack
+    [SerializeField]
+    private Vector3 stackingHeight;
+    #endregion
+
+    // Calculated speed based on number of steps
+    private float speed;
     // Whether the piece is moving
-    public bool moving;
+    private bool moving;
     // Whether the piece can damage other pieces
     private bool canHit;
-    // The height of a piece, how high each piece should stack
-    public Vector3 stackingHeight;
     // The position that the piece needs to move to
     private List<Vector3> targets = new List<Vector3>();
     // The piece this piece is stacking onto (if applicable)
@@ -51,6 +58,7 @@ public class Piece : MonoBehaviour
                 {
                     // Stop piece
                     moving = false;
+                    canHit = false;
 
                     #region Stacking stuff
                     // The pieces currently stacked on this piece
@@ -93,17 +101,54 @@ public class Piece : MonoBehaviour
             }
         }
     }
+    
+    void OnCollisionEnter(Collision otherObj)
+    {
+        Piece otherPiece = otherObj.gameObject.GetComponent<Piece>();
+        if (
+            // If a piece collides with another piece of the opposite color 
+            (otherObj.gameObject.tag == "black" || otherObj.gameObject.tag == "white") && otherObj.gameObject.tag != tag
+            // and this piece is not stacked
+            && transform.parent == null;
+            // and the piece can damage other pieces
+            && canHit
+        )
+        {
+            GameObject pieceToDestroy;
+            // If attacking a stack
+            if (otherPiece.transform.childCount > 1)
+            {
+                // Set pieceToDestroy
+                pieceToDestroy = otherPiece.transform.GetChild(otherPiece.transform.childCount - 1).gameObject;
+                // Unparent piece from stack to prevent a deleted object from being referenced
+                pieceToDestroy.transform.SetParent(null);
+                // Update target to proper position
+                BoardPosition properPos = GetComponent<BoardPosition>();
+                targets[0] = board.hexDex[properPos.z, properPos.x].transform.position + new Vector3(0f, transform.position.y, 0f); 
+                // Piece cannot damage other pieces while moving back to last position
+                canHit = false;
+            }
+            // If attacking a single piece
+            else
+            {
+                // Set pieceToDestroy
+                pieceToDestroy = otherObj.gameObject;
+            }
+            // Destroy piece
+            Destroy(pieceToDestroy);
+            // Updates stack count for one less piece (only if the bottom piece still exists since it was a stack)
+            if (otherPiece != null)
+            {
+                otherPiece.UpdateStackCount();
+            }
+        }
+    }
 
     /// <summary>Moves a piece to a new location.</summary>
     /// <param name = "steps">List of hexes to travel by. The final location should be last element in the list, and if the piece bounces off of a stack, it will be 
     /// second to last.</param>
     /// <param name = "movementType">The type of movement.</param>
-    public void Move(
-        // List of targets to move to
-        List<BoardPosition> steps,
-        // Movement type
-        MovementType movementType
-    )
+    public void Move(List<BoardPosition> steps, MovementType movementType)
     {
         // The new position should be at the final target position
         BoardPosition newPos = steps[steps.Count - 1];
@@ -179,54 +224,12 @@ public class Piece : MonoBehaviour
             }
         }
 
+        // Calculate a speed for this movement
+        speed = baseSpeed * steps.Count * (Math.pow(2.0, -(steps.Count - 2)) + 1);
         // Piece is now moving to its next position
         moving = true;
         // Piece can damage other pieces
         canHit = true;
-    }
-
-    void OnCollisionEnter(Collision otherObj)
-    {
-        Piece otherPiece = otherObj.gameObject.GetComponent<Piece>();
-        if (
-            // If a piece collides with another piece of the opposite color 
-            (otherObj.gameObject.tag == "black" || otherObj.gameObject.tag == "white") && otherObj.gameObject.tag != tag 
-            // and that piece is not moving (to prevent both pieces calling this function at the same and destroying each other at the same time)
-            && !otherPiece.moving
-            // and this piece the bottom of a stack or has no pieces on top of it
-            && (transform.childCount > 1 || transform.position.y == gameManager.pieceVertical.y)
-            // and the piece can damage other pieces
-            && canHit
-        )
-        {
-            GameObject pieceToDestroy;
-            // If attacking a stack
-            if (otherPiece.transform.childCount > 1)
-            {
-                // Set pieceToDestroy
-                pieceToDestroy = otherPiece.transform.GetChild(otherPiece.transform.childCount - 1).gameObject;
-                // Unparent piece from stack to prevent a deleted object from being referenced
-                pieceToDestroy.transform.SetParent(null);
-                // Update target to proper position
-                BoardPosition properPos = GetComponent<BoardPosition>();
-                targets[0] = board.hexDex[properPos.z, properPos.x].transform.position + new Vector3(0f, transform.position.y, 0f); 
-                // Piece cannot damage other pieces while moving back to last position
-                canHit = false;
-            }
-            // If attacking a single piece
-            else
-            {
-                // Set pieceToDestroy
-                pieceToDestroy = otherObj.gameObject;
-            }
-            // Destroy piece
-            Destroy(pieceToDestroy);
-            // Updates stack count for one less piece (only if the bottom piece still exists since it was a stack)
-            if (otherPiece != null)
-            {
-                otherPiece.UpdateStackCount();
-            }
-        }
     }
 
     /// <summary>Updates the stack number (stack count) displayed above a piece</summary>
