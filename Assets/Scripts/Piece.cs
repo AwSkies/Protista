@@ -104,6 +104,7 @@ public class Piece : MonoBehaviour
     
     void OnCollisionEnter(Collision otherObj)
     {
+        BoardPosition position = GetComponent<BoardPosition>();
         Piece otherPiece = otherObj.gameObject.GetComponent<Piece>();
         if (
             // If a piece collides with another piece of the opposite color 
@@ -112,6 +113,8 @@ public class Piece : MonoBehaviour
             && transform.parent == null;
             // and the piece can damage other pieces
             && canHit
+            // and piece hit can be damaged (all highlighted pieces are the in path that the piece can travel and are able to be damaged)
+            && board.highlighted.Contains(hexDex[position.z, position.x])
         )
         {
             GameObject pieceToDestroy;
