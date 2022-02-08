@@ -1064,11 +1064,12 @@ public class GameManager : MonoBehaviour
                                     z--;
                                 }
                             }
-                            // Cache hex component
-                            Hex hex = board.hexDex[z, x].GetComponent<Hex>();
                             // Make sure we don't go over the edge of the board
                             try
                             {
+                                // Cache hex component
+                                Hex hex = board.hexDex[z, x].GetComponent<Hex>();
+                                // Find position status
                                 int positionStatus = selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().CanMoveThrough(z, x);
                                 // If piece can move through position
                                 if (positionStatus != 0)
