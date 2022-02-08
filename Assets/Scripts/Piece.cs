@@ -21,6 +21,9 @@ public class Piece : MonoBehaviour
     // The height of a piece, how high each piece should stack
     [SerializeField]
     private Vector3 stackingHeight;
+    // Base of the speed curve
+    [SerializeField]
+    private float speedCurveBase;
     #endregion
 
     // Calculated speed based on number of steps
@@ -229,7 +232,7 @@ public class Piece : MonoBehaviour
         }
 
         // Calculate a speed for this movement
-        speed = (float) (baseSpeed * steps.Count * (Math.Pow(2.0, -(steps.Count - 2)) + 1));
+        speed = (float) (baseSpeed * steps.Count * (Math.Pow(speedCurveBase, -(steps.Count - 2)) + 0.75));
         // Piece is now moving to its next position
         moving = true;
         // Piece can damage other pieces
