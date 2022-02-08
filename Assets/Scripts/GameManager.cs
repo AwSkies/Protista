@@ -448,15 +448,13 @@ public class GameManager : MonoBehaviour
                     }
                     else if (movementType == MovementType.Cannon)
                     {
-                        // Cache hex
-                        GameObject hex = selected[0];
                         // Get direction to put arrows in
                         int direction = board.GetDirection(hex, hexHit, movementDirections.ToArray());
                         // Place arrows up to hit hex
-                        do 
+                        foreach (BoardPosition step in stepsTo[hexHit])
                         {
-                            // Set hex to be next
-                            hex = hex.GetComponent<Hex>().neighbors[direction];
+                            // Get hex
+                            GameObject hex = board.hexDex[step.z, step.x];
                             // Cache hex component
                             Hex hexComponent = hex.GetComponent<Hex>();
                             // If there are pieces on this hex add attack icon
@@ -473,7 +471,6 @@ public class GameManager : MonoBehaviour
                             // Place arrow between current and previous hex
                             PlaceArrow(hex.GetComponent<Hex>().neighbors[board.GetOppositeDirection(direction)], hex);
                         }
-                        while (hex != hexHit);
                     }
                     else if (movementType == MovementType.Wave)
                     {
