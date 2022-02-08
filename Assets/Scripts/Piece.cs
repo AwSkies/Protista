@@ -118,7 +118,7 @@ public class Piece : MonoBehaviour
             // and the piece can damage other pieces
             && canHit
             // and piece hit can be damaged (all highlighted pieces are the in path that the piece can travel and are able to be damaged)
-            && board.highlighted.Contains(board.hexDex[position.z, position.x])
+            && board.damageable.Contains(board.hexDex[position.z, position.x])
         )
         {
             GameObject pieceToDestroy;

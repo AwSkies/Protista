@@ -577,7 +577,7 @@ public class GameManager : MonoBehaviour
                                 contiguousVisits = new List<GameObject>();
                                 directionsList   = new List<int>();
                             }
-                            EndMove();
+                            EndSelection();
                         }
                     }
                 }
@@ -600,7 +600,7 @@ public class GameManager : MonoBehaviour
         // Deselect all hexes or movement option with right click
         if (Input.GetMouseButton(1))
         {
-            EndMove();
+            EndSelection();
         }
     }
 
@@ -693,19 +693,23 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>Starts a move of the specified type by setting buttons and variables</summary>
-    private void StartMove(MovementType movementT)
+    private void StartSelection(MovementType movementT)
     {
         // Toggles moving and sets movement type
         selectedMoving = true;
         movementType = movementT;
         ChangeButtons(false, movementT);
+        // Resets list of damageable from previous move
+        board.damageable = new List<GameObject>();
     }
 
     /// <summary>Ends a move and resets selections, highlights, and variables.</summary>
-    private void EndMove()
+    private void EndSelection()
     {
         // Turns off moving
         selectedMoving = false;
+        // Copies highlighted list to damageable list
+        board.damageable = board.highlighted;
         // Unoutlines and deselects all hexes
         board.DehighlightAllHexes();
         DeselectAllHexes();
@@ -779,7 +783,7 @@ public class GameManager : MonoBehaviour
     {
         if (selectedMoving)
         {
-            EndMove();
+            EndSelection();
             return false;
         }
         else
@@ -794,7 +798,7 @@ public class GameManager : MonoBehaviour
         // Makes sure only one piece is selected and we aren't already trying to move
         if (!NothingSelected() && OnlyOneSelected() && NotMoving())
         {
-            StartMove(MovementType.Single);
+            StartSelection(MovementType.Single);
             // Loops through all neighbors and outlines them as valid moves
             foreach (GameObject hex in selected[0].GetComponent<Hex>().neighbors)
             {
@@ -865,7 +869,7 @@ public class GameManager : MonoBehaviour
                 // Check if there are valid directions
                 if (validDirections.Count > 0)
                 {
-                    StartMove(MovementType.Wave);
+                    StartSelection(MovementType.Wave);
                     // Future code that checks and highlights possible moves
                 }
                 else
@@ -899,7 +903,7 @@ public class GameManager : MonoBehaviour
             // Make sure that the piece has at least one line and is not only in the middle of line(s)
             if (directions.Count != 0)
             {
-                StartMove(MovementType.Cannon);
+                StartSelection(MovementType.Cannon);
                 // Loop through all directions piece can move
                 // This if for if piece is the end of multiple lines
                 foreach (int direction in directions)
@@ -1006,7 +1010,7 @@ public class GameManager : MonoBehaviour
                 // If any valid Vs are found
                 if (Vs.Count != 0)
                 {
-                    StartMove(MovementType.V);
+                    StartSelection(MovementType.V);
                     // Loops through each V and reverses its direction (since Vs point away from direction they should be firing)
                     for (int i = 0; i < Vs.Count; i++)
                     {
@@ -1120,7 +1124,7 @@ public class GameManager : MonoBehaviour
             // Makes sure there are contiguous pieces
             if (contiguousHexes.Count != 0)
             {
-                StartMove(MovementType.Contiguous);
+                StartSelection(MovementType.Contiguous);
                 // Go through every found piece
                 foreach (GameObject hex in contiguousHexes.Keys)
                 {

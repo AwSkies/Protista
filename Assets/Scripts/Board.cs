@@ -10,6 +10,7 @@ public class Board : MonoBehaviour
     public GameObject[,] hexDex;
     // List of highlighted hexes
     public List<GameObject> highlighted = new List<GameObject>();
+    public List<GameObject> damageable = new List<GameObject>();
 
     #region Utility functions for directions and direction manipulation
     /// <summary>Returns direction that is offset from the current direction. Giving a positive offset goes clockwise and a negative offset goes counterclockwise.</summary>
