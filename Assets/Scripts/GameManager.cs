@@ -446,14 +446,15 @@ public class GameManager : MonoBehaviour
                     }
                     else if (movementType == MovementType.Cannon || movementType == MovementType.V)
                     {
+                        List<BoardPosition> steps = stepsTo[hexHit];
                         // Place arrows up to hit hex
-                        for (int i = 0; i < stepsTo[hexHit].Count - 1; i++)
+                        for (int i = 0; i < steps.Count - 1; i++)
                         {
                             // Get hex
-                            GameObject hex = board.hexDex[stepsTo[hexHit][i].z, stepsTo[hexHit][i].x];
+                            GameObject hex = board.hexDex[steps[i + 1].z, steps[i + 1].x];
                             // Cache hex component
                             Hex hexComponent = hex.GetComponent<Hex>();
-                            // If there are pieces on this hex add attack icon
+                            // If there are pieces on this hex and it's not the selected hex
                             if (hexComponent.piece != null)
                             {
                                 // Add attack icon
@@ -465,7 +466,7 @@ public class GameManager : MonoBehaviour
                                 }
                             }
                             // Place arrow between current and next hex
-                            PlaceArrow(hex, board.hexDex[stepsTo[hexHit][i + 1].z, stepsTo[hexHit][i + 1].x]);
+                            PlaceArrow(board.hexDex[steps[i].z, steps[i].x], hex);
                         }
                     }
                     else if (movementType == MovementType.Wave)
@@ -908,8 +909,12 @@ public class GameManager : MonoBehaviour
                 // This if for if piece is the end of multiple lines
                 foreach (int direction in directions)
                 {
-                    List<BoardPosition> steps = new List<BoardPosition>();
+                    // Set source hex as first hex
                     hex = selected[0];
+                    // Initialize step list for this direction
+                    List<BoardPosition> steps = new List<BoardPosition>();
+                    // Set source hex as first step
+                    steps.Add(hex.GetComponent<BoardPosition>());
 
                     // Highlight possible moves
                     for (int i = 0; i < lines[board.GetOppositeDirection(direction)].Count; i++)
@@ -1030,6 +1035,8 @@ public class GameManager : MonoBehaviour
 
                         // List of steps taken
                         List<BoardPosition> steps = new List<BoardPosition>();
+                        // Set source hex as first step
+                        steps.Add(position);
 
                         // Loops as many times as the smallest amount of pieces in either part of the V
                         // Since we revered the direction earlier we need to re-reverse it

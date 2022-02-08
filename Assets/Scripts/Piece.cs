@@ -184,21 +184,12 @@ public class Piece : MonoBehaviour
         // Attacking a stack and multiple hex moving
         else if (movementType == MovementType.Cannon || movementType == MovementType.V)
         {
-            // If this piece is attacking a stacked piece more than one step away
-            if (steps.Count > 1) 
-            {
-                // newPos should be the second to last position since it is bouncing off
-                newPos = steps[steps.Count - 2];
-                // Assign this piece to new hex
-                board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
-                // Make old hex have no pieces
-                board.hexDex[currentPos.z, currentPos.x].GetComponent<Hex>().piece = null;
-            }
-            else
-            {
-                // The piece is just bouncing back to where it already was
-                newPos = currentPos;
-            }
+            // newPos should be the second to last position since it is bouncing off
+            newPos = steps[steps.Count - 2];
+            // Make old hex have no pieces
+            board.hexDex[currentPos.z, currentPos.x].GetComponent<Hex>().piece = null;
+            // Assign this piece to new hex
+            board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
         }
         // Attacking a stack and moving normally
         else
