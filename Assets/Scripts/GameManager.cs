@@ -96,8 +96,6 @@ public class GameManager : MonoBehaviour
     // The hex hit with a raycast on the previous frame
     private GameObject previousHexHit;
 
-    // The direction the piece is moving for multiple piece moving
-    private List<int> movementDirections = new List<int>();
     // The hexes that a move would take a piece along if it were to move to a certain hex
     private Dictionary<GameObject, List<BoardPosition>> stepsTo = new Dictionary<GameObject, List<BoardPosition>>();
     // The amount of time left to rescind the invalid movement option text
@@ -550,25 +548,14 @@ public class GameManager : MonoBehaviour
                         if (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2))
                         {
                             // Checks movement option and executes proper move when clicked
-                            if (movementType == MovementType.Single) 
+                            if (movementType == MovementType.Single || movementType == MovementType.Cannon || movementType == MovementType.V) 
                             {
                                 // Move piece
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], MovementType.Single);
+                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], movementType);
                             }
                             else if (movementType == MovementType.Wave) 
                             {
                                 // Future movement code
-                            }
-                            else if (movementType == MovementType.Cannon) 
-                            {
-                                // Move piece
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], MovementType.Cannon);
-                                // Reset movement directions
-                                movementDirections = new List<int>();
-                            }
-                            else if (movementType == MovementType.V) 
-                            {
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], MovementType.V);
                             }
                             else if (movementType == MovementType.Contiguous) 
                             {
@@ -919,8 +906,6 @@ public class GameManager : MonoBehaviour
                 {
                     List<BoardPosition> steps = new List<BoardPosition>();
                     hex = selected[0];
-                    // Store direction for moving
-                    movementDirections.Add(direction);
 
                     // Highlight possible moves
                     for (int i = 0; i < lines[board.GetOppositeDirection(direction)].Count; i++)
