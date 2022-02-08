@@ -934,7 +934,9 @@ public class GameManager : MonoBehaviour
                             // Make sure the hex down the board exists
                             if (hexComponent.neighbors[direction] != null)
                             {
-                                int positionStatus = selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().CanMoveThrough(hexComponent.neighbors[direction].GetComponent<BoardPosition>());
+                                int positionStatus = selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().CanMoveThrough(
+                                    hexComponent.neighbors[direction].GetComponent<BoardPosition>()
+                                );
                                 // Checks if the hex can move through the position
                                 if (positionStatus != 0)
                                 {
@@ -953,6 +955,10 @@ public class GameManager : MonoBehaviour
                                         hex.GetComponent<cakeslice.Outline>().color = 2;
                                         break;
                                     }
+                                }
+                                else
+                                {
+                                    break;
                                 }
                             }
                             // Stop the highlighting, make all moves down the line invalid
@@ -1090,6 +1096,10 @@ public class GameManager : MonoBehaviour
                                         hex.GetComponent<cakeslice.Outline>().color = 2;
                                         break;
                                     }
+                                }
+                                else
+                                {
+                                    break;
                                 }
                             }
                             catch (IndexOutOfRangeException)
