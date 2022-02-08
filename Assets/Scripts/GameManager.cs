@@ -656,21 +656,12 @@ public class GameManager : MonoBehaviour
         // Get the position the arrow will be in
         // Average position of the two hexes plus the vertical offset
         Vector3 iconPosition = ((hex1.transform.position + hex2.transform.position) / 2) + movementIconVertical;
-        // Find multiple of rotation by iterating through and finding which direcion it faces
-        int rotation = 0;
-        for (int i = 0; i < 6; i++)
-        {
-            // If the hex in that direction exists and in that direction is the hex we hit
-            if (hex1.GetComponent<Hex>().neighbors[i] != null
-                && hex1.GetComponent<Hex>().neighbors[i] == hex2)
-            {
-                // Save rotation and end search
-                rotation = i;
-                break;
-            }
-        }
+        // Calculate relative position
+        Vector3 relativePosition = hex2.transform.position - hex1.transform.position;
+        // Calculate relative angle
+        float angle = - (float) (Math.Atan2(relativePosition.z, relativePosition.x) * (180/Math.PI));
         // Spawn movement arrow
-        movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, (float)(rotation * 60))));
+        movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, angle)));
     }
 
     /// <summary>Places a movement icon above a hex</summary>
