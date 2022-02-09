@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -820,51 +821,81 @@ public class GameManager : MonoBehaviour
         {
             if (selected.Count >= 3)
             {
-                // List for storing directions
-                List<int> directions = new List<int>();
-                // Cache neighbors array
-                GameObject[] neighbors = selected[0].GetComponent<Hex>().neighbors;
-                // Loop through each hex in each direction off the first selected hex and get the directions they were in
-                for (int i = 0; i < 6; i++)
+                // List of hexes that we have seen and validated so far
+                // Will be compared to the list of selected to see if they match
+                // If the lists match, then all pieces were seen and validated and we can move on
+                List<GameObject> selectedSeen = new List<GameObject>();
+
+                // Find piece at the end of the wave
+                GameObject end = null;
+                // The direction that the wave starts in from the end
+                int direction = -1;
+                // The piece at the end fo the wave should only have 1 selected neighbor while all others should have 2
+                // Loop through each selected hex
+                foreach (GameObject hex in selected)
                 {
-                    // If there is a piece on the hex and it is selected, save direction
-                    if (neighbors[i] != null && neighbors[i].GetComponent<Hex>().piece != null && selected.Contains(neighbors[i]))
-                    {
-                        directions.Add(i);
-                    }
-                }
-                
-                // Dictionary containing each valid direction and whether it starts with adding to the direction
-                Dictionary<int, bool> validDirections = new Dictionary<int, bool>();
-                // Loop through each direction and check if it's valid
-                foreach (int direction in directions)
-                {
-                    neighbors = selected[0].GetComponent<Hex>().neighbors[direction].GetComponent<Hex>().neighbors;
-                    // Loop through every neighbor hex of the original hex in the directions pieces were found
+                    // Start count
+                    int count = 0;
+                    // Cache neighbors
+                    GameObject[] neighbors = hex.GetComponent<Hex>().neighbors;
+                    // Count how many neighbors are selected
                     for (int i = 0; i < 6; i++)
                     {
-                        // If the hex exists
-                        if (neighbors[i] != null
-                            // and there is a piece on the hex
-                            && neighbors[i].GetComponent<Hex>().piece != null
-                            // and the piece is not the hex we came from
-                            && neighbors[i] != selected[0]
-                            // and the piece is selected
-                            && selected.Contains(neighbors[i])
-                            // and the piece is either one direction up or one direction down from direction we came from
-                            && (board.CycleDirection(i, 1) == direction || board.CycleDirection(i, -1) == direction))
+                        // If hex exists and is selected
+                        if (neighbors[i] != null && selected.Contains(neighbors[i]))
                         {
-                            // Add as a valid direction
-                            validDirections[i] = board.CycleDirection(i, 1) == direction;
+                            // Increment count
+                            count++;
+                            // Set direction to current direction (if this is the hex we're looking for, then this if statement should only trigger once
+                            // since there's only one neighbor that is selected, so the direction should get saved and not overwritten)
+                            direction = i;
                         }
+                    }
+                    // If count is 1, then it is on the end
+                    if (count == 1)
+                    {
+                        // Set this hex as end
+                        end = hex;
+                        break;
                     }
                 }
 
-                // Check if there are valid directions
-                if (validDirections.Count > 0)
+                // If no end hex was found
+                if (end == null || direction == -1)
                 {
-                    StartSelection(MovementType.Wave);
-                    // Future code that checks and highlights possible moves
+                    // Find direction(s) to find the wave in
+                    // Cache end hex component
+                    Hex endHexComponent = end.GetComponent<Hex>();
+                    // Set neighbors to be equal to the neighbors of the hex adjacent to the end hex in the found direction
+                    GameObject[] neighbors = endHexComponent.neighbors[direction].GetComponent<Hex>().neighbors;
+                    // Get directions cycled clockwise and counterclockwise
+                    int directionClockwise = board.CycleDirection(direction, 1);
+                    int directionCounterclockwise = board.CycleDirection(direction, -1);
+                    // Direction to start cycling in
+                    int cycle = 0;
+                    // If the hex in the cycled direction exists and is selected
+                    if (neighbors[directionClockwise] != null && selected.Contains(neighbors[directionCounterclockwise]))
+                    {
+                        cycle = 1;
+                    }
+                    else if (neighbors[directionCounterclockwise] != null && selected.Contains(neighbors[directionCounterclockwise]))
+                    {
+                        cycle = -1;
+                    }
+
+                    // Go up the wave, starting in direction and cycling by cycle and -cycle each time
+                    // <future code goes here>
+
+                    // Check if every selected hex was seen and validated
+                    if (Enumerable.SequenceEqual(selected.OrderBy(e => e), selectedSeen.OrderBy(e => e)))
+                    {
+                        StartSelection(MovementType.Wave);
+                        // Future code that checks and highlights possible moves
+                    }
+                    else
+                    {
+                        InvalidMovementOptionDisplay("Select a wave");
+                    }
                 }
                 else
                 {
