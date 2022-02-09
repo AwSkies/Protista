@@ -828,7 +828,7 @@ public class GameManager : MonoBehaviour
                 for (int i = 0; i < 6; i++)
                 {
                     // If there is a piece on the hex and it is selected, save direction
-                    if (neighbors[i].GetComponent<Hex>().piece != null && selected.Contains(neighbors[i]))
+                    if (neighbors[i] != null && neighbors[i].GetComponent<Hex>().piece != null && selected.Contains(neighbors[i]))
                     {
                         directions.Add(i);
                     }
@@ -843,8 +843,10 @@ public class GameManager : MonoBehaviour
                     // Loop through every neighbor hex of the original hex in the directions pieces were found
                     for (int i = 0; i < 6; i++)
                     {
-                        // If there is a piece on the hex
-                        if (neighbors[i].GetComponent<Hex>().piece != null
+                        // If the hex exists
+                        if (neighbors[i] != null
+                            // and there is a piece on the hex
+                            && neighbors[i].GetComponent<Hex>().piece != null
                             // and the piece is not the hex we came from
                             && neighbors[i] != selected[0]
                             // and the piece is selected
