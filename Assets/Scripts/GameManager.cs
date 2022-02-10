@@ -956,41 +956,75 @@ public class GameManager : MonoBehaviour
                         {
                             // Find the maximum distance we can go in this direction
                             // The amount that the wave can travel in this direction
-                            int min = 0;
+                            int min = int.MaxValue;
                             // The status of the farthest position that it can travel to
-                            int minStatus;
+                            int minStatus = 2;
                             // Loop through each hex in the wave
                             foreach (GameObject waveHex in wave)
                             {
                                 // The nubmer of hexes we've gone out so far
                                 int count = 0;
-                                // The status of the current position
-                                int positionStatus = 2;
                                 // Get hex
                                 GameObject currentHex = waveHex;
+                                // The status of the current position
+                                int positionStatus = -1;
 
                                 // Go out from waveHex in perpendicularDirection until it can't go any farther
-                                while (board.PositionStatus(currentHex.GetComponent<BoardPosition>(), waveHex.GetComponent<Hex>().piece) != 0)
+                                do
                                 {
                                     count++;
                                     // Cache current hex component
-                                    Hex currentHexComponent;
-                                    if (currentHex.GetComponent<Hex>().neighbors[perpendicularDirection] != null)
+                                    Hex currentHexComponent = currentHex.GetComponent<Hex>();
+                                    // Check if the next hex over is null
+                                    if (currentHexComponent.neighbors[perpendicularDirection] != null)
                                     {
-
+                                        // Set up for the next loop
+                                        currentHex = currentHexComponent.neighbors[perpendicularDirection];
+                                        positionStatus = board.PositionStatus(currentHex.GetComponent<BoardPosition>(), waveHex.GetComponent<Hex>().piece);
+                                    }
+                                    // If we went off the board, break
+                                    else
+                                    {
+                                        break;
                                     }
                                 }
-                                
+                                while (positionStatus != 0 && positionStatus != 1);
+
+                                // See if this is the new shortest distance the wave can travel
+                                if (count < min)
+                                {
+                                    min = count;
+                                }
+                                // See if this 
+                                if (positionStatus < minStatus)
+                                {
+                                    minStatus = positionStatus;
+                                }
                             }
 
                             // Highlight hexes out from each hex
                             // Loop through each hex in the wave
                             foreach (GameObject waveHex in wave)
                             {
+                                GameObject currentHex = waveHex;
                                 // Loop out min times for each hex
                                 for (int i = 0; i < min; i++)
                                 {
-                                    // Highlight hex
+                                    // Move to next hex
+                                    currentHex = currentHex.GetComponent<Hex>().neighbors[perpendicularDirection];
+                                    if (currentHex != null)
+                                    {
+                                        // Highlight hex
+                                        int color = 1;
+                                        // If (there's no piece on this hex and this is the last position and the wave will be bouncing off of the end) 
+                                        // or there is a piece on the hex
+                                        if (currentHex.GetComponent<Hex>().piece != null || (currentHex.GetComponent<Hex>().piece == null && i == min - 1 && minStatus == 1))
+                                        {
+                                            // Set to action color
+                                            color = 2;
+                                        }
+                                        board.OutlineHex(currentHex, color);
+                                    }
                                 }
                             }
                         }
