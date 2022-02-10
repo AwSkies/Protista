@@ -876,7 +876,7 @@ public class GameManager : MonoBehaviour
                     // Offset to start cycling in
                     int cycle = 0;
                     // If the hex in the cycled direction exists and is selected
-                    if (neighbors[directionClockwise] != null && selected.Contains(neighbors[directionCounterclockwise]))
+                    if (neighbors[directionClockwise] != null && selected.Contains(neighbors[directionClockwise]))
                     {
                         cycle = 1;
                     }
@@ -900,7 +900,7 @@ public class GameManager : MonoBehaviour
                     // Set initial hex to hex one away from the end of the wave
                     GameObject hex = endHexComponent.neighbors[direction];
                     // Go up the wave, starting in direction and cycling by cycle and -cycle each time
-                    // Neighbors was already set as the nieghbors of the second hex in the wave so we can just continue from there
+                    // Neighbors was already set as the neighbors of the second hex in the wave so we can just continue from there
                     while (selected.Contains(hex))
                     {
                         // Say that we have seen this hex
@@ -909,10 +909,12 @@ public class GameManager : MonoBehaviour
                         // Point to next hex
                         // Cache hex component
                         Hex hexComponent = hex.GetComponent<Hex>();
+                        // Get next direction
+                        int cycledDirection = board.CycleDirection(direction, cycle);
                         // Make sure hex exists
-                        if (hexComponent.neighbors[direction] != null)
+                        if (hexComponent.neighbors[cycledDirection] != null)
                         {
-                            hex = hexComponent.neighbors[board.CycleDirection(direction)];
+                            hex = hexComponent.neighbors[cycledDirection];
                         }
                         else
                         {
@@ -920,10 +922,32 @@ public class GameManager : MonoBehaviour
                         }
                         // Invert cycle for next time through the loop
                         cycle = -cycle;
+                        direction = cycledDirection;
                     }
 
+                    #region Make sure all selected hexes are part of the wave
+                    // Dictionary of all hexes that are selected and whether or not they are in the wave
+                    bool[] selectedInWave = new bool[selected.Count];
+                    for (int i = 0; i < selectedInWave.Length; i++)
+                    {
+                        if (wave.Contains(selected[i]))
+                        {
+                            selectedInWave[i] = true;
+                        }
+                    }
+                    // Whether or not every hex in the selected list is in the wave
+                    bool allSelectedInWave = true;
+                    foreach (bool inWave in selectedInWave)
+                    {
+                        if (!inWave)
+                        {
+                            allSelectedInWave = false;
+                        }
+                    }
+                    #endregion
+
                     // Check if every selected hex was seen and validated
-                    if (Enumerable.SequenceEqual(selected.OrderBy(e => e), wave.OrderBy(e => e)))
+                    if (allSelectedInWave)
                     {
                         StartSelection(MovementType.Wave);
 
@@ -952,7 +976,7 @@ public class GameManager : MonoBehaviour
                                 {
                                     count++;
                                     // Cache current hex component
-                                    Hex currentHexComponent
+                                    Hex currentHexComponent;
                                     if (currentHex.GetComponent<Hex>().neighbors[perpendicularDirection] != null)
                                     {
 
