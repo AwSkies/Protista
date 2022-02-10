@@ -274,4 +274,68 @@ public class Board : MonoBehaviour
         // Resets highlighted back to empty list
         highlighted = new List<GameObject>();
     }
+
+    /// <summary>Checks if the given piece can move through a position.</summary>
+    /// <param name = "tag">The tag of the piece in question.</param>
+    /// <returns><c>0</c> if the piece cannot move through the hex, <c>1</c> if the piece would bounce off a stack, 
+    /// and <c>2</c> if the piece can move through the hex.</returns>
+    /// <exception cref = "System.IndexOutOfRangeException">Thrown when <c>z</c> or <c>x</c> 
+    /// are outside of the board.</exception>
+    public int PositionStatus(int z, int x, string tag)
+    {
+        // Cache hex component
+        Hex hex = hexDex[z, x].GetComponent<Hex>();
+        // If the position has a piece on it
+        if (hex.piece != null)
+        {
+            // Cache piece component
+            Piece piece = hex.piece.GetComponent<Piece>();
+            // If the position has a piece of the same color on it
+            if (hex.piece.tag == tag)
+            {
+                return 0;
+            }
+            // If the position has a piece of the opposite color and is stacked
+            else if (piece.transform.childCount > 1)
+            {
+                return 1;
+            }
+            // If the position has a piece of the opposite color and isn't stacked
+            else
+            {
+                return 2;
+            }
+        }
+        else
+        {
+            return 2;
+        }
+    }
+
+    /// <summary>Checks if this piece can move through a position.</summary>
+    /// <param name = "tag">The tag of the piece in question.</param>
+    /// <returns><c>0</c> if the piece cannot move through the hex, <c>1</c> if the piece would bounce off a stack, 
+    /// and <c>2</c> if the piece can move through the hex.</returns>
+    public int PositionStatus(BoardPosition position, string tag)
+    {
+        return PositionStatus(position.z, position.x, tag);
+    }
+
+    /// <summary>Checks if this piece can move through a position.</summary>
+    /// <param name = "piece">The piece in question.</param>
+    /// <returns><c>0</c> if the piece cannot move through the hex, <c>1</c> if the piece would bounce off a stack, 
+    /// and <c>2</c> if the piece can move through the hex.</returns>
+    public int PositionStatus(int z, int x, GameObject piece)
+    {
+        return PositionStatus(z, x, piece.tag);
+    }
+
+    /// <summary>Checks if this piece can move through a position.</summary>
+    /// <param name = "piece">The piece in question.</param>
+    /// <returns><c>0</c> if the piece cannot move through the hex, <c>1</c> if the piece would bounce off a stack, 
+    /// and <c>2</c> if the piece can move through the hex.</returns>
+    public int PositionStatus(BoardPosition position, GameObject piece)
+    {
+        return PositionStatus(position, piece.tag);
+    }
 }

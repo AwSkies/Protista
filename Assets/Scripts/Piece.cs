@@ -282,48 +282,4 @@ public class Piece : MonoBehaviour
         // gets set as a child of the piece you're setting this piece to be a child of)
         canvas.transform.SetParent(transform, true);
     }
-
-    /// <summary>Checks if this piece can move through a position.</summary>
-    /// <returns><c>0</c> if the piece cannot move through the hex, <c>1</c> if the piece would bounce off a stack, 
-    /// and <c>2</c> if the piece can move through the hex.</returns>
-    /// <exception cref = "System.IndexOutOfRangeException">Thrown when <c>z</c> or <c>x</c> 
-    /// are outside of the board.</exception>
-    public int CanMoveThrough(int z, int x)
-    {
-        // Cache hex component
-        Hex hex = board.hexDex[z, x].GetComponent<Hex>();
-        // If the position has a piece on it
-        if (hex.piece != null)
-        {
-            // Cache piece component
-            Piece piece = hex.piece.GetComponent<Piece>();
-            // If the position has a piece of the same color on it
-            if (hex.piece.tag == tag)
-            {
-                return 0;
-            }
-            // If the position has a piece of the opposite color and is stacked
-            else if (piece.transform.childCount > 1)
-            {
-                return 1;
-            }
-            // If the position has a piece of the opposite color and isn't stacked
-            else
-            {
-                return 2;
-            }
-        }
-        else
-        {
-            return 2;
-        }
-    }
-
-    /// <summary>Checks if this piece can move through a position.</summary>
-    /// <returns><c>0</c> if the piece cannot move through the hex, <c>1</c> if the piece would bounce off a stack, 
-    /// and <c>2</c> if the piece can move through the hex.</returns>
-    public int CanMoveThrough(BoardPosition position)
-    {
-        return CanMoveThrough(position.z, position.x);
-    }
 }

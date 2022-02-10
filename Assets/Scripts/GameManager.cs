@@ -966,13 +966,11 @@ public class GameManager : MonoBehaviour
                                 int count = 0;
                                 // The status of the current position
                                 int positionStatus = 2;
-                                // Cache current piece component
-                                Piece piece = waveHex.GetComponent<Hex>().piece.GetComponent<Piece>();
                                 // Get hex
                                 GameObject currentHex = waveHex;
 
                                 // Go out from waveHex in perpendicularDirection until it can't go any farther
-                                while (piece.CanMoveThrough(currentHex.GetComponent<BoardPosition>()) != 0)
+                                while (board.PositionStatus(currentHex.GetComponent<BoardPosition>(), waveHex.GetComponent<Hex>().piece) != 0)
                                 {
                                     count++;
                                     // Cache current hex component
@@ -1057,8 +1055,9 @@ public class GameManager : MonoBehaviour
                             // Make sure the hex down the board exists
                             if (hexComponent.neighbors[direction] != null)
                             {
-                                int positionStatus = selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().CanMoveThrough(
-                                    hexComponent.neighbors[direction].GetComponent<BoardPosition>()
+                                int positionStatus = board.PositionStatus(
+                                    hexComponent.neighbors[direction].GetComponent<BoardPosition>(),
+                                    selected[0].GetComponent<Hex>().piece
                                 );
                                 // Checks if the hex can move through the position
                                 if (positionStatus != 0)
@@ -1208,7 +1207,7 @@ public class GameManager : MonoBehaviour
                                 // Cache hex component
                                 Hex hex = board.hexDex[z, x].GetComponent<Hex>();
                                 // Find position status
-                                int positionStatus = selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().CanMoveThrough(z, x);
+                                int positionStatus = board.PositionStatus(z, x, selected[0].GetComponent<Hex>().piece);
                                 // If piece can move through position
                                 if (positionStatus != 0)
                                 {
