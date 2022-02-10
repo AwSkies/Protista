@@ -905,7 +905,7 @@ public class GameManager : MonoBehaviour
                         // Make sure hex exists
                         if (hexComponent.neighbors[direction] != null)
                         {
-                            hex = hexComponent.neighbors[direction];
+                            hex = hexComponent.neighbors[board.CycleDirection(direction)];
                         }
                         else
                         {
