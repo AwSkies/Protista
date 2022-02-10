@@ -860,8 +860,8 @@ public class GameManager : MonoBehaviour
                     }
                 }
 
-                // If no end hex was found
-                if (end == null || direction == -1)
+                // If an end hex was found
+                if (end != null && direction != -1)
                 {
                     // Find direction(s) to find the wave in
                     // Cache end hex component
