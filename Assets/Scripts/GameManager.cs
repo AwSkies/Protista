@@ -856,6 +856,8 @@ public class GameManager : MonoBehaviour
                     {
                         // Set this hex as end
                         end = hex;
+                        // Say that we've seen this hex
+                        selectedSeen.Add(end);
                         break;
                     }
                 }
@@ -871,7 +873,7 @@ public class GameManager : MonoBehaviour
                     // Get directions cycled clockwise and counterclockwise
                     int directionClockwise = board.CycleDirection(direction, 1);
                     int directionCounterclockwise = board.CycleDirection(direction, -1);
-                    // Direction to start cycling in
+                    // Offset to start cycling in
                     int cycle = 0;
                     // If the hex in the cycled direction exists and is selected
                     if (neighbors[directionClockwise] != null && selected.Contains(neighbors[directionCounterclockwise]))
@@ -882,9 +884,36 @@ public class GameManager : MonoBehaviour
                     {
                         cycle = -1;
                     }
+                    else
+                    {
+                        InvalidMovementOptionDisplay("Select a wave");
+                        return;
+                    }
 
+                    // Set initial hex to hex one away from the end of the wave
+                    GameObject hex = endHexComponent.neighbors[direction];
                     // Go up the wave, starting in direction and cycling by cycle and -cycle each time
-                    // <future code goes here>
+                    // Neighbors was already set as the nieghbors of the second hex in the wave so we can just continue from there
+                    while (selected.Contains(hex))
+                    {
+                        // Say that we have seen this hex
+                        selectedSeen.Add(hex);
+
+                        // Point to next hex
+                        // Cache hex component
+                        Hex hexComponent = hex.GetComponent<Hex>();
+                        // Make sure hex exists
+                        if (hexComponent.neighbors[direction] != null)
+                        {
+                            hex = hexComponent.neighbors[direction];
+                        }
+                        else
+                        {
+                            break;
+                        }
+                        // Invert direction for next time through the loop
+                        direction = -direction;
+                    }
 
                     // Check if every selected hex was seen and validated
                     if (Enumerable.SequenceEqual(selected.OrderBy(e => e), selectedSeen.OrderBy(e => e)))
@@ -894,7 +923,7 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        InvalidMovementOptionDisplay("Select a wave");
+                        InvalidMovementOptionDisplay("Select only a wave");
                     }
                 }
                 else
