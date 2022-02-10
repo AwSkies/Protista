@@ -931,14 +931,32 @@ public class GameManager : MonoBehaviour
                         foreach (int perpendicularDirection in perpendicularDirections)
                         {
                             // Find the maximum distance we can go in this direction
+                            // The amount that the wave can travel in this direction
                             int min = 0;
+                            // The status of the farthest position that it can travel to
+                            int minStatus;
                             // Loop through each hex in the wave
                             foreach (GameObject waveHex in wave)
                             {
-                                // Go out from waveHex in perpendicularDirection until it can't go any farther
-                                while (true)
-                                {
+                                // The nubmer of hexes we've gone out so far
+                                int count = 0;
+                                // The status of the current position
+                                int positionStatus = 2;
+                                // Cache current piece component
+                                Piece piece = waveHex.GetComponent<Hex>().piece.GetComponent<Piece>();
+                                // Get hex
+                                GameObject currentHex = waveHex;
 
+                                // Go out from waveHex in perpendicularDirection until it can't go any farther
+                                while (piece.CanMoveThrough(currentHex.GetComponent<BoardPosition>()) != 0)
+                                {
+                                    count++;
+                                    // Cache current hex component
+                                    Hex currentHexComponent
+                                    if (currentHex.GetComponent<Hex>().neighbors[perpendicularDirection] != null)
+                                    {
+
+                                    }
                                 }
                                 
                             }
