@@ -824,7 +824,7 @@ public class GameManager : MonoBehaviour
                 // List of hexes that we have seen and validated so far
                 // Will be compared to the list of selected to see if they match
                 // If the lists match, then all pieces were seen and validated and we can move on
-                List<GameObject> selectedSeen = new List<GameObject>();
+                List<GameObject> wave = new List<GameObject>();
 
                 // Find piece at the end of the wave
                 GameObject end = null;
@@ -857,7 +857,7 @@ public class GameManager : MonoBehaviour
                         // Set this hex as end
                         end = hex;
                         // Say that we've seen this hex
-                        selectedSeen.Add(end);
+                        wave.Add(end);
                         break;
                     }
                 }
@@ -890,6 +890,13 @@ public class GameManager : MonoBehaviour
                         return;
                     }
 
+                    // Store directions perpendicular to wave
+                    int otherDirection = board.CycleDirection(direction, cycle);
+                    int[] perpendicularDirections = {
+                        board.CycleDirection(Math.Min(direction, otherDirection), -1),
+                        board.CycleDirection(Math.Max(direction, otherDirection), 1)
+                    };
+
                     // Set initial hex to hex one away from the end of the wave
                     GameObject hex = endHexComponent.neighbors[direction];
                     // Go up the wave, starting in direction and cycling by cycle and -cycle each time
@@ -897,7 +904,7 @@ public class GameManager : MonoBehaviour
                     while (selected.Contains(hex))
                     {
                         // Say that we have seen this hex
-                        selectedSeen.Add(hex);
+                        wave.Add(hex);
 
                         // Point to next hex
                         // Cache hex component
@@ -911,15 +918,42 @@ public class GameManager : MonoBehaviour
                         {
                             break;
                         }
-                        // Invert direction for next time through the loop
-                        direction = -direction;
+                        // Invert cycle for next time through the loop
+                        cycle = -cycle;
                     }
 
                     // Check if every selected hex was seen and validated
-                    if (Enumerable.SequenceEqual(selected.OrderBy(e => e), selectedSeen.OrderBy(e => e)))
+                    if (Enumerable.SequenceEqual(selected.OrderBy(e => e), wave.OrderBy(e => e)))
                     {
                         StartSelection(MovementType.Wave);
-                        // Future code that checks and highlights possible moves
+
+                        // Loop through both perpendicular direction
+                        foreach (int perpendicularDirection in perpendicularDirections)
+                        {
+                            // Find the maximum distance we can go in this direction
+                            int min = 0;
+                            // Loop through each hex in the wave
+                            foreach (GameObject waveHex in wave)
+                            {
+                                // Go out from waveHex in perpendicularDirection until it can't go any farther
+                                while (true)
+                                {
+
+                                }
+                                
+                            }
+
+                            // Highlight hexes out from each hex
+                            // Loop through each hex in the wave
+                            foreach (GameObject waveHex in wave)
+                            {
+                                // Loop out min times for each hex
+                                for (int i = 0; i < min; i++)
+                                {
+                                    // Highlight hex
+                                }
+                            }
+                        }
                     }
                     else
                     {
