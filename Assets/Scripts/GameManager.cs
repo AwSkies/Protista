@@ -117,6 +117,8 @@ public class GameManager : MonoBehaviour
     private List<GameObject> wave = new List<GameObject>();
     // The two directions perpendicular to the wave
     private int[] perpendicularDirections = new int[2];
+    // The worst status on each side
+    private Dictionary<int, int> worstStatuses = new Dictionary<int, int>();
     #endregion
     
     #region Movement option chosen
@@ -479,7 +481,51 @@ public class GameManager : MonoBehaviour
                     }
                     else if (movementType == MovementType.Wave)
                     {
-                        
+                        int direction;
+                        // Find which side of the wave this hex is in
+                        // Loop through each hex in the wave
+                        foreach (GameObject hex in wave)
+                        {
+                            // Check both sides of this hex
+                            foreach (int perpendicularDirection in perpendicularDirections)
+                            {
+                                // Get hex on the perpendicularDirection side of the wave
+                                GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[perpendicularDirection];
+                                // Make sure the hex on this side exists
+                                if (perpendicularHex != null)
+                                {
+                                    // If this is the hex that was hit, this is the correct direction
+                                    if (perpendicularHex == hexHit)
+                                    {
+                                        direction = perpendicularDirection;
+                                    }
+                                }
+                            }
+                        }
+                        // The status on this side of the wave
+                        int status = worstStatuses[direction];
+                        // Place movement icons for each hex in the wave
+                        foreach (GameObject hex in wave)
+                        {
+                            // Get hex on the perpendicularDirection side of the wave
+                            GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[perpendicularDirection];
+                            // Make sure the hex on this side exists
+                            if (perpendicularHex != null)
+                            {
+                                // If there is a piece on the hex
+                                if (perpendicularHex.GetComponent<Hex>().piece != null)
+                                {
+                                    // Place attack icon
+                                    PlaceIcon(perpendicularHex);
+                                }
+                                // If the status is bouncing off, do not place movement arrows
+                                if (status != 1)
+                                {
+                                    // Place movement arrow between hex in the wave and perpendicular hex
+                                    PlaceArrow(hex, perpendicularHex);
+                                }
+                            }
+                        }
                     }
                     else if (movementType == MovementType.Contiguous)
                     {
@@ -972,6 +1018,8 @@ public class GameManager : MonoBehaviour
                                     worstStatus = 0;
                                 }
                             }
+                            // Save status on this side for later
+                            worstStatuses[perpendicularDirection] = worstStatus;
 
                             if (worstStatus != 0)
                             {
