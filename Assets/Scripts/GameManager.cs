@@ -483,7 +483,7 @@ public class GameManager : MonoBehaviour
                     {
                         // Find which side of the wave this hex is on
                         // The side of the wave this is on
-                        int direction;
+                        int direction = -1;
                         // Loop through each hex in the wave
                         foreach (GameObject hex in wave)
                         {
@@ -509,7 +509,7 @@ public class GameManager : MonoBehaviour
                         foreach (GameObject hex in wave)
                         {
                             // Get hex on the perpendicularDirection side of the wave
-                            GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[perpendicularDirection];
+                            GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[direction];
                             // Make sure the hex on this side exists
                             if (perpendicularHex != null)
                             {
