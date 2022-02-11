@@ -172,9 +172,8 @@ public class Piece : MonoBehaviour
             // Make old hex have no pieces
             board.hexDex[currentPos.z, currentPos.x].GetComponent<Hex>().piece = null;
         }
-        // Normal movement or attacking a single piece (not stacking or attacking a stack) case
-        // If there's no piece or the piece on the hex has no pieces stacked on it
-        else if (board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece == null || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.transform.childCount <= 1)
+        // If piece can move through new position
+        else if (board.PositionStatus(newPos, tag) == 2)
         {
             // Assign this piece to new hex
             board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece = gameObject;
