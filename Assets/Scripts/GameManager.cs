@@ -481,8 +481,9 @@ public class GameManager : MonoBehaviour
                     }
                     else if (movementType == MovementType.Wave)
                     {
+                        // Find which side of the wave this hex is on
+                        // The side of the wave this is on
                         int direction;
-                        // Find which side of the wave this hex is in
                         // Loop through each hex in the wave
                         foreach (GameObject hex in wave)
                         {
