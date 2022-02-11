@@ -111,6 +111,8 @@ public class GameManager : MonoBehaviour
     // The directions it has taken to get to a hex
     private List<int> directionsList = new List<int>();
     #endregion
+
+    private List<GameObject> wave = new List<GameObject>();
     
     #region Movement option chosen
     // Whether a movement option is chosen at all
@@ -824,7 +826,7 @@ public class GameManager : MonoBehaviour
                 // List of hexes that we have seen and validated so far
                 // Will be compared to the list of selected to see if they match
                 // If the lists match, then all pieces were seen and validated and we can move on
-                List<GameObject> wave = new List<GameObject>();
+                wave = new List<GameObject>();
 
                 // Find piece at the end of the wave
                 GameObject end = null;
@@ -925,26 +927,15 @@ public class GameManager : MonoBehaviour
                         direction = cycledDirection;
                     }
 
-                    #region Make sure all selected hexes are part of the wave
-                    // Dictionary of all hexes that are selected and whether or not they are in the wave
-                    bool[] selectedInWave = new bool[selected.Count];
-                    for (int i = 0; i < selectedInWave.Length; i++)
-                    {
-                        if (wave.Contains(selected[i]))
-                        {
-                            selectedInWave[i] = true;
-                        }
-                    }
                     // Whether or not every hex in the selected list is in the wave
                     bool allSelectedInWave = true;
-                    foreach (bool inWave in selectedInWave)
+                    foreach (GameObject selectedHex in selected)
                     {
-                        if (!inWave)
+                        if (!wave.Contains(selectedHex))
                         {
                             allSelectedInWave = false;
                         }
                     }
-                    #endregion
 
                     // Check if every selected hex was seen and validated
                     if (allSelectedInWave)
