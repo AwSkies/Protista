@@ -893,8 +893,8 @@ public class GameManager : MonoBehaviour
                     // Store directions perpendicular to wave
                     int otherDirection = board.CycleDirection(direction, cycle);
                     int[] perpendicularDirections = {
-                        board.CycleDirection(Math.Min(direction, otherDirection), -1),
-                        board.CycleDirection(Math.Max(direction, otherDirection), 1)
+                        board.CycleDirection(direction, -cycle),
+                        board.CycleDirection(otherDirection, cycle)
                     };
 
                     // Set initial hex to hex one away from the end of the wave
