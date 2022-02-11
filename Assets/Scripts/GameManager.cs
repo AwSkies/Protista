@@ -962,6 +962,7 @@ public class GameManager : MonoBehaviour
                             {
                                 // Get adjacent hex
                                 GameObject nextHex = waveHex.GetComponent<Hex>().neighbors[perpendicularDirection];
+                                // Make sure hex exists
                                 if (nextHex != null)
                                 {
                                     int positionStatus = board.PositionStatus(nextHex.GetComponent<BoardPosition>(), waveHex.GetComponent<Hex>().piece);
@@ -969,6 +970,11 @@ public class GameManager : MonoBehaviour
                                     {
                                         worstStatus = positionStatus;
                                     }
+                                }
+                                else
+                                {
+                                    // If the hex on this side does not exist, then the wave cannot move there
+                                    worstStatus = 0;
                                 }
                             }
 
