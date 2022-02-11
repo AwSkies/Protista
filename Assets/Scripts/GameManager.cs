@@ -112,7 +112,12 @@ public class GameManager : MonoBehaviour
     private List<int> directionsList = new List<int>();
     #endregion
 
+    #region Variables for wave movement
+    // The wave that is selected (this should have the same elements as selected, but should be in order)
     private List<GameObject> wave = new List<GameObject>();
+    // The two directions perpendicular to the wave
+    private int[] perpendicularDirections = new int[2];
+    #endregion
     
     #region Movement option chosen
     // Whether a movement option is chosen at all
@@ -894,10 +899,9 @@ public class GameManager : MonoBehaviour
 
                     // Store directions perpendicular to wave
                     int otherDirection = board.CycleDirection(direction, cycle);
-                    int[] perpendicularDirections = {
-                        board.CycleDirection(direction, -cycle),
-                        board.CycleDirection(otherDirection, cycle)
-                    };
+                    perpendicularDirections = new int[2];
+                    perpendicularDirections[0] = board.CycleDirection(direction, -cycle);
+                    perpendicularDirections[1] = board.CycleDirection(otherDirection, cycle);
 
                     // Set initial hex to hex one away from the end of the wave
                     GameObject hex = endHexComponent.neighbors[direction];
