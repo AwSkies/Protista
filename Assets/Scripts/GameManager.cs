@@ -483,26 +483,7 @@ public class GameManager : MonoBehaviour
                     {
                         // Find which side of the wave this hex is on
                         // The side of the wave this is on
-                        int direction = -1;
-                        // Loop through each hex in the wave
-                        foreach (GameObject hex in wave)
-                        {
-                            // Check both sides of this hex
-                            foreach (int perpendicularDirection in perpendicularDirections)
-                            {
-                                // Get hex on the perpendicularDirection side of the wave
-                                GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[perpendicularDirection];
-                                // Make sure the hex on this side exists
-                                if (perpendicularHex != null)
-                                {
-                                    // If this is the hex that was hit, this is the correct direction
-                                    if (perpendicularHex == hexHit)
-                                    {
-                                        direction = perpendicularDirection;
-                                    }
-                                }
-                            }
-                        }
+                        int direction = FindWaveDirection(hexHit);
                         // The status on this side of the wave
                         int status = worstStatuses[direction];
                         // Place movement icons for each hex in the wave
@@ -611,7 +592,16 @@ public class GameManager : MonoBehaviour
                             }
                             else if (movementType == MovementType.Wave) 
                             {
-                                // Future movement code
+                                // Get direction
+                                int direction = FindWaveDirection(hexHit);
+                                foreach (GameObject hex in wave)
+                                {
+                                    // Move hex to board position one step in the direction
+                                    hex.GetComponent<Hex>().piece.GetComponent<Piece>().Move(
+                                        new List<BoardPosition> {hex.GetComponent<Hex>().neighbors[direction].GetComponent<BoardPosition>()},
+                                        movementType
+                                    );
+                                }
                             }
                             else if (movementType == MovementType.Contiguous) 
                             {
@@ -1060,6 +1050,32 @@ public class GameManager : MonoBehaviour
                 InvalidMovementOptionDisplay("Select at least three pieces");
             }
         }
+    }
+
+    // <summary>Finds the direction that a wave is in given a hex next to a wave
+    public int FindWaveDirection(GameObject hex)
+    {
+        // Loop through each hex in the wave
+        foreach (GameObject waveHex in wave)
+        {
+            // Check both sides of this hex
+            foreach (int perpendicularDirection in perpendicularDirections)
+            {
+                // Get hex on the perpendicularDirection side of the wave
+                GameObject perpendicularHex = waveHex.GetComponent<Hex>().neighbors[perpendicularDirection];
+                // Make sure the hex on this side exists
+                if (perpendicularHex != null)
+                {
+                    // If this is the hex that was hit, this is the correct direction
+                    if (perpendicularHex == hex)
+                    {
+                        return perpendicularDirection;
+                    }
+                }
+            }
+        }
+        // Return -1 if not found
+        return -1;
     }
 
     public void CannonMovement()
