@@ -129,9 +129,7 @@ public class Piece : MonoBehaviour
                 pieceToDestroy = otherPiece.transform.GetChild(otherPiece.transform.childCount - 1).gameObject;
                 // Unparent piece from stack to prevent a deleted object from being referenced
                 pieceToDestroy.transform.SetParent(null);
-                // Update target to proper position
-                BoardPosition properPos = GetComponent<BoardPosition>();
-                targets[0] = board.hexDex[properPos.z, properPos.x].transform.position + new Vector3(0f, transform.position.y, 0f); 
+                BounceOff();
                 // Piece cannot damage other pieces while moving back to last position
                 canHit = false;
             }
@@ -148,7 +146,37 @@ public class Piece : MonoBehaviour
             {
                 otherPiece.UpdateStackCount();
             }
+            // Says that this piece has completed its damage
+            gameManager.waveDamageCompleted[gameObject] = true;
+
+            // Checks if all pieces that were going to damage something have completed it
+            bool completed = true;
+            foreach (bool damageCompleted in gameManager.waveDamageCompleted.Values)
+            {
+                if (!damageCompleted)
+                {
+                    completed = false;
+                }
+            }
+            // If all wave pieces have completed their damage
+            if (completed)
+            {
+                // Make all pieces bounce off
+                foreach (Piece piece in gameManager.wavePieces)
+                {
+                    piece.moving = true;
+                    piece.BounceOff();
+                }
+            }
         }
+    }
+
+    /// <summary>Makes a piece bounce off or go back to its assigned board position</summary>
+    private void BounceOff()
+    {
+        // Update target to proper position
+        BoardPosition properPos = GetComponent<BoardPosition>();
+        targets = new List<Vector3> {board.hexDex[properPos.z, properPos.x].transform.position + new Vector3(0f, transform.position.y, 0f)}; 
     }
 
     /// <summary>Moves a piece to a new location.</summary>
@@ -179,6 +207,16 @@ public class Piece : MonoBehaviour
             stacking = true;
             // Make old hex have no pieces
             board.hexDex[currentPos.z, currentPos.x].GetComponent<Hex>().piece = null;
+        }
+        else if (movementType == MovementType.Wave && gameManager.waveBouncingOff)
+        {
+            // If this piece would damage another piece
+            if (board.PositionStatus(newPos, tag) == 1 || board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece != null)
+            {
+                gameManager.waveDamageCompleted[gameObject] = false;
+            }
+            // Change BoardPosition to be the same as the old position
+            newPos = currentPos;
         }
         // If piece can move through new position
         else if (board.PositionStatus(newPos, tag) == 2)

@@ -119,6 +119,13 @@ public class GameManager : MonoBehaviour
     private int[] perpendicularDirections = new int[2];
     // The worst status on each side
     private Dictionary<int, int> worstStatuses = new Dictionary<int, int>();
+
+    // Dictionary containing whether or not each piece in a wave movement that was going to damage another piece has completed its movement 
+    public Dictionary<GameObject, bool> waveDamageCompleted = new Dictionary<GameObject, bool>();
+    // Whether or not the wave should continue through or bounce off
+    public bool waveBouncingOff;
+    // The pieces in the wave
+    public List<Piece> wavePieces = new List<Piece>();
     #endregion
     
     #region Movement option chosen
@@ -594,10 +601,20 @@ public class GameManager : MonoBehaviour
                             {
                                 // Get direction
                                 int direction = FindWaveDirection(hexHit);
+                                // Decide whether the wave is bouncing off or not
+                                waveBouncingOff = worstStatuses[direction] == 1;
+                                // Reset damage statuses
+                                waveDamageCompleted = new Dictionary<GameObject, bool>();
+                                wavePieces = new List<Piece>();
+                                // Go through every hex in the wave and move it
                                 foreach (GameObject hex in wave)
                                 {
+                                    // Cache piece GameObject
+                                    GameObject piece = hex.GetComponent<Hex>().piece;
+                                    // Populate wavePieces
+                                    wavePieces.Add(piece.GetComponent<Piece>());
                                     // Move hex to board position one step in the direction
-                                    hex.GetComponent<Hex>().piece.GetComponent<Piece>().Move(
+                                    piece.GetComponent<Piece>().Move(
                                         new List<BoardPosition> {hex.GetComponent<Hex>().neighbors[direction].GetComponent<BoardPosition>()},
                                         movementType
                                     );
