@@ -166,7 +166,15 @@ public class Piece : MonoBehaviour
 
         // Reassign the pieces on the hexes if the piece is not stacking
         // Stacking case
-        if (movementType == MovementType.Single && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece != null && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.tag == tag)
+        if
+        (
+            // If it's single movement
+            movementType == MovementType.Single
+            // and there's a piece on the hex
+            && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece != null
+            // and the piece is the same color as this piece
+            && board.hexDex[newPos.z, newPos.x].GetComponent<Hex>().piece.tag == tag
+        )
         {
             stacking = true;
             // Make old hex have no pieces
