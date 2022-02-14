@@ -1052,7 +1052,9 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // <summary>Finds the direction that a wave is in given a hex next to a wave
+    /// <summary>Finds the direction that a wave is in given a hex next to a wave.</summary>
+    /// <param name = "hex">The hex that is on one side of the wave.</param>
+    /// <returns>Direction that the given hex in is relative to the wave if the direction is found, -1 otherwise.</returns>
     public int FindWaveDirection(GameObject hex)
     {
         // Loop through each hex in the wave
