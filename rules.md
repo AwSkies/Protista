@@ -34,7 +34,6 @@ Alternative: designate a 'king' playing piece on each side, first team to captur
 ### Taking/Killing Pieces
 - Any move of multiple steps terminates as soon as it hits a piece of the same color, or the player making the move decides to stop.  
   - Alternative: Until that point, it must continue as stated in the moves for that configuration.
-
 - In the course of a move, if the player's pieces land on cells occupied by the opponent, the opponent's pieces are removed
 
 ### Possible Moves:
