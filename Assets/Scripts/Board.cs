@@ -10,6 +10,7 @@ public class Board : MonoBehaviour
     public GameObject[,] hexDex;
     // List of highlighted hexes
     public List<GameObject> highlighted = new List<GameObject>();
+    // List of damageable hexes when moving
     public List<GameObject> damageable = new List<GameObject>();
 
     #region Utility functions for directions and direction manipulation
