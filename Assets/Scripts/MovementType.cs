@@ -4,5 +4,6 @@ public enum MovementType
     Wave,
     Cannon,
     V,
-    Contiguous
+    Contiguous,
+    Unstack
 }

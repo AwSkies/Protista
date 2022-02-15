@@ -840,6 +840,8 @@ public class GameManager : MonoBehaviour
     }
     #endregion
 
+    #region Functions attached to movement buttons
+    // These functions check and highlight possible moves
     public void SingleMovement()
     {
         // Makes sure only one piece is selected and we aren't already trying to move
@@ -1408,6 +1410,108 @@ public class GameManager : MonoBehaviour
         if (directionsList.Count != 0)
         {
             directionsList.RemoveAt(directionsList.Count - 1);
+        }
+    }
+    #endregion
+    
+    public void UnstackMovement()
+    {
+        if (!NothingSelected() && OnlyOneSelected() && NotMoving())
+        {
+            // Cache hex component
+            Hex hex = selected[0].GetComponent<Hex>();
+            if (hex.piece != null && hex.piece.transform.childCount > 1)
+            {
+                StartSelection(MovementType.Unstack);
+                int stackCount = selected[0].GetComponent<Hex>.piece.transform.childCount;
+                // Go out in all directions
+                for (int direction = 0; direction < 6; direction++)
+                {
+                    // Whether or not the stack can unstack completely in this direction
+                    bool canUnstack = true;
+                    hex = selected[0].GetComponent<Hex>();
+                    // Highlight possible moves
+                    for (int i = 0; i < stackCount - 1; i++)
+                    {
+                        // Makes sure the hexes down the board exist
+                        try
+                        {
+                            // Checks and highlights valid moves
+                            // Make sure the hex down the board exists
+                            if (hex.neighbors[direction] != null)
+                            {
+                                // Sets current hex to hex to the direction of the past hex
+                                hex = hex.neighbors[direction].GetComponent<Hex>();
+                                // Get position status
+                                int positionStatus = board.PositionStatus(
+                                    hex.GetComponent<BoardPosition>(),
+                                    selected[0].GetComponent<Hex>().piece
+                                );
+                                // Checks if the hex can move through the position
+                                if (positionStatus != 2)
+                                {
+                                    // Mark this direction as invalid
+                                    canUnstack = false;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                // Mark this direction as invalid
+                                canUnstack = false;
+                                break;
+                            }
+                        }
+                        catch (KeyNotFoundException)
+                        {
+                            // Mark this direction as invalid
+                            canUnstack = false;
+                            break;
+                        }
+                    }
+
+                    // Highlight moves in this direction
+                    // Get first hex again
+                    hex = selected[0].GetComponent<Hex>();
+                    // Start tracking steps
+                    List<BoardPosition> steps = new List<BoardPosition>();
+                    // Add source hex as first step
+                    steps.Add(hex.GetComponent<BoardPosition>());
+                    // If direction was determined to be valid, highlight in that direction
+                    if (canUnstack)
+                    {
+                        for (int i = 0; i < stackCount - 1; i++)
+                        {
+                            // Sets current hex to hex to the direction of the past hex
+                            hex = hex.neighbors[direction].GetComponent<Hex>();
+                            // Choose color
+                            // Since stacks in the way have been weeded out already, 
+                            // if is any piece on the hex it should be unstacked and able to be moved through
+                            int color;
+                            // If there is no piece on the hex
+                            if (hex.piece == null)
+                            {
+                                color = 1;
+                            }
+                            // If there is a piece on the hex
+                            else
+                            {
+                                color = 2;
+                            }
+                            // Outline hex
+                            board.OutlineHex(hex.gameObject, color);
+                            // Add to steps to this hex
+                            steps.Add(hex.GetComponent<BoardPosition>());
+                            // Set stepsTo for this hex
+                            stepsTo[hex.gameObject] = new List<BoardPosition>(steps);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                InvalidMovementOptionDisplay("Select a stack");
+            }
         }
     }
     #endregion
