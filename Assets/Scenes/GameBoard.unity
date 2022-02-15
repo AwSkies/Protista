@@ -1575,6 +1575,8 @@ MonoBehaviour:
   pieceVertical: {x: 0, y: 0.6, z: 0}
   movementIconVertical: {x: 0, y: 3.33, z: 0}
   textRescindTime: 100
+  waveBouncingOff: 0
+  wavePieces: []
 --- !u!4 &1568063594
 Transform:
   m_ObjectHideFlags: 0
@@ -1602,6 +1604,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlighted: []
+  damageable: []
 --- !u!1 &1754419912
 GameObject:
   m_ObjectHideFlags: 0
