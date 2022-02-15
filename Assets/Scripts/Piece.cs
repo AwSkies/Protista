@@ -218,6 +218,26 @@ public class Piece : MonoBehaviour
             // Change BoardPosition to be the same as the old position
             newPos = currentPos;
         }
+        // Unstacking
+        else if (movementType == MovementType.Unstack)
+        {
+            // This is piece staying on the current hex but the rest are moving off
+            newPos = currentPos;
+
+            // The pieces currently stacked on this piece
+            List<Transform> stackedPieces = new List<Transform>();
+            // Get all pieces currently stacked
+            foreach (Transform piece in transform)
+            {
+                if (piece.gameObject.TryGetComponent(out Piece pieceComponent))
+                {
+                    pieceComponent.ParentTo(null);
+                    pieceComponent.Move()
+                }
+            }
+            // Remove the first element of the list (should always be canvas)
+            stackedPieces.RemoveAt(0);
+        }
         // If piece can move through new position
         else if (board.PositionStatus(newPos, tag) == 2)
         {

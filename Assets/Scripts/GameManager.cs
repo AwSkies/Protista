@@ -596,7 +596,13 @@ public class GameManager : MonoBehaviour
                         if (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2))
                         {
                             // Checks movement option and executes proper move when clicked
-                            if (movementType == MovementType.Single || movementType == MovementType.Cannon || movementType == MovementType.V) 
+                            if 
+                            (
+                                movementType == MovementType.Single
+                                || movementType == MovementType.Cannon
+                                || movementType == MovementType.V
+                                || movementType == MovementType.Unstack
+                            ) 
                             {
                                 // Move piece
                                 selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], movementType);
@@ -643,10 +649,6 @@ public class GameManager : MonoBehaviour
                                 contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
                                 contiguousVisits = new List<GameObject>();
                                 directionsList   = new List<int>();
-                            }
-                            else if (movementType == MovementType.Unstack)
-                            {
-                                // Future movement code
                             }
                             EndSelection();
                         }
@@ -1466,7 +1468,7 @@ public class GameManager : MonoBehaviour
             if (hex.piece != null && hex.piece.transform.childCount > 1)
             {
                 StartSelection(MovementType.Unstack);
-                int stackCount = selected[0].GetComponent<Hex>().piece.transform.childCount;
+                int stackCount = selected[0].GetComponent<Hex>.piece.transform.childCount;
                 // Go out in all directions
                 for (int direction = 0; direction < 6; direction++)
                 {
@@ -1522,7 +1524,7 @@ public class GameManager : MonoBehaviour
                         // List of spaces in this direction
                         List<BoardPosition> steps = new List<BoardPosition>();
                         // Add source hex to first position in line
-                        steps.Add(selected[0].GetComponent<BoardPosition>());
+                        line.Add(selected[0]);
 
                         for (int i = 0; i < stackCount - 1; i++)
                         {
@@ -1549,9 +1551,9 @@ public class GameManager : MonoBehaviour
                         }
 
                         // Go through each hex in the line and set their steps to equal to the steps for the whole line
-                        foreach (BoardPosition step in steps)
+                        foreach (BoardPosition hex in steps)
                         {
-                            stepsTo[step.gameObject] = steps;
+                            stepsTo[hex.gameObject] = steps;
                         }
                     }
                 }
