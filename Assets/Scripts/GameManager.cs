@@ -1553,7 +1553,7 @@ public class GameManager : MonoBehaviour
                         // Go through each hex in the line and set their steps to equal to the steps for the whole line
                         foreach (BoardPosition step in steps)
                         {
-                            stepsTo[hex.gameObject] = steps;
+                            stepsTo[step.gameObject] = steps;
                         }
                     }
                 }

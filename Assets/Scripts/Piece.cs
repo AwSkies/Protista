@@ -221,22 +221,18 @@ public class Piece : MonoBehaviour
         // Unstacking
         else if (movementType == MovementType.Unstack)
         {
-            // This is piece staying on the current hex but the rest are moving off
-            newPos = currentPos;
-
-            // The pieces currently stacked on this piece
-            List<Transform> stackedPieces = new List<Transform>();
+            Piece[] children = GetComponentsInChildren<Piece>();
             // Get all pieces currently stacked
-            foreach (Transform piece in transform)
+            for (int i = 1; i < children.Length; i++)
             {
-                if (piece.gameObject.TryGetComponent(out Piece pieceComponent))
-                {
-                    pieceComponent.ParentTo(null);
-                    pieceComponent.Move()
-                }
+                children[i].ParentTo(null);
+                children[i].UpdateStackCount();
+                children[i].Move(new List<BoardPosition> {steps[i]}, MovementType.Single);
             }
-            // Remove the first element of the list (should always be canvas)
-            stackedPieces.RemoveAt(0);
+            // Re-pair this piece to its hex since all of the other children that were moved disconnected it
+            board.hexDex[currentPos.z, currentPos.x].GetComponent<Hex>().piece = gameObject;
+            // Since movement type was unstack, this was the bottom piece and shouldn't move
+            return;
         }
         // If piece can move through new position
         else if (board.PositionStatus(newPos, tag) == 2)
@@ -266,11 +262,12 @@ public class Piece : MonoBehaviour
         currentPos.z = newPos.z;
         currentPos.x = newPos.x;
 
+        // Set targets as the position of the hex of the step and add the piece vertical
         foreach (BoardPosition target in steps)
         {
-            targets.Add(board.hexDex[target.z, target.x].transform.position + new Vector3(0f, transform.position.y, 0f));
+            targets.Add(board.hexDex[target.z, target.x].transform.position + gameManager.pieceVertical);
         }
-
+        
         // Stacking 
         if (stacking)
         {
