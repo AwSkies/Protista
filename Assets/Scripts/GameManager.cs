@@ -1466,7 +1466,7 @@ public class GameManager : MonoBehaviour
             if (hex.piece != null && hex.piece.transform.childCount > 1)
             {
                 StartSelection(MovementType.Unstack);
-                int stackCount = selected[0].GetComponent<Hex>.piece.transform.childCount;
+                int stackCount = selected[0].GetComponent<Hex>().piece.transform.childCount;
                 // Go out in all directions
                 for (int direction = 0; direction < 6; direction++)
                 {
@@ -1522,7 +1522,7 @@ public class GameManager : MonoBehaviour
                         // List of spaces in this direction
                         List<BoardPosition> steps = new List<BoardPosition>();
                         // Add source hex to first position in line
-                        line.Add(selected[0]);
+                        steps.Add(selected[0].GetComponent<BoardPosition>());
 
                         for (int i = 0; i < stackCount - 1; i++)
                         {
@@ -1549,9 +1549,9 @@ public class GameManager : MonoBehaviour
                         }
 
                         // Go through each hex in the line and set their steps to equal to the steps for the whole line
-                        foreach (BoardPosition hex in steps)
+                        foreach (BoardPosition step in steps)
                         {
-                            stepsTo[hex.gameObject] = steps;
+                            stepsTo[step.gameObject] = steps;
                         }
                     }
                 }

@@ -1,9 +1,9 @@
 public enum MovementType
 {
     Single,
-    Wave,
+    Unstack,
+    Contiguous,
     Cannon,
     V,
-    Contiguous,
-    Unstack
+    Wave
 }
