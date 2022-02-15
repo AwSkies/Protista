@@ -8,6 +8,7 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
+    #region Serialized fields for setting in the editor
     [SerializeField]
     public Board board;
 
@@ -75,6 +76,7 @@ public class GameManager : MonoBehaviour
     // The amount of time it takes to rescind the invalid movement option text
     // Since the project's fixed timeskip is probably set to 0.02 or 1/50th it should be 100
     private int textRescindTime;
+    #endregion
 
     #region Variables for use during generation and gameplay
     // Selected hexes
@@ -98,6 +100,7 @@ public class GameManager : MonoBehaviour
     // The amount of time left to rescind the invalid movement option text
     private int textRescindCountdown;
 
+    #region Movement variables
     #region Variables for contiguous movement
     // The valid hexes and the directions taken to them
     // For each hex there is a list of the lists of directions that it took to get there
@@ -116,11 +119,12 @@ public class GameManager : MonoBehaviour
     // The worst status on each side
     private Dictionary<int, int> worstStatuses = new Dictionary<int, int>();
     #endregion
-    
+
     #region Movement option chosen
     // Whether a movement option is chosen at all
     private bool selectedMoving = false;
     private MovementType movementType;
+    #endregion
     #endregion
     #endregion
 
@@ -454,7 +458,7 @@ public class GameManager : MonoBehaviour
                             PlaceIcon(hexHit);
                         }
                     }
-                    else if (movementType == MovementType.Cannon || movementType == MovementType.V)
+                    else if (movementType == MovementType.Cannon || movementType == MovementType.V || movementType == MovementType.Unstack)
                     {
                         List<BoardPosition> steps = stepsTo[hexHit];
                         // Place arrows up to hit hex
@@ -1470,16 +1474,17 @@ public class GameManager : MonoBehaviour
                         }
                     }
 
-                    // Highlight moves in this direction
-                    // Get first hex again
-                    hex = selected[0].GetComponent<Hex>();
-                    // Start tracking steps
-                    List<BoardPosition> steps = new List<BoardPosition>();
-                    // Add source hex as first step
-                    steps.Add(hex.GetComponent<BoardPosition>());
                     // If direction was determined to be valid, highlight in that direction
                     if (canUnstack)
                     {
+                        // Highlight moves in this direction
+                        // Get first hex again
+                        hex = selected[0].GetComponent<Hex>();
+                        // List of spaces in this direction
+                        List<BoardPosition> steps = new List<BoardPosition>();
+                        // Add source hex to first position in line
+                        line.Add(selected[0]);
+
                         for (int i = 0; i < stackCount - 1; i++)
                         {
                             // Sets current hex to hex to the direction of the past hex
@@ -1500,10 +1505,14 @@ public class GameManager : MonoBehaviour
                             }
                             // Outline hex
                             board.OutlineHex(hex.gameObject, color);
-                            // Add to steps to this hex
+                            // Add to line
                             steps.Add(hex.GetComponent<BoardPosition>());
-                            // Set stepsTo for this hex
-                            stepsTo[hex.gameObject] = new List<BoardPosition>(steps);
+                        }
+
+                        // Go through each hex in the line and set their steps to equal to the steps for the whole line
+                        foreach (BoardPosition hex in steps)
+                        {
+                            stepsTo[hex.gameObject] = steps;
                         }
                     }
                 }
