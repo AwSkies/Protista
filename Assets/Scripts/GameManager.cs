@@ -118,6 +118,13 @@ public class GameManager : MonoBehaviour
     private int[] perpendicularDirections = new int[2];
     // The worst status on each side
     private Dictionary<int, int> worstStatuses = new Dictionary<int, int>();
+
+    // Dictionary containing whether or not each piece in a wave movement that was going to damage another piece has completed its movement 
+    public Dictionary<GameObject, bool> waveDamageCompleted = new Dictionary<GameObject, bool>();
+    // Whether or not the wave should continue through or bounce off
+    public bool waveBouncingOff;
+    // The pieces in the wave
+    public List<Piece> wavePieces = new List<Piece>();
     #endregion
 
     #region Movement option chosen
@@ -487,33 +494,14 @@ public class GameManager : MonoBehaviour
                     {
                         // Find which side of the wave this hex is on
                         // The side of the wave this is on
-                        int direction;
-                        // Loop through each hex in the wave
-                        foreach (GameObject hex in wave)
-                        {
-                            // Check both sides of this hex
-                            foreach (int perpendicularDirection in perpendicularDirections)
-                            {
-                                // Get hex on the perpendicularDirection side of the wave
-                                GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[perpendicularDirection];
-                                // Make sure the hex on this side exists
-                                if (perpendicularHex != null)
-                                {
-                                    // If this is the hex that was hit, this is the correct direction
-                                    if (perpendicularHex == hexHit)
-                                    {
-                                        direction = perpendicularDirection;
-                                    }
-                                }
-                            }
-                        }
+                        int direction = FindWaveDirection(hexHit);
                         // The status on this side of the wave
                         int status = worstStatuses[direction];
                         // Place movement icons for each hex in the wave
                         foreach (GameObject hex in wave)
                         {
                             // Get hex on the perpendicularDirection side of the wave
-                            GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[perpendicularDirection];
+                            GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[direction];
                             // Make sure the hex on this side exists
                             if (perpendicularHex != null)
                             {
@@ -615,7 +603,26 @@ public class GameManager : MonoBehaviour
                             }
                             else if (movementType == MovementType.Wave) 
                             {
-                                // Future movement code
+                                // Get direction
+                                int direction = FindWaveDirection(hexHit);
+                                // Decide whether the wave is bouncing off or not
+                                waveBouncingOff = worstStatuses[direction] == 1;
+                                // Reset damage statuses
+                                waveDamageCompleted = new Dictionary<GameObject, bool>();
+                                wavePieces = new List<Piece>();
+                                // Go through every hex in the wave and move it
+                                foreach (GameObject hex in wave)
+                                {
+                                    // Cache piece GameObject
+                                    GameObject piece = hex.GetComponent<Hex>().piece;
+                                    // Populate wavePieces
+                                    wavePieces.Add(piece.GetComponent<Piece>());
+                                    // Move hex to board position one step in the direction
+                                    piece.GetComponent<Piece>().Move(
+                                        new List<BoardPosition> {hex.GetComponent<Hex>().neighbors[direction].GetComponent<BoardPosition>()},
+                                        movementType
+                                    );
+                                }
                             }
                             else if (movementType == MovementType.Contiguous) 
                             {
@@ -1070,6 +1077,34 @@ public class GameManager : MonoBehaviour
                 InvalidMovementOptionDisplay("Select at least three pieces");
             }
         }
+    }
+
+    /// <summary>Finds the direction that a wave is in given a hex next to a wave.</summary>
+    /// <param name = "hex">The hex that is on one side of the wave.</param>
+    /// <returns>Direction that the given hex in is relative to the wave if the direction is found, -1 otherwise.</returns>
+    public int FindWaveDirection(GameObject hex)
+    {
+        // Loop through each hex in the wave
+        foreach (GameObject waveHex in wave)
+        {
+            // Check both sides of this hex
+            foreach (int perpendicularDirection in perpendicularDirections)
+            {
+                // Get hex on the perpendicularDirection side of the wave
+                GameObject perpendicularHex = waveHex.GetComponent<Hex>().neighbors[perpendicularDirection];
+                // Make sure the hex on this side exists
+                if (perpendicularHex != null)
+                {
+                    // If this is the hex that was hit, this is the correct direction
+                    if (perpendicularHex == hex)
+                    {
+                        return perpendicularDirection;
+                    }
+                }
+            }
+        }
+        // Return -1 if not found
+        return -1;
     }
 
     public void CannonMovement()
