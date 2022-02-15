@@ -637,6 +637,10 @@ public class GameManager : MonoBehaviour
                                 contiguousVisits = new List<GameObject>();
                                 directionsList   = new List<int>();
                             }
+                            else if (movementType == MovementType.Unstack)
+                            {
+                                // Future movement code
+                            }
                             EndSelection();
                         }
                     }
