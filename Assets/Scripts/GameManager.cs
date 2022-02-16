@@ -42,11 +42,15 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI invalidMovementOptionText;
     [SerializeField]
-    private Animator invalidMovementOptionAnim;
+    private TextMeshProUGUI turnCounterText;
     [SerializeField]
-    private Animator whiteTurnAnim;
+    private Animator invalidMovementOptionAnimator;
     [SerializeField]
-    private Animator blackTurnAnim; 
+    private Animator whiteTurnAnimator;
+    [SerializeField]
+    private Animator blackTurnAnimator;
+    [SerializeField]
+    private Animator turnCounterAnimator;
     [SerializeField]
     private GameObject[] buttons;
 
@@ -89,6 +93,7 @@ public class GameManager : MonoBehaviour
 
     #region Variables for use during generation and gameplay
     // The current turn
+    private int turnCount = 0;
     // Can be either "black" or "white" to correpond to the piece tags
     // Whatever this is set to in the editor, the game will start with the opposite one
     public string turnColor;
@@ -763,22 +768,28 @@ public class GameManager : MonoBehaviour
         // Reset number of moves
         movesTaken = 0;
         // Switch color and choose animation
-        string animation;
-        Animator animator;
+        string slideAnimation;
+        string counterAnimation;
+        Animator turnTextAnimator;
         if (turnColor == "white")
         {
             turnColor = "black";
-            animation = "SlideRight";
-            animator = blackTurnAnim;
+            slideAnimation = "SlideRight";
+            counterAnimation = "WhiteToBlack";
+            turnTextAnimator = blackTurnAnimator;
         }
         else 
         {
             turnColor = "white";
-            animation = "SlideLeft";
-            animator = whiteTurnAnim;
+            slideAnimation = "SlideLeft";
+            counterAnimation = "BlackToWhite";
+            turnTextAnimator = whiteTurnAnimator;
         }
         // Display turn text
-        animator.Play(animation);
+        turnTextAnimator.Play(slideAnimation);
+        // Update turn count
+        turnCounterText.SetText("Turn " + ++turnCount);
+        turnCounterAnimator.Play(counterAnimation);
     }
 
     /// <summary>Ends the current move and switches turn if no extra moves have been garnered</summary>
@@ -835,7 +846,7 @@ public class GameManager : MonoBehaviour
     private void InvalidMovementOptionDisplay(string text = "Invalid Movement Option")
     {
         invalidMovementOptionText.SetText(text);
-        invalidMovementOptionAnim.Play("InvalidMovementOptionText");
+        invalidMovementOptionAnimator.Play("InvalidMovementOptionText");
     }
 
     /// <summary>Changes clickable status of every movement button except for the one specified</summary>
