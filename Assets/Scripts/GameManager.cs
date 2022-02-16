@@ -81,8 +81,8 @@ public class GameManager : MonoBehaviour
     #region Variables for use during generation and gameplay
     // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
-    // Whether the player clicked the previous frame
-    private bool clickedLastFrame = false;
+    // The hexes that have been selected on this click
+    private List<GameObject> clickSelected = new List<GameObject>();
 
     // Movement arrow object currently in use
     private Dictionary<string, List<GameObject>> movementIcons;
@@ -564,8 +564,8 @@ public class GameManager : MonoBehaviour
             // If clicked
             if (Input.GetMouseButton(0))
             {
-                // If not holding down mouse button and hit something
-                if (!clickedLastFrame && hit.collider != null)
+                // If not selected this hex yet on this click
+                if (!clickSelected.Contains(hexHit))
                 {
                     // Checks if player has already selected a movement option
                     // If they haven't, go on with selecting, if they have, go on with checking movement
@@ -587,6 +587,8 @@ public class GameManager : MonoBehaviour
                             }
                             // Toggles outline
                             hexHit.GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexHit);
+                            // Say that we have hit this hex on this click
+                            clickSelected.Add(hexHit);
                         }
                     }
                     else
@@ -654,11 +656,10 @@ public class GameManager : MonoBehaviour
                         }
                     }
                 }
-                clickedLastFrame = true;
             } 
             else 
             {
-                clickedLastFrame = false;
+                clickSelected = new List<GameObject>();
             }
             // Set hex hit this frame to hex hit previous frame
             previousHexHit = hexHit;
