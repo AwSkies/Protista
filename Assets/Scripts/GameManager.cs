@@ -46,6 +46,9 @@ public class GameManager : MonoBehaviour
 
     [Header("Game behavior variables for tweaking")]
     [SerializeField]
+    // The maximum number of moves per turn
+    private int maxMovesPerTurn;
+    [SerializeField]
     // Number of objective hexes for each player
     private int objHexNum;
     [SerializeField]
@@ -79,8 +82,21 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Variables for use during generation and gameplay
+    // The current turn
+    // Can be either "black" or "white" to correpond to the piece tags
+    // Whatever this is set to in the editor, the game will start with the opposite one
+    public string turn;
+    // The number of moves that have been taken so far this turn
+    private int movesTaken = 0;
     // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
+    // The pieces that are moving
+    public List<Piece> movingPieces = new List<Piece>();
+    // The coordinates of loops in each color on the previous move
+    private Dictionary<string, List<int[]>> previousMoveLoops = new Dictionary<string, List<int[2]>>();
+
+    // The hex hit with a raycast on the previous frame
+    private GameObject previousHexHit;
     // The hexes that have been selected on this click
     private List<GameObject> clickSelected = new List<GameObject>();
 
@@ -92,15 +108,12 @@ public class GameManager : MonoBehaviour
                                                                                                                     {"attack", new List<GameObject>()},
                                                                                                                     {"stack",  new List<GameObject>()}
                                                                                                                 };
-    // The hex hit with a raycast on the previous frame
-    private GameObject previousHexHit;
-
     // The hexes that a move would take a piece along if it were to move to a certain hex
     private Dictionary<GameObject, List<BoardPosition>> stepsTo = new Dictionary<GameObject, List<BoardPosition>>();
     // The amount of time left to rescind the invalid movement option text
     private int textRescindCountdown;
 
-    #region Movement variables
+    #region Variables specific to movement types
     #region Variables for contiguous movement
     // The valid hexes and the directions taken to them
     // For each hex there is a list of the lists of directions that it took to get there
@@ -123,8 +136,6 @@ public class GameManager : MonoBehaviour
     public Dictionary<GameObject, bool> waveDamageCompleted = new Dictionary<GameObject, bool>();
     // Whether or not the wave should continue through or bounce off
     public bool waveBouncingOff;
-    // The pieces in the wave
-    public List<Piece> wavePieces = new List<Piece>();
     #endregion
 
     #region Movement option chosen
@@ -429,10 +440,10 @@ public class GameManager : MonoBehaviour
                         // If there's no piece on moused over hex 
                         if (hexHit.GetComponent<Hex>().piece == null
                             // Or if the piece on the moused over hex is the opposite color and not stacked
-                            || (hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
+                            || (hexHit.GetComponent<Hex>().piece.tag != turn
                                 && hexHit.GetComponent<Hex>().piece.transform.childCount <= 1)
                             // Or if the piece on the moused over hex is the same color as the selected piece
-                            || hexHit.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag)
+                            || hexHit.GetComponent<Hex>().piece.tag == turn)
                         // Otherwise display only movement icon
                         {
                             // Place arrow
@@ -448,7 +459,7 @@ public class GameManager : MonoBehaviour
                                 string key;
                                 // If the piece moused over is the opposite color
                                 // (We shouldn't have to check for it being stacked since we did that already)
-                                if (piece.tag != selected[0].GetComponent<Hex>().piece.tag)
+                                if (piece.tag != turn)
                                 {
                                     key = "attack";
                                 }
@@ -530,7 +541,7 @@ public class GameManager : MonoBehaviour
                         // Do not place arrows if hitHex has a stack on it
                         // Should only trigger for last hex in the list
                         if (!(hexHit.GetComponent<Hex>().piece != null
-                            && hexHit.GetComponent<Hex>().piece.tag != selected[0].GetComponent<Hex>().piece.tag
+                            && hexHit.GetComponent<Hex>().piece.tag != turn
                             && hexHit.GetComponent<Hex>().piece.transform.childCount > 1))
                         {
                             foreach (int direction in directionList)
@@ -617,14 +628,11 @@ public class GameManager : MonoBehaviour
                                 waveBouncingOff = worstStatuses[direction] == 1;
                                 // Reset damage statuses
                                 waveDamageCompleted = new Dictionary<GameObject, bool>();
-                                wavePieces = new List<Piece>();
                                 // Go through every hex in the wave and move it
                                 foreach (GameObject hex in wave)
                                 {
                                     // Cache piece GameObject
                                     GameObject piece = hex.GetComponent<Hex>().piece;
-                                    // Populate wavePieces
-                                    wavePieces.Add(piece.GetComponent<Piece>());
                                     // Move hex to board position one step in the direction
                                     piece.GetComponent<Piece>().Move(
                                         new List<BoardPosition> {hex.GetComponent<Hex>().neighbors[direction].GetComponent<BoardPosition>()},
@@ -656,9 +664,10 @@ public class GameManager : MonoBehaviour
                         }
                     }
                 }
-            } 
-            else 
+            }
+            else
             {
+                // Reset clickSelected list for next click
                 clickSelected = new List<GameObject>();
             }
             // Set hex hit this frame to hex hit previous frame
@@ -757,6 +766,44 @@ public class GameManager : MonoBehaviour
         );
     }
 
+    /// <summary>Peforms operations to start the next turn</summary>
+    private void StartNewTurn()
+    {
+        // Display turn text
+        // Reset number of moves
+        movesTaken = 0;
+        if (turn == "white")
+        {
+            turn = "black";
+        }
+        else 
+        {
+            turn = "white";
+        }
+    }
+
+    /// <summary>Ends the current move and switches turn if no extra moves have been garnered</summary>
+    public void EndMove()
+    {
+        // Increment move counter
+        movesTaken++;
+
+        List<int[]> loops = new List<int[2]>();
+        // Search for loops
+
+        if (
+            // If we haven't taken too many moves
+            movesTaken < maxMovesPerTurn 
+            && loops.Count >= previousMoveLoops[turn].Count)
+        {
+
+        }
+        else
+        {
+
+        }
+    }
+
     /// <summary>Starts a move of the specified type by setting buttons and variables</summary>
     private void StartSelection(MovementType movementT)
     {
@@ -764,8 +811,9 @@ public class GameManager : MonoBehaviour
         selectedMoving = true;
         movementType = movementT;
         ChangeButtons(false, movementT);
-        // Resets list of damageable from previous move
+        // Resets lists that need to be reset after a move is over
         board.damageable = new List<GameObject>();
+        movingPieces = new List<Piece>();
     }
 
     /// <summary>Ends a move and resets selections, highlights, and variables.</summary>
@@ -1428,7 +1476,7 @@ public class GameManager : MonoBehaviour
                 {
                     // Don't deal with it if it has a piece of the same color on it
                     if (hexNeighbor != null
-                        && !(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == selected[0].GetComponent<Hex>().piece.tag))
+                        && !(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == turn))
                     {
                         // Add direction to directions list
                         directionsList.Add(board.GetDirection(hex, hexNeighbor));

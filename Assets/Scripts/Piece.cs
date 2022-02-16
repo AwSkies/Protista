@@ -62,7 +62,14 @@ public class Piece : MonoBehaviour
                 {
                     // Stop piece
                     moving = false;
+                    gameManager.movingPieces.Remove(this);
                     canHit = false;
+
+                    // End move if all pieces have completed their moves
+                    if (movingPieces.Count == 0)
+                    {
+                        gameManager.EndMove();
+                    }
 
                     #region Stacking stuff
                     // The pieces currently stacked on this piece
@@ -288,6 +295,7 @@ public class Piece : MonoBehaviour
         speed = (float) (baseSpeed + (baseSpeed * steps.Count * stepsCoefficient));
         // Piece is now moving to its next position
         moving = true;
+        gameManager.movingPieces.Add(this);
         // Piece can damage other pieces
         canHit = true;
     }
