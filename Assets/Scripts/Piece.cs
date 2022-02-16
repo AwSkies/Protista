@@ -66,7 +66,7 @@ public class Piece : MonoBehaviour
                     canHit = false;
 
                     // End move if all pieces have completed their moves
-                    if (movingPieces.Count == 0)
+                    if (gameManager.movingPieces.Count == 0)
                     {
                         gameManager.EndMove();
                     }
@@ -169,7 +169,7 @@ public class Piece : MonoBehaviour
             if (completed)
             {
                 // Make all pieces bounce off
-                foreach (Piece piece in gameManager.wavePieces)
+                foreach (Piece piece in gameManager.movingPieces)
                 {
                     piece.moving = true;
                     piece.BounceOff();

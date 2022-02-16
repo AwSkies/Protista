@@ -42,6 +42,12 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI invalidMovementOptionText;
     [SerializeField]
+    private Animator invalidMovementOptionAnim;
+    [SerializeField]
+    private Animator whiteTurnAnim;
+    [SerializeField]
+    private Animator blackTurnAnim; 
+    [SerializeField]
     private GameObject[] buttons;
 
     [Header("Game behavior variables for tweaking")]
@@ -85,7 +91,7 @@ public class GameManager : MonoBehaviour
     // The current turn
     // Can be either "black" or "white" to correpond to the piece tags
     // Whatever this is set to in the editor, the game will start with the opposite one
-    public string turn;
+    public string turnColor;
     // The number of moves that have been taken so far this turn
     private int movesTaken = 0;
     // Selected hexes
@@ -93,7 +99,7 @@ public class GameManager : MonoBehaviour
     // The pieces that are moving
     public List<Piece> movingPieces = new List<Piece>();
     // The coordinates of loops in each color on the previous move
-    private Dictionary<string, List<int[]>> previousMoveLoops = new Dictionary<string, List<int[2]>>();
+    private Dictionary<string, List<int[]>> previousMoveLoops = new Dictionary<string, List<int[]>>();
 
     // The hex hit with a raycast on the previous frame
     private GameObject previousHexHit;
@@ -397,6 +403,9 @@ public class GameManager : MonoBehaviour
 
         // Centers camera with generated board by setting transform x position to be half the distance of the number of columns * row space offset
         Camera.main.transform.position = new Vector3((columns * rowSpace.x) / 2, Camera.main.transform.position.y, Camera.main.transform.position.z);
+
+        // Start the first turn
+        StartNewTurn();
     }
 
     // Update is called once per frame
@@ -440,10 +449,10 @@ public class GameManager : MonoBehaviour
                         // If there's no piece on moused over hex 
                         if (hexHit.GetComponent<Hex>().piece == null
                             // Or if the piece on the moused over hex is the opposite color and not stacked
-                            || (hexHit.GetComponent<Hex>().piece.tag != turn
+                            || (hexHit.GetComponent<Hex>().piece.tag != turnColor
                                 && hexHit.GetComponent<Hex>().piece.transform.childCount <= 1)
                             // Or if the piece on the moused over hex is the same color as the selected piece
-                            || hexHit.GetComponent<Hex>().piece.tag == turn)
+                            || hexHit.GetComponent<Hex>().piece.tag == turnColor)
                         // Otherwise display only movement icon
                         {
                             // Place arrow
@@ -459,7 +468,7 @@ public class GameManager : MonoBehaviour
                                 string key;
                                 // If the piece moused over is the opposite color
                                 // (We shouldn't have to check for it being stacked since we did that already)
-                                if (piece.tag != turn)
+                                if (piece.tag != turnColor)
                                 {
                                     key = "attack";
                                 }
@@ -541,7 +550,7 @@ public class GameManager : MonoBehaviour
                         // Do not place arrows if hitHex has a stack on it
                         // Should only trigger for last hex in the list
                         if (!(hexHit.GetComponent<Hex>().piece != null
-                            && hexHit.GetComponent<Hex>().piece.tag != turn
+                            && hexHit.GetComponent<Hex>().piece.tag != turnColor
                             && hexHit.GetComponent<Hex>().piece.transform.childCount > 1))
                         {
                             foreach (int direction in directionList)
@@ -578,29 +587,24 @@ public class GameManager : MonoBehaviour
                 // If not selected this hex yet on this click
                 if (!clickSelected.Contains(hexHit))
                 {
-                    // Checks if player has already selected a movement option
-                    // If they haven't, go on with selecting, if they have, go on with checking movement
-                    if (!selectedMoving)
+                    // If the player has not selected a movement option and there is a piece on the hex and no pieces are moving
+                    if (!selectedMoving && hexHit.GetComponent<Hex>().piece != null && hexHit.GetComponent<Hex>().piece.tag == turnColor && movingPieces.Count == 0)
                     {
-                        // Only select if there's a piece on the hex
-                        if (hexHit.GetComponent<Hex>().piece != null)
+                        // Makes sure outline color is selection color
+                        hexHit.GetComponent<cakeslice.Outline>().color = 0;
+                        // Adds to list of selected if it's not selected, remove if it is
+                        if (!selected.Contains(hexHit))
                         {
-                            // Makes sure outline color is selection color
-                            hexHit.GetComponent<cakeslice.Outline>().color = 0;
-                            // Adds to list of selected if it's not selected, remove if it is
-                            if (!selected.Contains(hexHit))
-                            {
-                                selected.Add(hexHit);
-                            }
-                            else
-                            {
-                                selected.Remove(hexHit);
-                            }
-                            // Toggles outline
-                            hexHit.GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexHit);
-                            // Say that we have hit this hex on this click
-                            clickSelected.Add(hexHit);
+                            selected.Add(hexHit);
                         }
+                        else
+                        {
+                            selected.Remove(hexHit);
+                        }
+                        // Toggles outline
+                        hexHit.GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexHit);
+                        // Say that we have hit this hex on this click
+                        clickSelected.Add(hexHit);
                     }
                     else
                     {
@@ -687,19 +691,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // FixedUpdate is called at a fixed interval
-    private void FixedUpdate() 
-    {
-        if (invalidMovementOptionText.enabled)
-        {
-            textRescindCountdown--;
-            if (textRescindCountdown <= 0 )
-            {
-                invalidMovementOptionText.enabled = false;
-            }
-        }
-    }
-
     #region Functions for utility
     /// <summary>Destroys all movement icon <c>GameObject</c>s currently in scene</summary>
     private void KillAllMovementIcons()
@@ -769,17 +760,25 @@ public class GameManager : MonoBehaviour
     /// <summary>Peforms operations to start the next turn</summary>
     private void StartNewTurn()
     {
-        // Display turn text
         // Reset number of moves
         movesTaken = 0;
-        if (turn == "white")
+        // Switch color and choose animation
+        string animation;
+        Animator animator;
+        if (turnColor == "white")
         {
-            turn = "black";
+            turnColor = "black";
+            animation = "SlideRight";
+            animator = blackTurnAnim;
         }
         else 
         {
-            turn = "white";
+            turnColor = "white";
+            animation = "SlideLeft";
+            animator = whiteTurnAnim;
         }
+        // Display turn text
+        animator.Play(animation);
     }
 
     /// <summary>Ends the current move and switches turn if no extra moves have been garnered</summary>
@@ -788,19 +787,17 @@ public class GameManager : MonoBehaviour
         // Increment move counter
         movesTaken++;
 
-        List<int[]> loops = new List<int[2]>();
+        List<int[]> loops = new List<int[]>();
         // Search for loops
 
-        if (
-            // If we haven't taken too many moves
-            movesTaken < maxMovesPerTurn 
-            && loops.Count >= previousMoveLoops[turn].Count)
+        if
+        (
+            // If we we've taken too many moves
+            movesTaken >= maxMovesPerTurn
+            // || loops.Count < previousMoveLoops[turnColor].Count
+        )
         {
-
-        }
-        else
-        {
-
+            StartNewTurn();
         }
     }
 
@@ -833,13 +830,12 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Functions for moving
-    /// <summary>Displays text when a movement option is invalid</summary>
-    /// <param name = "error">the text (which should be a description of the error) to display; default value is <c>"Invalid Movement Option"</c></param>
-    private void InvalidMovementOptionDisplay(string error = "Invalid Movement Option")
+    /// <summary>Displays text when a movement option is invalid.</summary>
+    /// <param name = "text">The text (which should be a description of the error) to display; default value is <c>"Invalid Movement Option"</c>.</param>
+    private void InvalidMovementOptionDisplay(string text = "Invalid Movement Option")
     {
-        invalidMovementOptionText.SetText(error);
-        invalidMovementOptionText.enabled = true;
-        textRescindCountdown = textRescindTime;
+        invalidMovementOptionText.SetText(text);
+        invalidMovementOptionAnim.Play("InvalidMovementOptionText");
     }
 
     /// <summary>Changes clickable status of every movement button except for the one specified</summary>
@@ -1476,7 +1472,7 @@ public class GameManager : MonoBehaviour
                 {
                     // Don't deal with it if it has a piece of the same color on it
                     if (hexNeighbor != null
-                        && !(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == turn))
+                        && !(hexNeighbor.GetComponent<Hex>().piece != null && hexNeighbor.GetComponent<Hex>().piece.tag == turnColor))
                     {
                         // Add direction to directions list
                         directionsList.Add(board.GetDirection(hex, hexNeighbor));
