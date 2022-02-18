@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
     [Header("Game behavior variables for tweaking")]
     [SerializeField]
     // The number of max moves that a turn starts with
-    private in baseMaxMoves;
+    private int baseMaxMoves;
     [SerializeField]
     // The maximum number of extra moves that can be gained from completing loops in one movemovemovemove
     private int maxExtraMovesPerMove;
