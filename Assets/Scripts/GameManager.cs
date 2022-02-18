@@ -44,6 +44,10 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI turnCounterText;
     [SerializeField]
+    private TextMeshProUGUI moveCounterText;
+    [SerializeField]
+    private TextMeshProUGUI maxMovesCounterText;
+    [SerializeField]
     private Animator invalidMovementOptionAnimator;
     [SerializeField]
     private Animator whiteTurnAnimator;
@@ -52,9 +56,15 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Animator turnCounterAnimator;
     [SerializeField]
+    private Animator moveCounterAnimator;
+    [SerializeField]
+    private Animator maxMoveCounterAnimator;
     private GameObject[] buttons;
 
     [Header("Game behavior variables for tweaking")]
+    [SerializeField]
+    // The number of max moves that a turn starts with
+    private in baseMaxMoves;
     [SerializeField]
     // The maximum number of extra moves that can be gained from completing loops in one movemovemovemove
     private int maxExtraMovesPerMove;
@@ -97,7 +107,7 @@ public class GameManager : MonoBehaviour
     // The number of moves that have been taken so far this turn
     private int movesTaken = 0;
     // The maximum number of moves that can be taken on this turn
-    private int maxMoves = 0;
+    private int maxMoves = baseMaxMoves;
     // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
     [NonSerialized]
@@ -766,30 +776,41 @@ public class GameManager : MonoBehaviour
     {
         // Reset number of moves
         movesTaken = 0;
-        maxMoves = 0;
+        maxMoves = baseMaxMoves;
         // Switch color and choose animation
         string slideAnimation;
-        string counterAnimation;
+        string turnCounterAnimation;
+        string moveCounterAnimation;
+        string maxMoveCounterAnimation;
         Animator turnTextAnimator;
         if (turnColor == "white")
         {
             turnColor = "black";
             slideAnimation = "SlideRight";
-            counterAnimation = "WhiteToBlack";
+            turnCounterAnimation = "WhiteToBlack";
+            moveCounterAnimation = "WhiteToBlack"
+            maxMoveCounterAnimation = "BlackToWhite"
             turnTextAnimator = blackTurnAnimator;
         }
         else 
         {
             turnColor = "white";
             slideAnimation = "SlideLeft";
-            counterAnimation = "BlackToWhite";
+            turnCounterAnimation = "BlackToWhite";
+            moveCounterAnimation = "BlackToWhite"
+            maxMoveCounterAnimation = "WhiteToBlack"
             turnTextAnimator = whiteTurnAnimator;
         }
         // Display turn text
         turnTextAnimator.Play(slideAnimation);
         // Update turn count
         turnCounterText.SetText("Turn " + ++turnCount);
-        turnCounterAnimator.Play(counterAnimation);
+        turnCounterAnimator.Play(turnCounterAnimation);
+        // Change move counter color
+        moveCounterAnimator.Play(moveCounterAnimation);
+        maxMoveCounterAnimator.Play(maxMoveCounterAnimation);
+        // Update move count
+        UpdateMoveCounter();
     }
 
     /// <summary>Ends the current move and switches turn if no extra moves have been garnered</summary>
@@ -888,6 +909,7 @@ public class GameManager : MonoBehaviour
         }
         // Set this move's loops as the previous loops for next move
         previousMoveLoops = loops;
+        UpdateMoveCounter();
     }
 
     /// <summary>Starts a move of the specified type by setting buttons and variables</summary>
@@ -925,6 +947,13 @@ public class GameManager : MonoBehaviour
     {
         invalidMovementOptionText.SetText(text);
         invalidMovementOptionAnimator.Play("InvalidMovementOptionText");
+    }
+
+    /// <summary>Updates the move counter to the current values</summary>
+    private void UpdateMoveCounter()
+    {
+        moveCounterText.SetText((string) movesTaken);
+        maxMovesCounterText.SetText((string) maxMoves);
     }
 
     /// <summary>Changes clickable status of every movement button except for the one specified</summary>
