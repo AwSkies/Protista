@@ -106,7 +106,7 @@ public class GameManager : MonoBehaviour
     // The pieces that are moving
     public List<Piece> movingPieces = new List<Piece>();
     // The coordinates of loops in each color on the previous move
-    private Dictionary<string, List<int[]>> previousMoveLoops = new Dictionary<string, List<int[]>>();
+    private Dictionary<string, List<BoardPosition>> previousMoveLoops = new Dictionary<string, List<BoardPosition>>();
 
     // The hex hit with a raycast on the previous frame
     private GameObject previousHexHit;
@@ -173,7 +173,6 @@ public class GameManager : MonoBehaviour
         #region Generate objective hex arrangement
         // Makes an array that has whether or not an objective hex needs to be generated in a coordinate, then makes all values false
         bool[,] objHexes = new bool[rows, columns];
-        for (int i = 0; i < rows * columns; i++) { objHexes[i % rows, i / rows] = false; }
         // Generates the needed number of objective hexes on each side
         for (int i = 0; i < objHexNum; i++)
         {
@@ -800,8 +799,68 @@ public class GameManager : MonoBehaviour
         // Increment move counter
         movesTaken++;
 
-        List<int[]> loops = new List<int[]>();
+        // The loops in this color on the board after this move
+        Dictionary<List<BoardPosition>> loops = new Dictionary<List<BoardPosition>> {
+            {"white", new List<BoardPosition>()},
+            {"black", new List<BoardPosition>()}
+        };
         // Search for loops
+        // Search through every hex on the board
+        for (int i = 0; i < rows * columns; i++)
+        {
+            // Cache current hex
+            Hex hex = board.hexDex[i % rows, i / rows].GetComponent<Hex>();
+            string color;
+            // If there is no piece on this hex or the piece is not the same color
+            if (hex.piece != null)
+            {
+                if (hex.piece.tag == "white")
+                {
+                    color = "black";
+                }
+                else
+                {
+                    color = "white";
+                }
+            }
+            // Whether this hex is surrounded by all of the same color pieces
+            bool surrounded = true;
+            // Loop through all neighbors
+            foreach (GameObject neighbor in hex.neighbors)
+            {
+                // If neighbor exists
+                if (neighbor != null)
+                {
+                    // Cache hex component of this neighbor
+                    Hex neighborComponent = neighbor.GetComponent<Hex>();
+                    // If there isn't a piece on the neighbor or color has been set and it's the wrong color
+                    if (neighborComponent.piece == null || (color != null && neighborComponent.piece.tag != color))
+                    {
+                        // Then the hex is not surrounded
+                        surrounded = false;
+                        break;
+                    }
+                    // If the color has not been set and there's a piece on this neighbor
+                    else if (color == null && neighborComponent.piece != null)
+                    {
+                        // Set color to the color of the piece on this neighbor
+                        color = neighborComponent.piece.tag;
+                    }
+                }
+                else
+                {
+                    // Then the hex is not surrounded
+                    surrounded = false;
+                    break;
+                }
+            }
+            // If the hex is surrounded
+            if (surrounded)
+            {
+                // Add this loop to the loops
+                loops[color].Add(hex.GetComponent<BoardPosition>());
+            }
+        }
 
         if
         (
