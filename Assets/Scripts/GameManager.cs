@@ -94,13 +94,15 @@ public class GameManager : MonoBehaviour
     #region Variables for use during generation and gameplay
     // The current turn
     private int turnCount = 0;
+    [SerializeField]
     // Can be either "black" or "white" to correpond to the piece tags
     // Whatever this is set to in the editor, the game will start with the opposite one
-    public string turnColor;
+    private string turnColor;
     // The number of moves that have been taken so far this turn
     private int movesTaken = 0;
     // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
+    [NonSerialized]
     // The pieces that are moving
     public List<Piece> movingPieces = new List<Piece>();
     // The coordinates of loops in each color on the previous move
