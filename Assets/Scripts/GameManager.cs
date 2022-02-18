@@ -56,8 +56,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Game behavior variables for tweaking")]
     [SerializeField]
-    // The maximum number of moves per turn
-    private int maxMovesPerTurn;
+    // The maximum number of extra moves that can be gained from completing loops in one movemovemovemove
+    private int maxExtraMovesPerMove;
     [SerializeField]
     // Number of objective hexes for each player
     private int objHexNum;
@@ -85,10 +85,6 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     // Vertical offset of the movement arrows
     private Vector3 movementIconVertical;
-    [SerializeField]
-    // The amount of time it takes to rescind the invalid movement option text
-    // Since the project's fixed timeskip is probably set to 0.02 or 1/50th it should be 100
-    private int textRescindTime;
     #endregion
 
     #region Variables for use during generation and gameplay
@@ -100,6 +96,8 @@ public class GameManager : MonoBehaviour
     private string turnColor;
     // The number of moves that have been taken so far this turn
     private int movesTaken = 0;
+    // The maximum number of moves that can be taken on this turn
+    private int maxMoves = 0;
     // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
     [NonSerialized]
@@ -768,6 +766,7 @@ public class GameManager : MonoBehaviour
     {
         // Reset number of moves
         movesTaken = 0;
+        maxMoves = 0;
         // Switch color and choose animation
         string slideAnimation;
         string counterAnimation;
@@ -804,6 +803,8 @@ public class GameManager : MonoBehaviour
             {"white", new List<BoardPosition>()},
             {"black", new List<BoardPosition>()}
         };
+        // The number of new loops
+        int newLoops = 0;
         // Search for loops
         // Search through every hex on the board
         for (int i = 0; i < rows * columns; i++)
@@ -857,20 +858,36 @@ public class GameManager : MonoBehaviour
             // If the hex is surrounded
             if (surrounded)
             {
+                // Cache board position
+                BoardPosition pos = hex.GetComponent<BoardPosition>();
                 // Add this loop to the loops
-                loops[color].Add(hex.GetComponent<BoardPosition>());
+                loops[color].Add(pos);
+                // If this loop was not there the previous move
+                // (If the previous move loops of this color does not contain this board position)
+                if (!previousMoveLoops[color].Contains(pos))
+                {
+                    // Increment the number of new loops
+                    newLoops++;
+                }
             }
         }
 
-        if
-        (
-            // If we we've taken too many moves
-            movesTaken >= maxMovesPerTurn
-            // || loops.Count < previousMoveLoops[turnColor].Count
-        )
+        // Cap the number of extra moves 
+        if (newLoops > maxExtraMovesPerMove)
+        {
+            newLoops = maxExtraMovesPerMove;
+        }
+
+        // Increase number of moves this turn
+        maxMoves += newLoops;
+
+        // If we we've taken too many moves
+        if (movesTaken >= maxMoves)
         {
             StartNewTurn();
         }
+        // Set this move's loops as the previous loops for next move
+        previousMoveLoops = loops;
     }
 
     /// <summary>Starts a move of the specified type by setting buttons and variables</summary>
