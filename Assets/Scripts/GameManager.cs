@@ -780,36 +780,35 @@ public class GameManager : MonoBehaviour
         maxMoves = baseMaxMoves;
         // Switch color and choose animation
         string slideAnimation;
-        string turnCounterAnimation;
-        string moveCounterAnimation;
-        string maxMoveCounterAnimation;
+        string changeToCurrentColorAnimation;
+        string changeToOppositeColorAnimation;
         Animator turnTextAnimator;
         if (turnColor == "white")
         {
             turnColor = "black";
             slideAnimation = "SlideRight";
-            turnCounterAnimation = "WhiteToBlack";
-            moveCounterAnimation = "WhiteToBlack";
-            maxMoveCounterAnimation = "BlackToWhite";
+            changeToCurrentColorAnimation = "WhiteToBlack";
+            changeToCurrentColorAnimation = "WhiteToBlack";
+            changeToOppositeColorAnimation = "BlackToWhite";
             turnTextAnimator = blackTurnAnimator;
         }
         else 
         {
             turnColor = "white";
             slideAnimation = "SlideLeft";
-            turnCounterAnimation = "BlackToWhite";
-            moveCounterAnimation = "BlackToWhite";
-            maxMoveCounterAnimation = "WhiteToBlack";
+            changeToCurrentColorAnimation = "BlackToWhite";
+            changeToCurrentColorAnimation = "BlackToWhite";
+            changeToOppositeColorAnimation = "WhiteToBlack";
             turnTextAnimator = whiteTurnAnimator;
         }
         // Display turn text
         turnTextAnimator.Play(slideAnimation);
         // Update turn count
         turnCounterText.SetText("Turn " + ++turnCount);
-        turnCounterAnimator.Play(turnCounterAnimation);
+        turnCounterAnimator.Play(changeToCurrentColorAnimation);
         // Change move counter color
-        moveCounterAnimator.Play(moveCounterAnimation);
-        maxMoveCounterAnimator.Play(maxMoveCounterAnimation);
+        moveCounterAnimator.Play(changeToCurrentColorAnimation);
+        maxMoveCounterAnimator.Play(changeToOppositeColorAnimation);
         // Update move count
         UpdateMoveCounter();
     }
