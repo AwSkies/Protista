@@ -953,7 +953,7 @@ public class GameManager : MonoBehaviour
     /// <summary>Updates the move counter to the current values</summary>
     private void UpdateMoveCounter()
     {
-        moveCounterText.SetText(movesTaken.ToString());
+        moveCounterText.SetText((movesTaken + 1).ToString());
         maxMoveCounterText.SetText(maxMoves.ToString());
     }
 
