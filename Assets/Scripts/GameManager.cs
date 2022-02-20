@@ -46,7 +46,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI moveCounterText;
     [SerializeField]
-    private TextMeshProUGUI maxMovesCounterText;
+    private TextMeshProUGUI maxMoveCounterText;
     [SerializeField]
     private Animator invalidMovementOptionAnimator;
     [SerializeField]
@@ -59,6 +59,7 @@ public class GameManager : MonoBehaviour
     private Animator moveCounterAnimator;
     [SerializeField]
     private Animator maxMoveCounterAnimator;
+    [SerializeField]
     private GameObject[] buttons;
 
     [Header("Game behavior variables for tweaking")]
@@ -107,7 +108,7 @@ public class GameManager : MonoBehaviour
     // The number of moves that have been taken so far this turn
     private int movesTaken = 0;
     // The maximum number of moves that can be taken on this turn
-    private int maxMoves = baseMaxMoves;
+    private int maxMoves;
     // Selected hexes
     private List<GameObject> selected = new List<GameObject>();
     [NonSerialized]
@@ -771,7 +772,7 @@ public class GameManager : MonoBehaviour
         );
     }
 
-    /// <summary>Peforms operations to start the next turn</summary>
+    /// <summary>Peforms operations to start the next turn, like resetting counters and shifting colors</summary>
     private void StartNewTurn()
     {
         // Reset number of moves
@@ -788,8 +789,8 @@ public class GameManager : MonoBehaviour
             turnColor = "black";
             slideAnimation = "SlideRight";
             turnCounterAnimation = "WhiteToBlack";
-            moveCounterAnimation = "WhiteToBlack"
-            maxMoveCounterAnimation = "BlackToWhite"
+            moveCounterAnimation = "WhiteToBlack";
+            maxMoveCounterAnimation = "BlackToWhite";
             turnTextAnimator = blackTurnAnimator;
         }
         else 
@@ -797,8 +798,8 @@ public class GameManager : MonoBehaviour
             turnColor = "white";
             slideAnimation = "SlideLeft";
             turnCounterAnimation = "BlackToWhite";
-            moveCounterAnimation = "BlackToWhite"
-            maxMoveCounterAnimation = "WhiteToBlack"
+            moveCounterAnimation = "BlackToWhite";
+            maxMoveCounterAnimation = "WhiteToBlack";
             turnTextAnimator = whiteTurnAnimator;
         }
         // Display turn text
@@ -820,7 +821,7 @@ public class GameManager : MonoBehaviour
         movesTaken++;
 
         // The loops in this color on the board after this move
-        Dictionary<List<BoardPosition>> loops = new Dictionary<List<BoardPosition>> {
+        Dictionary<string, List<BoardPosition>> loops = new Dictionary<string, List<BoardPosition>> {
             {"white", new List<BoardPosition>()},
             {"black", new List<BoardPosition>()}
         };
@@ -832,7 +833,7 @@ public class GameManager : MonoBehaviour
         {
             // Cache current hex
             Hex hex = board.hexDex[i % rows, i / rows].GetComponent<Hex>();
-            string color;
+            string color = "";
             // If there is no piece on this hex or the piece is not the same color
             if (hex.piece != null)
             {
@@ -856,14 +857,14 @@ public class GameManager : MonoBehaviour
                     // Cache hex component of this neighbor
                     Hex neighborComponent = neighbor.GetComponent<Hex>();
                     // If there isn't a piece on the neighbor or color has been set and it's the wrong color
-                    if (neighborComponent.piece == null || (color != null && neighborComponent.piece.tag != color))
+                    if (neighborComponent.piece == null || (color != "" && neighborComponent.piece.tag != color))
                     {
                         // Then the hex is not surrounded
                         surrounded = false;
                         break;
                     }
                     // If the color has not been set and there's a piece on this neighbor
-                    else if (color == null && neighborComponent.piece != null)
+                    else if (color == "" && neighborComponent.piece != null)
                     {
                         // Set color to the color of the piece on this neighbor
                         color = neighborComponent.piece.tag;
@@ -952,8 +953,8 @@ public class GameManager : MonoBehaviour
     /// <summary>Updates the move counter to the current values</summary>
     private void UpdateMoveCounter()
     {
-        moveCounterText.SetText((string) movesTaken);
-        maxMovesCounterText.SetText((string) maxMoves);
+        moveCounterText.SetText(movesTaken.ToString());
+        maxMoveCounterText.SetText(maxMoves.ToString());
     }
 
     /// <summary>Changes clickable status of every movement button except for the one specified</summary>
