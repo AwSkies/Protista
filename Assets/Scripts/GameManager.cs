@@ -114,8 +114,19 @@ public class GameManager : MonoBehaviour
     [NonSerialized]
     // The pieces that are moving
     public List<Piece> movingPieces = new List<Piece>();
+
+    #region Variables for finding loops at the end of each turn
+    // The pieces that have been examined in the current region when looking for loops within a region
+    private List<BoardPosition> hexesInRegion = new List<BoardPosition>();
+    // The pieces that have been examined on the whole board over this floodfill iteration
+    private List<BoardPosition> hexesFilled = new List<BoardPosition>();
+    // Whether or not this region is a loop
+    private bool isLoop = true;
     // The coordinates of loops in each color on the previous move
-    private Dictionary<string, List<BoardPosition>> previousMoveLoops = new Dictionary<string, List<BoardPosition>>();
+    // The string key is the color
+    // The value is a list containing the loops (lists of board positions)
+    private Dictionary<string, List<List<BoardPosition>>> previousMoveLoops = new Dictionary<string, List<List<BoardPosition>>>();
+    #endregion
 
     // The hex hit with a raycast on the previous frame
     private GameObject previousHexHit;
@@ -820,85 +831,52 @@ public class GameManager : MonoBehaviour
         movesTaken++;
 
         // The loops in this color on the board after this move
-        Dictionary<string, List<BoardPosition>> loops = new Dictionary<string, List<BoardPosition>> {
-            {"white", new List<BoardPosition>()},
-            {"black", new List<BoardPosition>()}
+        Dictionary<string, List<List<BoardPosition>>> loops = new Dictionary<string, List<List<BoardPosition>>> {
+            {"white", new List<List<BoardPosition>>()},
+            {"black", new List<List<BoardPosition>>()}
         };
-        // The number of new loops
-        int newLoops = 0;
+
+        string[] colors = {"white", "black"};
+        
         // Search for loops
-        // Search through every hex on the board
-        for (int i = 0; i < rows * columns; i++)
+        // Repeat for each color
+        foreach (string color in colors)
         {
-            // Cache current hex
-            Hex hex = board.hexDex[i % rows, i / rows].GetComponent<Hex>();
-            string color = "";
-            // If there is no piece on this hex or the piece is not the same color
-            if (hex.piece != null)
+            // Reset hexes filled for this color
+            hexesFilled = new List<BoardPosition>();
+            // Search through every hex on the board
+            for (int i = 0; i < rows * columns; i++)
             {
-                if (hex.piece.tag == "white")
+                GameObject hex = board.hexDex[i % rows, i / rows];
+                BoardPosition position = hex.GetComponent<BoardPosition>();
+                // If the hex has not already been filled and it either has no pieces on it or pieces of the opposite color
+                if (!hexesFilled.Contains(position) && (hex.GetComponent<Hex>.piece == null || hex.GetComponent<Hex>.piece.tag != color))
                 {
-                    color = "black";
-                }
-                else
-                {
-                    color = "white";
-                }
-            }
-            // Whether this hex is surrounded by all of the same color pieces
-            bool surrounded = true;
-            // Loop through all neighbors
-            foreach (GameObject neighbor in hex.neighbors)
-            {
-                // If neighbor exists
-                if (neighbor != null)
-                {
-                    // Cache hex component of this neighbor
-                    Hex neighborComponent = neighbor.GetComponent<Hex>();
-                    // If there isn't a piece on the neighbor or color has been set and it's the wrong color
-                    if (neighborComponent.piece == null || (color != "" && neighborComponent.piece.tag != color))
-                    {
-                        // Then the hex is not surrounded
-                        surrounded = false;
-                        break;
-                    }
-                    // If the color has not been set and there's a piece on this neighbor
-                    else if (color == "" && neighborComponent.piece != null)
-                    {
-                        // Set color to the color of the piece on this neighbor
-                        color = neighborComponent.piece.tag;
-                    }
-                }
-                else
-                {
-                    // Then the hex is not surrounded
-                    surrounded = false;
-                    break;
-                }
-            }
-            // If the hex is surrounded
-            if (surrounded)
-            {
-                // Cache board position
-                BoardPosition pos = hex.GetComponent<BoardPosition>();
-                // Add this loop to the loops
-                loops[color].Add(pos);
-                // If this loop was not there the previous move
-                // (If the previous move loops of this color does not contain this board position)
-                if (!previousMoveLoops[color].Contains(pos))
-                {
-                    // Increment the number of new loops
-                    newLoops++;
+                    // Reset variables for finding regions
+                    isLoop = true;
+                    hexesInRegion = new List<BoardPosition>();
+
+                    // Find hexes in region
+                    RegionInLoop(position)
+
+                    // Add region found to list of loops in this color
+                    loops[color].Add(hexesInRegion);
+                    // Add hexes examined to the list of filled
+                    hexesFilled = hexesFilled.AddRange(hexesInRegion);
                 }
             }
         }
+
+        // The number of new loops
+        int newLoops = 0;
+        // Find the number of new loops
+        // <future code here>
 
         // Cap the number of extra moves 
         if (newLoops > maxExtraMovesPerMove)
         {
             newLoops = maxExtraMovesPerMove;
         }
-
         // Increase number of moves this turn
         maxMoves += newLoops;
 
@@ -907,9 +885,41 @@ public class GameManager : MonoBehaviour
         {
             StartNewTurn();
         }
+
         // Set this move's loops as the previous loops for next move
         previousMoveLoops = loops;
         UpdateMoveCounter();
+    }
+
+    /// <summary>Finds a region bordered by pieces of a certain color using a floodfill algorithm.
+    /// Sets <c>hexesInRegion</c> to all of the hexes within the region and <c>hitWall</c> to true if wall was hit.</summary>
+    /// <param name = "source">A hex within the region that the status of would like to be determined</param>
+    /// <param name = "color">The string of the color to find loops of</param>
+    private void RegionInLoop(BoardPosition source, String color)
+    {
+        // If the source position has not been examined yet and no wall has been hit yet
+        if (!hexesInRegion.Contains(source) && isLoop)
+        {
+            // This position has now been examined
+            hexesInRegion.Add(source);
+            // Loop through each neighbor
+            foreach (GameObject hex in board.hexDex[source.z, source.x].GetComponent<Hex>().neighbors)
+            {
+                // If this hex is null (meaning that there is no neigbor in this direction, then we hit a wall)
+                if (hex != null)
+                {
+                    // Since we hit a wall, this is not bordered by pieces and is not a loop
+                    isLoop = false;
+                    return;
+                }
+                // If there is no piece on this hex or the piece is of the opposite color
+                else if (hex.GetComponent<Hex>.piece == null || hex.GetComponent<Hex>.piece.tag != color)
+                {
+                    // Floodfill with the next neighbor
+                    RegionInLoop(source, color);
+                }
+            }
+        }
     }
 
     /// <summary>Starts a move of the specified type by setting buttons and variables</summary>
