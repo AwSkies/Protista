@@ -865,7 +865,16 @@ public class GameManager : MonoBehaviour
         // The number of new loops
         int newLoops = 0;
         // Find the number of new loops
-        // <future code here>
+        // Loop through each loop found of this color
+        foreach (bool[,] region in loops[turnColor])
+        {
+            // If this reigion was not there on the previous turn
+            if (!previousMoveLoops[turnColor].Contains(region))
+            {
+                // There is one new loop
+                newLoops++;
+            }
+        }
 
         // Cap the number of extra moves 
         if (newLoops > maxExtraMovesPerMove)
