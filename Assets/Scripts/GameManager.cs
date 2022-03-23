@@ -116,16 +116,12 @@ public class GameManager : MonoBehaviour
     public List<Piece> movingPieces = new List<Piece>();
 
     #region Variables for finding loops at the end of each turn
-    // The pieces that have been examined in the current region when looking for loops within a region
-    private List<BoardPosition> hexesInRegion = new List<BoardPosition>();
     // The pieces that have been examined on the whole board over this floodfill iteration
     private List<BoardPosition> hexesFilled = new List<BoardPosition>();
-    // Whether or not this region is a loop
-    private bool isLoop = true;
     // The coordinates of loops in each color on the previous move
     // The string key is the color
     // The value is a list containing the loops (lists of board positions)
-    private Dictionary<string, List<List<BoardPosition>>> previousMoveLoops = new Dictionary<string, List<List<BoardPosition>>>();
+    private Dictionary<string, List<bool[,]>> previousMoveLoops = new Dictionary<string, List<bool[,]>>();
     #endregion
 
     // The hex hit with a raycast on the previous frame
@@ -831,9 +827,9 @@ public class GameManager : MonoBehaviour
         movesTaken++;
 
         // The loops in this color on the board after this move
-        Dictionary<string, List<List<BoardPosition>>> loops = new Dictionary<string, List<List<BoardPosition>>> {
-            {"white", new List<List<BoardPosition>>()},
-            {"black", new List<List<BoardPosition>>()}
+        Dictionary<string, List<bool[,]>> loops = new Dictionary<string, List<bool[,]>> {
+            {"white", new List<bool[,]>()},
+            {"black", new List<bool[,]>()}
         };
 
         string[] colors = {"white", "black"};
@@ -852,17 +848,16 @@ public class GameManager : MonoBehaviour
                 // If the hex has not already been filled and it either has no pieces on it or pieces of the opposite color
                 if (!hexesFilled.Contains(position) && (hex.GetComponent<Hex>.piece == null || hex.GetComponent<Hex>.piece.tag != color))
                 {
-                    // Reset variables for finding regions
-                    isLoop = true;
-                    hexesInRegion = new List<BoardPosition>();
-
+                    // The region to be examined
+                    bool[,] region = new bool[rows, columns];
                     // Find hexes in region
-                    RegionInLoop(position)
-
-                    // Add region found to list of loops in this color
-                    loops[color].Add(hexesInRegion);
-                    // Add hexes examined to the list of filled
-                    hexesFilled = hexesFilled.AddRange(hexesInRegion);
+                    bool isLoop = ReigionIsLoop(position, color, out region);
+                    // If the region is a loop
+                    if (isLoop)
+                    {
+                        // Add region found to list of loops in this color
+                        loops[color].Add(region);
+                    }
                 }
             }
         }
@@ -892,33 +887,39 @@ public class GameManager : MonoBehaviour
     }
 
     /// <summary>Finds a region bordered by pieces of a certain color using a floodfill algorithm.
-    /// Sets <c>hexesInRegion</c> to all of the hexes within the region and <c>hitWall</c> to true if wall was hit.</summary>
+    /// Sets <c>region</c> to all of the hexes within the region and <c>hitWall</c> to true if wall was hit.</summary>
     /// <param name = "source">A hex within the region that the status of would like to be determined</param>
     /// <param name = "color">The string of the color to find loops of</param>
-    private void RegionInLoop(BoardPosition source, String color)
+    private bool ReigionIsLoop(BoardPosition source, String color, out bool[,] region)
     {
-        // If the source position has not been examined yet and no wall has been hit yet
-        if (!hexesInRegion.Contains(source) && isLoop)
+        // Cache source hex
+        GameObject sourceHex = board.hexDex[source.z, source.x];
+        // If this hex has no piece on it or it has a piece of the opposite color
+        if (sourceHex.GetComponent<Hex>.piece == null || sourceHex.GetComponent<Hex>.piece.tag != color)
         {
             // This position has now been examined
-            hexesInRegion.Add(source);
+            hexesFilled.Add(source);
+            // Add this position to the region
+            region[source.z, source.x] = true;
+            // Whether any of the neighbors is the edge of the board
+            bool[] isLoop = new bool[6];
             // Loop through each neighbor
-            foreach (GameObject hex in board.hexDex[source.z, source.x].GetComponent<Hex>().neighbors)
+            for (int i = 0; i < 6; i++)
             {
+                // Get this neighbor hex
+                hex = board.hexDex[source.z, source.x].GetComponent<Hex>().neighbors[i];
                 // If this hex is null (meaning that there is no neigbor in this direction, then we hit a wall)
                 if (hex != null)
                 {
-                    // Since we hit a wall, this is not bordered by pieces and is not a loop
-                    isLoop = false;
-                    return;
-                }
-                // If there is no piece on this hex or the piece is of the opposite color
-                else if (hex.GetComponent<Hex>.piece == null || hex.GetComponent<Hex>.piece.tag != color)
-                {
                     // Floodfill with the next neighbor
-                    RegionInLoop(source, color);
+                    isLoop[i] = ReigionIsLoop(hex.GetComponent<BoardPosition>(), color, out region));
                 }
             }
+            return isLoop.All(b => b);
+        }
+        else
+        {
+            return true;
         }
     }
 
