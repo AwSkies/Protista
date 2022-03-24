@@ -851,7 +851,7 @@ public class GameManager : MonoBehaviour
                     // The region to be examined
                     bool[,] region = new bool[rows, columns];
                     // Find hexes in region
-                    bool isLoop = ReigionIsLoop(position, color, ref region);
+                    bool isLoop = RegionIsLoop(position, color, ref region);
                     // If the region is a loop
                     if (isLoop)
                     {
@@ -902,7 +902,7 @@ public class GameManager : MonoBehaviour
     /// Sets <c>region</c> to all of the hexes within the region and <c>hitWall</c> to true if wall was hit.</summary>
     /// <param name = "source">A hex within the region that the status of would like to be determined</param>
     /// <param name = "color">The string of the color to find loops of</param>
-    private bool ReigionIsLoop(BoardPosition source, String color, ref bool[,] region)
+    private bool RegionIsLoop(BoardPosition source, String color, ref bool[,] region)
     {
         // Cache source hex
         GameObject sourceHex = board.hexDex[source.z, source.x];
@@ -924,7 +924,7 @@ public class GameManager : MonoBehaviour
                 if (hex != null)
                 {
                     // Floodfill with the next neighbor
-                    isLoop[i] = ReigionIsLoop(hex.GetComponent<BoardPosition>(), color, ref region);
+                    isLoop[i] = RegionIsLoop(hex.GetComponent<BoardPosition>(), color, ref region);
                 }
             }
             return isLoop.All(b => b);
