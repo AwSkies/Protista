@@ -118,10 +118,8 @@ public class GameManager : MonoBehaviour
     #region Variables for finding loops at the end of each turn
     // The pieces that have been examined on the whole board over this floodfill iteration
     private List<BoardPosition> hexesFilled = new List<BoardPosition>();
-    // The coordinates of loops in each color on the previous move
-    // The string key is the color
-    // The value is a list containing the loops (lists of board positions)
-    private Dictionary<string, List<bool[,]>> previousMoveLoops = new Dictionary<string, List<bool[,]>>();
+    // The number of the loops in each color
+    private Dictionary<string, int> previousMoveLoops = 0;
     #endregion
 
     // The hex hit with a raycast on the previous frame
@@ -827,9 +825,9 @@ public class GameManager : MonoBehaviour
         movesTaken++;
 
         // The loops in this color on the board after this move
-        Dictionary<string, List<bool[,]>> loops = new Dictionary<string, List<bool[,]>> {
-            {"white", new List<bool[,]>()},
-            {"black", new List<bool[,]>()}
+        Dictionary<string, int> loops = new Dictionary<string, int> {
+            {"white", 0},
+            {"black", 0}
         };
 
         string[] colors = {"white", "black"};
@@ -843,46 +841,35 @@ public class GameManager : MonoBehaviour
             // Search through every hex on the board
             for (int i = 0; i < rows * columns; i++)
             {
+                // Cache stuff at this position
                 GameObject hex = board.hexDex[i % rows, i / rows];
                 BoardPosition position = hex.GetComponent<BoardPosition>();
                 // If the hex has not already been filled and it either has no pieces on it or pieces of the opposite color
                 if (!hexesFilled.Contains(position) && (hex.GetComponent<Hex>().piece == null || hex.GetComponent<Hex>().piece.tag != color))
                 {
-                    // The region to be examined
-                    bool[,] region = new bool[rows, columns];
-                    // Find hexes in region
-                    bool isLoop = RegionIsLoop(position, color, ref region);
+                    // Determine if there is a region at this loop
+                    bool isLoop = RegionIsLoop(position, color);
                     // If the region is a loop
                     if (isLoop)
                     {
                         // Add region found to list of loops in this color
-                        loops[color].Add(region);
+                        loops[color]++;
                     }
                 }
             }
         }
 
         // The number of new loops
-        int newLoops = 0;
-        // Find the number of new loops
-        // Loop through each loop found of this color
-        foreach (bool[,] region in loops[turnColor])
-        {
-            // This is very intimidating
-            // Checks if none of the loops in previousMoveLoops of this color, 
-            // when converted from a 2D array of bools to an IEnumerable of bools,
-            // contains the same elements in the same order
-            if (!previousMoveLoops[turnColor].Any(loop => loop.Cast<bool>().SequenceEqual(region.Cast<bool>())))
-            {
-                // There is one new loop
-                newLoops++;
-            }
-        }
-
+        int newLoops = loops[turnColor] - previousMoveLoops[turnColor];
         // Cap the number of extra moves 
         if (newLoops > maxExtraMovesPerMove)
         {
             newLoops = maxExtraMovesPerMove;
+        }
+        // Make sure you don't lose moves if you break a loop
+        else if (newLoops < 0)
+        {
+            newLoops = 0;
         }
         // Increase number of moves this turn
         maxMoves += newLoops;
@@ -902,7 +889,7 @@ public class GameManager : MonoBehaviour
     /// Sets <c>region</c> to all of the hexes within the region and <c>hitWall</c> to true if wall was hit.</summary>
     /// <param name = "source">A hex within the region that the status of would like to be determined</param>
     /// <param name = "color">The string of the color to find loops of</param>
-    private bool RegionIsLoop(BoardPosition source, String color, ref bool[,] region)
+    private bool RegionIsLoop(BoardPosition source, String color)
     {
         // Cache source hex
         GameObject sourceHex = board.hexDex[source.z, source.x];
@@ -911,8 +898,6 @@ public class GameManager : MonoBehaviour
         {
             // This position has now been examined
             hexesFilled.Add(source);
-            // Add this position to the region
-            region[source.z, source.x] = true;
             // Whether any of the neighbors is the edge of the board
             bool[] isLoop = new bool[6];
             // Loop through each neighbor
@@ -924,7 +909,7 @@ public class GameManager : MonoBehaviour
                 if (hex != null)
                 {
                     // Floodfill with the next neighbor
-                    isLoop[i] = RegionIsLoop(hex.GetComponent<BoardPosition>(), color, ref region);
+                    isLoop[i] = RegionIsLoop(hex.GetComponent<BoardPosition>(), color);
                 }
             }
             return isLoop.All(b => b);
