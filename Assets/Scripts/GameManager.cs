@@ -119,7 +119,10 @@ public class GameManager : MonoBehaviour
     // The pieces that have been examined on the whole board over this floodfill iteration
     private List<BoardPosition> hexesFilled = new List<BoardPosition>();
     // The number of the loops in each color
-    private Dictionary<string, int> previousMoveLoops = 0;
+    private Dictionary<string, int> previousMoveLoops = new Dictionary<string, int> {
+        {"white", 0},
+        {"black", 0}
+    };
     #endregion
 
     // The hex hit with a raycast on the previous frame
