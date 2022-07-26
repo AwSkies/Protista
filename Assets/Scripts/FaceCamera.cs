@@ -16,7 +16,8 @@ public class FaceCamera : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Transforms rotation to look at the camera
-        transform.rotation = Quaternion.LookRotation(transform.position - cam.transform.GetChild(0).position);
+        // Sets rotation to equal camera rotation
+        // Since camera rotation is always looking downwards it will remain flat
+        transform.rotation = cam.transform.rotation;
     }
 }

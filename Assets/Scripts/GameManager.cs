@@ -11,6 +11,8 @@ public class GameManager : MonoBehaviour
     #region Serialized fields for setting in the editor
     [SerializeField]
     public Board board;
+    [SerializeField]
+    private Camera cam;
 
     [Header("Game Pieces")]
     [SerializeField]
@@ -47,6 +49,8 @@ public class GameManager : MonoBehaviour
     private TextMeshProUGUI moveCounterText;
     [SerializeField]
     private TextMeshProUGUI maxMoveCounterText;
+    [SerializeField]
+    private Animator cameraAnimator;
     [SerializeField]
     private Animator invalidMovementOptionAnimator;
     [SerializeField]
@@ -134,14 +138,12 @@ public class GameManager : MonoBehaviour
     private Dictionary<string, List<GameObject>> movementIcons;
     // Template for empty movement icons variable
     private Dictionary<string, List<GameObject>> emptyMovementIcons = new Dictionary<string, List<GameObject>> {
-                                                                                                                    {"arrows", new List<GameObject>()},
-                                                                                                                    {"attack", new List<GameObject>()},
-                                                                                                                    {"stack",  new List<GameObject>()}
-                                                                                                                };
+        {"arrows", new List<GameObject>()},
+        {"attack", new List<GameObject>()},
+        {"stack",  new List<GameObject>()}
+    };
     // The hexes that a move would take a piece along if it were to move to a certain hex
     private Dictionary<GameObject, List<BoardPosition>> stepsTo = new Dictionary<GameObject, List<BoardPosition>>();
-    // The amount of time left to rescind the invalid movement option text
-    private int textRescindCountdown;
 
     #region Variables specific to movement types
     #region Variables for contiguous movement
@@ -424,8 +426,8 @@ public class GameManager : MonoBehaviour
         }
         #endregion
 
-        // Centers camera with generated board by setting transform x position to be half the distance of the number of columns * row space offset
-        Camera.main.transform.position = new Vector3((columns * rowSpace.x) / 2, Camera.main.transform.position.y, Camera.main.transform.position.z);
+        // Centers camera with generated board by positioning the camera above the centerpoint of the board
+        cam.transform.position += rowSpace * ((float)(columns - 1) / 2) + columnSpace * ((float)(rows - 1) / 2);
 
         // Start the first turn
         StartNewTurn();
@@ -438,7 +440,7 @@ public class GameManager : MonoBehaviour
         // This required colliders since it's a physics action
         // Since everything was made with Maya they won't have colliders already
         // So make sure that everything we need to click on is set to have a collider
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
         Physics.Raycast(ray, out hit);
 
@@ -787,17 +789,15 @@ public class GameManager : MonoBehaviour
         movesTaken = 0;
         maxMoves = baseMaxMoves;
         // Switch color and choose animation
-        string slideAnimation;
-        string changeToCurrentColorAnimation;
-        string changeToOppositeColorAnimation;
+        string slideAnimation, changeToCurrentColorAnimation, changeToOppositeColorAnimation, spinAnimation;
         Animator turnTextAnimator;
         if (turnColor == "white")
         {
             turnColor = "black";
             slideAnimation = "SlideRight";
             changeToCurrentColorAnimation = "WhiteToBlack";
-            changeToCurrentColorAnimation = "WhiteToBlack";
             changeToOppositeColorAnimation = "BlackToWhite";
+            spinAnimation = "SpinToBlack";
             turnTextAnimator = blackTurnAnimator;
         }
         else 
@@ -805,8 +805,8 @@ public class GameManager : MonoBehaviour
             turnColor = "white";
             slideAnimation = "SlideLeft";
             changeToCurrentColorAnimation = "BlackToWhite";
-            changeToCurrentColorAnimation = "BlackToWhite";
             changeToOppositeColorAnimation = "WhiteToBlack";
+            spinAnimation = "SpinToWhite";
             turnTextAnimator = whiteTurnAnimator;
         }
         // Display turn text
@@ -817,6 +817,8 @@ public class GameManager : MonoBehaviour
         // Change move counter color
         moveCounterAnimator.Play(changeToCurrentColorAnimation);
         maxMoveCounterAnimator.Play(changeToOppositeColorAnimation);
+        // Spin camera
+        cameraAnimator.Play(spinAnimation);
         // Update move count
         UpdateMoveCounter();
     }
