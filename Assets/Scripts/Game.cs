@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using TMPro;
@@ -37,6 +38,7 @@ public class Game : MonoBehaviour
     {
         // Selects json files in the persistent data path
         var files = from file in Directory.GetFiles(Application.persistentDataPath) where file.EndsWith(".json") select file;
+        // If there are any json files in the directory
         if (files.Count() > 0)
         {
             // Set the no layouts text and button inactive
@@ -54,6 +56,12 @@ public class Game : MonoBehaviour
                 // Add button to list
                 layoutButtons.Add(button);
             }
+        }
+        else
+        {
+            // Make sure the no layouts text and open folder button are enabled
+            noLayoutsText.SetActive(true);
+            openFolderButton.SetActive(true);
         }
     }
 
@@ -89,6 +97,9 @@ public class Game : MonoBehaviour
 
     public void OpenFolder()
     {
-        System.Diagnostics.Process.Start("explorer.exe", Application.persistentDataPath);
+        Process process = new Process();
+        process.StartInfo.FileName = Application.platform == RuntimePlatform.WindowsPlayer || Application.platform == RuntimePlatform.WindowsEditor ? "explorer.exe" : "open";
+        process.StartInfo.Arguments = "file://" + Application.persistentDataPath;
+        process.Start();
     }
 }
