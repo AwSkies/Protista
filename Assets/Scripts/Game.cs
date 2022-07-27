@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using Newtonsoft.Json;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -20,9 +21,24 @@ public class Game : MonoBehaviour
     [SerializeField]
     private GameObject openFolderButton;
     [SerializeField]
-    private GameObject layoutButtonPrefab;
+    private GameObject layoutButton;
     [SerializeField]
     private Transform contentField;
+
+    [SerializeField]
+    private TMP_Text title;
+    [SerializeField]
+    private TMP_Text author;
+    [SerializeField]
+    private TMP_Text description;
+    [SerializeField]
+    private TMP_Text rowText;
+    [SerializeField]
+    private TMP_Text rowCount;
+    [SerializeField]
+    private TMP_Text columnText;
+    [SerializeField]
+    private TMP_Text columnCount;
 
     private List<GameObject> layoutButtons = new List<GameObject>();
 
@@ -33,7 +49,7 @@ public class Game : MonoBehaviour
         SceneManager.LoadScene("GameBoard");
     }
 
-    /// <summary>Displays in the UI the json layouts appearing in the player's data directory</summary>
+    /// <summary>Displays in the UI the json layouts appearing in the player's data directory. Creates a button for each one.</summary>
     public void DisplayJsonLayouts()
     {
         // Selects json files in the persistent data path
@@ -50,9 +66,12 @@ public class Game : MonoBehaviour
             {
                 // Make a button to click on for each of the names
                 // Instantiates a button at the correct position with no rotation and parented to the content field
-                GameObject button = Instantiate(layoutButtonPrefab, contentField);
+                GameObject button = Instantiate(layoutButton, contentField);
+                button.SetActive(true);
                 // Sets the text of the button to be the name of the layout
-                button.transform.GetChild(0).GetComponent<TMP_Text>().SetText(path);
+                button.transform.GetChild(0).GetComponent<TMP_Text>().SetText(Path.GetFileNameWithoutExtension(path));
+                // Stores path in button
+                button.GetComponent<LayoutPath>().path = path;
                 // Add button to list
                 layoutButtons.Add(button);
             }
@@ -73,6 +92,34 @@ public class Game : MonoBehaviour
             Destroy(button);
         }
         layoutButtons = new List<GameObject>();
+    }
+
+    public void DisplayInformation(LayoutPath path)
+    {
+        string json = File.ReadAllText(path.path);
+        layout = JsonConvert.DeserializeObject<Layout>(json);
+        title.SetText(Path.GetFileNameWithoutExtension(path.path));
+        if (layout != null)
+        {
+            author.SetText("By " + layout.Author);
+            description.SetText(layout.Description);
+            rowCount.SetText(layout.Rows.ToString());
+            columnCount.SetText(layout.Columns.ToString());
+            author.gameObject.SetActive(true);
+            rowText.gameObject.SetActive(true);
+            rowCount.gameObject.SetActive(true);
+            columnText.gameObject.SetActive(true);
+            columnCount.gameObject.SetActive(true);
+        }
+        else
+        {
+            description.SetText("There is an error with this layout file. Check the formatting to make sure it is correct.");
+            author.gameObject.SetActive(false);
+            rowText.gameObject.SetActive(false);
+            rowCount.gameObject.SetActive(false);
+            columnText.gameObject.SetActive(false);
+            columnCount.gameObject.SetActive(false);
+        }
     }
 
     /// <summary>Sets game type to corresponding enum based on a string</summary>

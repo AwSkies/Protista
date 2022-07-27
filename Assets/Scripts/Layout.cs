@@ -7,6 +7,6 @@ public class Layout
     public (int Z, int X, int Stack)[] BlackPieces { get; set; }
     public (int Z, int X, int Stack)[] WhitePieces { get; set; }
 
-    public string author;
-    public string description;
+    public string Author { get; set; }
+    public string Description { get; set; }
 }
