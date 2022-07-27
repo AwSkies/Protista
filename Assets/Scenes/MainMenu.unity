@@ -6986,12 +6986,14 @@ MonoBehaviour:
   openFolderButton: {fileID: 1255079340}
   layoutButton: {fileID: 7488278334476071885}
   contentField: {fileID: 1473958367}
-  layoutInformation: {fileID: 0}
-  title: {fileID: 0}
-  author: {fileID: 0}
-  description: {fileID: 0}
-  rowCount: {fileID: 0}
-  columnCount: {fileID: 0}
+  title: {fileID: 423100015}
+  author: {fileID: 364756747}
+  description: {fileID: 1038757016}
+  rowText: {fileID: 1469364013}
+  rowCount: {fileID: 1327804118}
+  columnText: {fileID: 361619173}
+  columnCount: {fileID: 1708517561}
+  playButton: {fileID: 2145751130}
 --- !u!114 &1177989847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9157,7 +9159,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1534982959}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 110101638}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1534982959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -14090,7 +14104,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1177989846}
         m_TargetAssemblyTypeName: Game, Assembly-CSharp
-        m_MethodName: OpenFolder
+        m_MethodName: LoadGame
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -14247,11 +14261,11 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1177989846}
         m_TargetAssemblyTypeName: Game, Assembly-CSharp
-        m_MethodName: ShowInformation
-        m_Mode: 1
+        m_MethodName: DisplayInformation
+        m_Mode: 2
         m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_ObjectArgument: {fileID: 7488278334476071886}
+          m_ObjectArgumentAssemblyTypeName: LayoutPath, Assembly-CSharp
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -14454,6 +14468,7 @@ GameObject:
   - component: {fileID: 2479885149903966824}
   - component: {fileID: 4050297785546900399}
   - component: {fileID: 1535285888044455398}
+  - component: {fileID: 7488278334476071886}
   m_Layer: 5
   m_Name: CustomLayoutButton
   m_TagString: Untagged
@@ -14461,6 +14476,19 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 0
+--- !u!114 &7488278334476071886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7488278334476071885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 189a0bf6904bea24884e03907bd70fbe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  path: 
 --- !u!224 &7821434029831223817
 RectTransform:
   m_ObjectHideFlags: 0

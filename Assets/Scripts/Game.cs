@@ -39,6 +39,8 @@ public class Game : MonoBehaviour
     private TMP_Text columnText;
     [SerializeField]
     private TMP_Text columnCount;
+    [SerializeField]
+    private GameObject playButton;
 
     private List<GameObject> layoutButtons = new List<GameObject>();
 
@@ -97,7 +99,14 @@ public class Game : MonoBehaviour
     public void DisplayInformation(LayoutPath path)
     {
         string json = File.ReadAllText(path.path);
-        layout = JsonConvert.DeserializeObject<Layout>(json);
+        try
+        {
+            layout = JsonConvert.DeserializeObject<Layout>(json);
+        }
+        catch (JsonReaderException)
+        {
+            layout = null;
+        }
         title.SetText(Path.GetFileNameWithoutExtension(path.path));
         if (layout != null)
         {
@@ -110,6 +119,7 @@ public class Game : MonoBehaviour
             rowCount.gameObject.SetActive(true);
             columnText.gameObject.SetActive(true);
             columnCount.gameObject.SetActive(true);
+            playButton.gameObject.SetActive(true);
         }
         else
         {
@@ -119,6 +129,7 @@ public class Game : MonoBehaviour
             rowCount.gameObject.SetActive(false);
             columnText.gameObject.SetActive(false);
             columnCount.gameObject.SetActive(false);
+            playButton.gameObject.SetActive(false);
         }
     }
 
