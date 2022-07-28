@@ -724,7 +724,7 @@ RectTransform:
   - {fileID: 381385164}
   - {fileID: 110101639}
   m_Father: {fileID: 842611127}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1134,7 +1134,7 @@ RectTransform:
   - {fileID: 700007594}
   - {fileID: 294660559}
   m_Father: {fileID: 842611127}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1499,8 +1499,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: SetGameType
         m_Mode: 5
         m_Arguments:
@@ -1789,8 +1789,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: SetGameType
         m_Mode: 5
         m_Arguments:
@@ -2552,7 +2552,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 690644758}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: Quit
         m_Mode: 1
@@ -4160,8 +4160,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: LoadGame
         m_Mode: 1
         m_Arguments:
@@ -4169,7 +4169,7 @@ MonoBehaviour:
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
-          m_StringArgument: 
+          m_StringArgument: Standard
           m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &564564243
@@ -4820,7 +4820,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 690644757}
-  - component: {fileID: 690644758}
   - component: {fileID: 690644759}
   - component: {fileID: 690644760}
   m_Layer: 5
@@ -4846,25 +4845,13 @@ RectTransform:
   - {fileID: 1507767808}
   - {fileID: 298300735}
   m_Father: {fileID: 842611127}
-  m_RootOrder: 2
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 220, y: 307}
   m_Pivot: {x: 0, y: 0}
---- !u!114 &690644758
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 690644756}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a93759d858b21484dabf463ca92c5d28, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!95 &690644759
 Animator:
   serializedVersion: 3
@@ -5016,8 +5003,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: DisplayJsonLayouts
         m_Mode: 1
         m_Arguments:
@@ -5700,6 +5687,7 @@ RectTransform:
   m_Children:
   - {fileID: 2076450969}
   - {fileID: 1129904059}
+  - {fileID: 1916105992}
   - {fileID: 690644757}
   - {fileID: 1177989844}
   - {fileID: 189599554}
@@ -7199,7 +7187,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1177989844}
   - component: {fileID: 1177989845}
-  - component: {fileID: 1177989846}
   - component: {fileID: 1177989847}
   m_Layer: 5
   m_Name: Play
@@ -7224,7 +7211,7 @@ RectTransform:
   - {fileID: 228675948}
   - {fileID: 548079581}
   m_Father: {fileID: 842611127}
-  m_RootOrder: 3
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -7250,30 +7237,6 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
---- !u!114 &1177989846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1177989843}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8403f682e2d2bf64999cd1197cacc030, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  noLayoutsText: {fileID: 1051088325}
-  openFolderButton: {fileID: 1255079340}
-  layoutButton: {fileID: 7488278334476071885}
-  contentField: {fileID: 1473958367}
-  title: {fileID: 423100015}
-  author: {fileID: 364756747}
-  description: {fileID: 1038757016}
-  rowText: {fileID: 1469364013}
-  rowCount: {fileID: 1327804118}
-  columnText: {fileID: 361619173}
-  columnCount: {fileID: 1708517561}
-  playButton: {fileID: 2145751130}
 --- !u!114 &1177989847
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7603,8 +7566,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: OpenFolder
         m_Mode: 1
         m_Arguments:
@@ -8174,7 +8137,7 @@ RectTransform:
   m_Children:
   - {fileID: 322782982}
   m_Father: {fileID: 842611127}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -9269,7 +9232,7 @@ GameObject:
   - component: {fileID: 1481277877}
   - component: {fileID: 1481277876}
   m_Layer: 0
-  m_Name: Group2
+  m_Name: HexGroup2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9392,7 +9355,7 @@ GameObject:
   - component: {fileID: 1494848771}
   - component: {fileID: 1494848770}
   m_Layer: 0
-  m_Name: Group1
+  m_Name: HexGroup1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -10612,8 +10575,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: SetGameType
         m_Mode: 5
         m_Arguments:
@@ -12417,6 +12380,66 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e0069b5aa707e2e4188d9e8a993dcf00, type: 3}
+--- !u!1 &1916105990
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1916105992}
+  - component: {fileID: 1916105991}
+  m_Layer: 5
+  m_Name: Menu
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1916105991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916105990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8403f682e2d2bf64999cd1197cacc030, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noLayoutsText: {fileID: 1051088325}
+  openFolderButton: {fileID: 1255079340}
+  layoutButton: {fileID: 7488278334476071885}
+  contentField: {fileID: 1473958367}
+  title: {fileID: 423100015}
+  author: {fileID: 364756747}
+  description: {fileID: 1038757016}
+  rowText: {fileID: 1469364013}
+  rowCount: {fileID: 1327804118}
+  columnText: {fileID: 361619173}
+  columnCount: {fileID: 1708517561}
+  playButton: {fileID: 2145751130}
+--- !u!224 &1916105992
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1916105990}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 842611127}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!4 &1917494558 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6412439877986423550, guid: e0069b5aa707e2e4188d9e8a993dcf00,
@@ -12664,7 +12687,7 @@ RectTransform:
   - {fileID: 143591026}
   - {fileID: 1646537720}
   m_Father: {fileID: 842611127}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -12798,8 +12821,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: OpenFolder
         m_Mode: 1
         m_Arguments:
@@ -13868,7 +13891,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 1177989846}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: Game, Assembly-CSharp
         m_MethodName: DeleteJsonLayouts
         m_Mode: 1
@@ -14452,8 +14475,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: DeleteJsonLayouts
         m_Mode: 1
         m_Arguments:
@@ -14464,8 +14487,8 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: DisplayJsonLayouts
         m_Mode: 1
         m_Arguments:
@@ -14755,8 +14778,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: LoadGame
         m_Mode: 1
         m_Arguments:
@@ -14912,8 +14935,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1177989846}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: DisplayInformation
         m_Mode: 2
         m_Arguments:
