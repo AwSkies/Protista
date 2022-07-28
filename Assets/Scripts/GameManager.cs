@@ -959,7 +959,7 @@ public class GameManager : MonoBehaviour
     private void InvalidMovementOptionDisplay(string text = "Invalid Movement Option")
     {
         invalidMovementOptionText.SetText(text);
-        invalidMovementOptionAnimator.Play("InvalidMovementOptionText");
+        invalidMovementOptionAnimator.Play("InvalidMovementOption");
     }
 
     /// <summary>Updates the move counter to the current values</summary>
