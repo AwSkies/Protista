@@ -98,6 +98,9 @@ public class GameManager : MonoBehaviour
     // Vertical offset of each piece
     public Vector3 pieceVertical;
     [SerializeField]
+    // The height of a piece, how high each piece should stack
+    public Vector3 stackingHeight;
+    [SerializeField]
     // Vertical offset of the movement arrows
     private Vector3 movementIconVertical;
     #endregion
@@ -181,62 +184,130 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Decide variables based on whether a custom layout was provided or not
+        if (MainMenu.layout != null)
+        {
+            board.layout = MainMenu.layout;
+        }
+        else
+        {
+            // Set rows and columns to be the ones set in the editor
+            board.layout = new Layout{
+                Rows = rows,
+                Columns = columns
+            };
+        }
+        
+        // If the seed was not set, set it
+        if (board.layout.Seed == null)
+        {
+            board.layout.Seed = Environment.TickCount;
+        }
+
+        // Set board size based on layout
+        rows = board.layout.Rows;
+        columns = board.layout.Columns;
         // Initialize hexDex as 2D array with size of rows and columns specified
         board.hexDex = new GameObject[rows, columns];
 
         // halfBoard = the number of rows that make up half the board, minus the middle row 
         int halfBoard = rows / 2;
         // Initialize random
-        System.Random random = new System.Random();
+        System.Random random = new System.Random((int) board.layout.Seed);
 
         #region Generate objective hex arrangement
         // Makes an array that has whether or not an objective hex needs to be generated in a coordinate, then makes all values false
         bool[,] objHexes = new bool[rows, columns];
-        // Generates the needed number of objective hexes on each side
-        for (int i = 0; i < objHexNum; i++)
+        // If no objective hex layout was specified by the custom layout or no layout was selected
+        if (board.layout.ObjectiveHexes == null)
         {
-            // Chooses the rows that belong to each player
-            // If the position is already occupied by a previously generated objective hex, it will go through the do while loop again
-            int xPos, zPos;
-            do
+            // Set the new objective hex num if it is specified
+            objHexNum = board.layout.ObjectiveHexNum == null ? objHexNum : (int)board.layout.ObjectiveHexNum;
+            board.layout.ObjectiveHexNum = objHexNum;
+            // Set size of objective hex list to be twice the size of the objective hex num set in the editor to account for both sides
+            board.layout.ObjectiveHexes = new int[2 * objHexNum][];
+            // Generates the needed number of objective hexes on each side
+            for (int i = 0; i < objHexNum; i++)
             {
-                // Choose position on one half of the board
-                xPos = random.Next(0, columns);
-                zPos = random.Next(0, halfBoard);
-                // Add objective hex at chosen position
-                objHexes[zPos, xPos] = true;
-                // Mirror objective hexes across board
-                zPos = (rows - 1) - zPos;
-                // Add objective hex at mirrored position
-                objHexes[zPos, xPos] = true;
-            } 
-            while (!objHexes[zPos, xPos]);
+                // Chooses the rows that belong to each player
+                // If the position is already occupied by a previously generated objective hex, it will go through the do while loop again
+                (int Z, int X) position;
+                do
+                {
+                    // Choose position on one half of the board
+                    position.X = random.Next(0, columns);
+                    position.Z = random.Next(0, halfBoard);
+                    // Add objective hex at chosen position
+                    objHexes[position.Z, position.X] = true;
+                    board.layout.ObjectiveHexes[i] = new int[] {position.Z, position.X};
+                    // Mirror objective hexes across board
+                    position.Z = (rows - 1) - position.Z;
+                    // Add objective hex at mirrored position
+                    objHexes[position.Z, position.X] = true;
+                    board.layout.ObjectiveHexes[i + objHexNum] = new int[] {position.Z, position.X};
+                }
+                while (!objHexes[position.Z, position.X]);
+            }
+        }
+        else
+        {
+            // Translate objective hexes specified in layout to bool[] objHexes
+            foreach (int[] objHex in board.layout.ObjectiveHexes)
+            {
+                objHexes[objHex[0], objHex[1]] = true;
+            }
         }
         #endregion
 
         #region Generate piece arrangement
         // Makes an array that has whether or not a piece needs to be generated in a coordinate, then makes all values false
-        bool[,] pieces = new bool[rows, columns];
-        for (int i = 0; i < rows * columns; i++) { pieces[i % rows, i / rows] = false; }
-        // Generates the needed number of pieces on each side
-        for (int i = 0; i < pieceNum; i++)
+        List<PieceInfo> pieces;
+        // If no objective hex layout was specified by the custom layout or no layout was selected
+        if (board.layout.Pieces == null)
         {
-            // Chooses the rows that belong to each player
-            // If the position is already occupied by a previously generated piece, it will go through the do while loop again
-            int xPos, zPos;
-            do
+            // Initalize pieces
+            pieces = new List<PieceInfo>();
+            // Set the new piece num if it is specified
+            pieceNum = board.layout.PieceNum == null ? pieceNum : (int)board.layout.PieceNum;
+            // Generates the needed number of pieces on each side
+            for (int i = 0; i < pieceNum; i++)
             {
-                // Choose position on one half of the board
-                xPos = random.Next(0, columns);
-                zPos = random.Next(0, halfBoard);
-                // Add piece at chosen position
-                pieces[zPos, xPos] = true;
-                // Mirror pieces across board
-                zPos = (rows - 1) - zPos;
-                // Add piece at mirrored position
-                pieces[zPos, xPos] = true;
-            } 
-            while (!pieces[zPos, xPos]);
+                // Chooses the rows that belong to each player
+                // If the position is already occupied by a previously generated piece, it will go through the do while loop again
+                int xPos, zPos;
+                PieceInfo[] samePositions;
+                do
+                {
+                    // Choose position on one half of the board
+                    xPos = random.Next(0, columns);
+                    zPos = random.Next(0, halfBoard);
+                    // Add piece at chosen position
+                    pieces.Add(new PieceInfo {
+                        Position = new int[] {zPos, xPos},
+                        Stacked = 0,
+                        White = true
+                    });
+                    // Mirror pieces across board
+                    zPos = (rows - 1) - zPos;
+                    // Add piece at mirrored position
+                    pieces.Add(new PieceInfo {
+                        Position = new int[] {zPos, xPos},
+                        Stacked = 0,
+                        White = false
+                    });
+                    // Get list of pieces that have the same position as the selected one to make sure that two pieces aren't generated on top of each other
+                    samePositions =
+                        (from piece in pieces 
+                        where piece.Position[0] == zPos && piece.Position[1] == xPos
+                        select piece).ToArray();
+                }
+                // There should only be one piece with the same position as the one we just placed
+                while (samePositions.Length > 1);
+            }
+        }
+        else
+        {
+            pieces = board.layout.Pieces;
         }
         #endregion
 
@@ -265,7 +336,6 @@ public class GameManager : MonoBehaviour
             {
                 // Hex and piece that are going to be placed
                 GameObject hexToPlace;
-                GameObject pieceToPlace;
 
                 #region Choose colors
                 // Color for top of hex
@@ -278,21 +348,18 @@ public class GameManager : MonoBehaviour
                 if (z < halfBoard)
                 {
                     color = 0;
-                    pieceToPlace = whitePiecePrefab;
                 }
                 // If z is one more than half the board and the number of rows is odd
                 // Color is neutral
                 else if (z == halfBoard && rows % 2 == 1)
                 {
                     color = 2;
-                    pieceToPlace = null;
                 }
                 // If on the second half
                 // Color is black
                 else
                 {
                     color = 1;
-                    pieceToPlace = blackPiecePrefab;
                 }
                 
                 // Choose to place normal or objective hex based on earlier generation
@@ -318,19 +385,6 @@ public class GameManager : MonoBehaviour
                 board.hexDex[z, x] = hexSpawned;
                 #endregion
 
-
-                // Choose whether or not to spawn pieces based on earlier generation
-                if (pieces[z, x])
-                {
-                    // Spawn piece above hex, add correct board position, and place in hexDex
-                    GameObject pieceSpawned = Instantiate(pieceToPlace, lastPosition + pieceVertical, Quaternion.identity);
-                    // Cache board position
-                    BoardPosition piecePosition = pieceSpawned.GetComponent<BoardPosition>();
-                    piecePosition.x = x;
-                    piecePosition.z = z;
-                    board.hexDex[z, x].GetComponent<Hex>().piece = pieceSpawned;
-                }
-
                 // Offets next hex position (for next time through loop)
                 lastPosition += rowSpace;
             }
@@ -347,6 +401,40 @@ public class GameManager : MonoBehaviour
             {
                 lastWentRight = true; 
             }
+        }
+        // Place pieces on hexes
+        // Loop through each piece information that was created or provided
+        foreach (PieceInfo piece in pieces)
+        {
+            // The hex this piece is going on
+            GameObject hex = board.hexDex[piece.Position[0], piece.Position[1]];
+            // Choose which color piece to place
+            GameObject pieceToPlace = piece.White ? whitePiecePrefab : blackPiecePrefab;
+
+            // Spawn piece above hex, add correct board position, and place in hexDex
+            GameObject pieceSpawned = Instantiate(pieceToPlace, hex.transform.position + pieceVertical, Quaternion.identity);
+            // Cache board position
+            BoardPosition piecePosition = pieceSpawned.GetComponent<BoardPosition>();
+            // Set board position
+            piecePosition.z = piece.Position[0];
+            piecePosition.x = piece.Position[1];
+            hex.GetComponent<Hex>().piece = pieceSpawned;
+
+            // Stack pieces on if necessary
+            for (int i = 0; i < piece.Stacked; i++)
+            {
+                // Spawn piece at correct stacked height 
+                GameObject stackedPiece = Instantiate(pieceToPlace, hex.transform.position + pieceVertical + (stackingHeight * (i + 1)), Quaternion.identity);
+                // Cache board position
+                BoardPosition stackedPosition = stackedPiece.GetComponent<BoardPosition>();
+                // Set board position
+                stackedPosition.z = piece.Position[0];
+                stackedPosition.x = piece.Position[1];
+                // Parent to bottom piece
+                stackedPiece.GetComponent<Piece>().ParentTo(pieceSpawned.transform);
+            }
+            // Update stack count
+            pieceSpawned.GetComponent<Piece>().UpdateStackCount();
         }
         #endregion
 
@@ -372,23 +460,23 @@ public class GameManager : MonoBehaviour
                 for (int direction = 0; direction < 6; direction++)
                 {
                     // Assign a vertical translation based on top or bottom position
-                    if (board.DirectionIsBottom(direction))
+                    if (Board.DirectionIsBottom(direction))
                     {
                         transVert = -1;
                     }
-                    else if (board.DirectionIsMiddle(direction))
+                    else if (Board.DirectionIsMiddle(direction))
                     {
                         transVert = 0;
                     }
-                    else if (board.DirectionIsTop(direction))
+                    else if (Board.DirectionIsTop(direction))
                     {
                         transVert = 1;
                     }
 
                     // Assign a horizontal translation based on if we're moving up or not and whether we're moving left or right
-                    if (board.DirectionIsBottom(direction) || board.DirectionIsTop(direction))
+                    if (Board.DirectionIsBottom(direction) || Board.DirectionIsTop(direction))
                     {
-                        if (board.DirectionIsRight(direction))
+                        if (Board.DirectionIsRight(direction))
                         {
                             transHoriz = vertRight;
                         }
@@ -399,7 +487,7 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        if (board.DirectionIsRight(direction))
+                        if (Board.DirectionIsRight(direction))
                         {
                             transHoriz = 1;
                         }
@@ -1120,8 +1208,8 @@ public class GameManager : MonoBehaviour
                     // Set neighbors to be equal to the neighbors of the hex adjacent to the end hex in the found direction
                     GameObject[] neighbors = endHexComponent.neighbors[direction].GetComponent<Hex>().neighbors;
                     // Get directions cycled clockwise and counterclockwise
-                    int directionClockwise = board.CycleDirection(direction, 1);
-                    int directionCounterclockwise = board.CycleDirection(direction, -1);
+                    int directionClockwise = Board.CycleDirection(direction, 1);
+                    int directionCounterclockwise = Board.CycleDirection(direction, -1);
                     // Offset to start cycling in
                     int cycle = 0;
                     // If the hex in the cycled direction exists and is selected
@@ -1140,10 +1228,10 @@ public class GameManager : MonoBehaviour
                     }
 
                     // Store directions perpendicular to wave
-                    int otherDirection = board.CycleDirection(direction, cycle);
+                    int otherDirection = Board.CycleDirection(direction, cycle);
                     perpendicularDirections = new int[2];
-                    perpendicularDirections[0] = board.CycleDirection(direction, -cycle);
-                    perpendicularDirections[1] = board.CycleDirection(otherDirection, cycle);
+                    perpendicularDirections[0] = Board.CycleDirection(direction, -cycle);
+                    perpendicularDirections[1] = Board.CycleDirection(otherDirection, cycle);
 
                     // Set initial hex to hex one away from the end of the wave
                     GameObject hex = endHexComponent.neighbors[direction];
@@ -1158,7 +1246,7 @@ public class GameManager : MonoBehaviour
                         // Cache hex component
                         Hex hexComponent = hex.GetComponent<Hex>();
                         // Get next direction
-                        int cycledDirection = board.CycleDirection(direction, cycle);
+                        int cycledDirection = Board.CycleDirection(direction, cycle);
                         // Make sure hex exists
                         if (hexComponent.neighbors[cycledDirection] != null)
                         {
@@ -1296,7 +1384,7 @@ public class GameManager : MonoBehaviour
             // Gets lines from selected
             List<GameObject>[] lines = board.FindLines(hex.GetComponent<BoardPosition>());
             // Get directions line go in
-            List<int> directions = board.GetLineDirections(lines);
+            List<int> directions = Board.GetLineDirections(lines);
             // Cache neighbors
             GameObject[] neighbors = hex.GetComponent<Hex>().neighbors;
             #endregion
@@ -1317,7 +1405,7 @@ public class GameManager : MonoBehaviour
                     steps.Add(hex.GetComponent<BoardPosition>());
 
                     // Highlight possible moves
-                    for (int i = 0; i < lines[board.GetOppositeDirection(direction)].Count; i++)
+                    for (int i = 0; i < lines[Board.GetOppositeDirection(direction)].Count; i++)
                     {
                         // Makes sure the hexes down the board exist
                         try
@@ -1404,7 +1492,7 @@ public class GameManager : MonoBehaviour
                     // The two directions off the selected hex that the V goes in
                     int[] VDirections = new int[2];
                     // Next consecutive direction
-                    int direction2 = board.CycleDirection(direction, 1);
+                    int direction2 = Board.CycleDirection(direction, 1);
                     // If direction and the next direction clockwise have lines going in those directions, add the V going in those two directions to the list of Vs
                     if (directions.Contains(direction2))
                     {
@@ -1422,7 +1510,7 @@ public class GameManager : MonoBehaviour
                     {
                         for (int j = 0; j < 2; j++)
                         {
-                            Vs[i][j] = board.GetOppositeDirection(Vs[i][j]);
+                            Vs[i][j] = Board.GetOppositeDirection(Vs[i][j]);
                         }
                     }
                     
@@ -1441,22 +1529,22 @@ public class GameManager : MonoBehaviour
 
                         // Loops as many times as the smallest amount of pieces in either part of the V
                         // Since we revered the direction earlier we need to re-reverse it
-                        for (int i = 0; i < Math.Min(lines[board.GetOppositeDirection(V[0])].Count, lines[board.GetOppositeDirection(V[1])].Count); i++)
+                        for (int i = 0; i < Math.Min(lines[Board.GetOppositeDirection(V[0])].Count, lines[Board.GetOppositeDirection(V[1])].Count); i++)
                         {
                             // If V is pointing straight up
-                            if (board.DirectionIsTop(V[0]) && board.DirectionIsTop(V[1]))
+                            if (Board.DirectionIsTop(V[0]) && Board.DirectionIsTop(V[1]))
                             {
                                 z += 2;
                             }
                             // If V is pointing straight down
-                            else if (board.DirectionIsBottom(V[0]) && board.DirectionIsBottom(V[1]))
+                            else if (Board.DirectionIsBottom(V[0]) && Board.DirectionIsBottom(V[1]))
                             {
                                 z -= 2;
                             }
                             else
                             {
                                 // If either direction of the V is left, then it will be pointing left
-                                if (board.DirectionIsLeft(V[0]))
+                                if (Board.DirectionIsLeft(V[0]))
                                 {
                                     x -= 2 - z % 2;
                                 }
@@ -1465,7 +1553,7 @@ public class GameManager : MonoBehaviour
                                     x += 1 + z % 2;
                                 }
                                 // If either direction of the V is up, then it will be pointing up
-                                if (board.DirectionIsTop(V[0]) || board.DirectionIsTop(V[1]))
+                                if (Board.DirectionIsTop(V[0]) || Board.DirectionIsTop(V[1]))
                                 {
                                     z++;
                                 }

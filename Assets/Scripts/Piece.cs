@@ -18,9 +18,6 @@ public class Piece : MonoBehaviour
     // Base speed
     [SerializeField]
     private float baseSpeed;
-    // The height of a piece, how high each piece should stack
-    [SerializeField]
-    private Vector3 stackingHeight;
     // Coefficient of the number of steps when calculating piece speed
     [SerializeField]
     private float stepsCoefficient;
@@ -284,7 +281,7 @@ public class Piece : MonoBehaviour
             int stackCount = stackingOnto.transform.childCount;
 
             // Make stack offset for stacking on a stack
-            Vector3 stackOffset = stackingHeight * stackCount;
+            Vector3 stackOffset = gameManager.stackingHeight * stackCount;
             for (int i = 0; i < targets.Count; i++)
             {
                 targets[i] += stackOffset;
@@ -344,7 +341,7 @@ public class Piece : MonoBehaviour
     }
 
     /// <summary>Parents piece to another piece</summary>
-    private void ParentTo(Transform parent)
+    public void ParentTo(Transform parent)
     {
         // Parent piece to the piece it's being stacked on
         transform.SetParent(parent, true);

@@ -6,6 +6,8 @@ using UnityEngine;
 /// <summary>Class <c>Board</c> contains information about the current state of the board and utility methods for interacting with the board</summary>
 public class Board : MonoBehaviour
 {
+    // The layout of the board
+    public Layout layout;
     // Index of hexes ordered by z, x position
     public GameObject[,] hexDex;
     // List of highlighted hexes
@@ -15,7 +17,7 @@ public class Board : MonoBehaviour
 
     #region Utility functions for directions and direction manipulation
     /// <summary>Returns direction that is offset from the current direction. Giving a positive offset goes clockwise and a negative offset goes counterclockwise.</summary>
-    public int CycleDirection(int direction, int offset)
+    public static int CycleDirection(int direction, int offset)
     {
         // Get new direction from going offset steps in one direction       
         int newDirection = direction + offset;
@@ -27,19 +29,19 @@ public class Board : MonoBehaviour
     }
 
     /// <summary>Returns direction that is offset from the current direction. Giving a positive offset goes clockwise and a negative offset goes counterclockwise.</summary>
-    public Direction CycleDirection(Direction direction, int offset)
+    public static Direction CycleDirection(Direction direction, int offset)
     {
         return (Direction)CycleDirection((int)direction, offset);
     }
     
     /// <summary>Returns the opposite direction</summary>
-    public int GetOppositeDirection(int direction) 
+    public static int GetOppositeDirection(int direction) 
     {
         return CycleDirection(direction, 3);
     }
 
     /// <summary>Returns the opposite direction</summary>
-    public Direction GetOppositeDirection(Direction direction) 
+    public static Direction GetOppositeDirection(Direction direction) 
     {
         return CycleDirection(direction, 3);
     }
@@ -80,61 +82,61 @@ public class Board : MonoBehaviour
     #region Methods about determining which ways directions go
     #region Left or right semicircle
     /// <summary>Determines if a direction is in the left semicircle</summary>
-    public bool DirectionIsLeft(int direction)
+    public static bool DirectionIsLeft(int direction)
     {
         return direction >= 2 && direction <= 4;
     }
 
     /// <summary>Determines if a direction is in the left semicircle</summary>
-    public bool DirectionIsLeft(Direction direction)
+    public static bool DirectionIsLeft(Direction direction)
     {
         return DirectionIsLeft((int)direction);
     }
 
     /// <summary>Determines if a direction is in the right semicircle</summary>
-    public bool DirectionIsRight(int direction)
+    public static bool DirectionIsRight(int direction)
     {
         return !DirectionIsLeft(direction);
     }
 
-    public bool DirectionIsRight(Direction direction)
+    public static bool DirectionIsRight(Direction direction)
     {
         return !DirectionIsLeft(direction);
     }
     #endregion
     #region Top, bottom, or middle
     /// <summary>Determines if a direction is at the top</summary>
-    public bool DirectionIsTop(int direction)
+    public static bool DirectionIsTop(int direction)
     {
         return direction == 4 || direction == 5;
     }
 
     /// <summary>Determines if a direction is at the top</summary>
-    public bool DirectionIsTop(Direction direction)
+    public static bool DirectionIsTop(Direction direction)
     {
         return DirectionIsTop((int)direction);
     }
 
     /// <summary>Determines if a direction is in the middle</summary>
-    public bool DirectionIsMiddle(int direction)
+    public static bool DirectionIsMiddle(int direction)
     {
         return direction == 0 || direction == 3;
     }
 
     /// <summary>Determines if a direction is in the middle</summary>
-    public bool DirectionIsMiddle(Direction direction)
+    public static bool DirectionIsMiddle(Direction direction)
     {
         return DirectionIsMiddle((int)direction);
     }
 
     /// <summary>Determines if a direction is at the bottom</summary>
-    public bool DirectionIsBottom(int direction)
+    public static bool DirectionIsBottom(int direction)
     {
         return direction == 1 || direction == 2;
     }
     
     /// <summary>Determines if a direction is at the bottom</summary>
-    public bool DirectionIsBottom(Direction direction)
+    public static bool DirectionIsBottom(Direction direction)
     {
         return DirectionIsBottom((int)direction);
     }
@@ -204,7 +206,7 @@ public class Board : MonoBehaviour
     }
 
     /// <summary>Gets directions that lines are in</summary>
-    public List<int> GetLineDirections(List<GameObject>[] lines)
+    public static List<int> GetLineDirections(List<GameObject>[] lines)
     {
         // List of directions to return
         List<int> directions = new List<int>();
