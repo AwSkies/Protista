@@ -10297,8 +10297,8 @@ MonoBehaviour:
   m_Padding:
     m_Left: 0
     m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
+    m_Top: 5
+    m_Bottom: 5
   m_ChildAlignment: 0
   m_Spacing: 0
   m_ChildForceExpandWidth: 1
@@ -12291,8 +12291,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 125, y: -25}
-  m_SizeDelta: {x: 250, y: 50}
+  m_AnchoredPosition: {x: 100, y: -25}
+  m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1534982958
 MonoBehaviour:
@@ -15318,10 +15318,23 @@ MonoBehaviour:
   title: {fileID: 423100015}
   author: {fileID: 364756747}
   description: {fileID: 1038757016}
-  rowText: {fileID: 1469364013}
+  sizeGroup: {fileID: 1271951804}
   rowCount: {fileID: 1327804118}
-  columnText: {fileID: 361619173}
   columnCount: {fileID: 1708517561}
+  pieceGroup: {fileID: 1442036547}
+  pieceEachGroup: {fileID: 1525039016}
+  pieceEachNum: {fileID: 298385035}
+  pieceWhiteGroup: {fileID: 999428768}
+  pieceWhiteNum: {fileID: 1224615781}
+  pieceBlackGroup: {fileID: 1616068202}
+  pieceBlackNum: {fileID: 1458095760}
+  objectiveHexGroup: {fileID: 542500060}
+  objectiveHexEachGroup: {fileID: 1852816584}
+  objectiveHexEachNum: {fileID: 592605364}
+  objectiveHexWhiteGroup: {fileID: 1873727916}
+  objectiveHexWhiteNum: {fileID: 1074274468}
+  objectiveHexBlackGroup: {fileID: 42060497}
+  objectiveHexBlackNum: {fileID: 1407964765}
   playButton: {fileID: 2145751130}
 --- !u!224 &1916105992
 RectTransform:
@@ -15675,8 +15688,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 350, y: -25}
-  m_SizeDelta: {x: 233.33333, y: 50}
+  m_AnchoredPosition: {x: 300, y: -25}
+  m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1941684996
 MonoBehaviour:
@@ -16719,8 +16732,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 116.666664, y: -25}
-  m_SizeDelta: {x: 233.33333, y: 50}
+  m_AnchoredPosition: {x: 100, y: -25}
+  m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2016780953
 MonoBehaviour:
@@ -16789,8 +16802,20 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: Game, Assembly-CSharp
+      - m_Target: {fileID: 110101638}
+        m_TargetAssemblyTypeName: UnityEngine.GameObject, UnityEngine
+        m_MethodName: SetActive
+        m_Mode: 6
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 1916105991}
+        m_TargetAssemblyTypeName: MainMenu, Assembly-CSharp
         m_MethodName: DeleteJsonLayouts
         m_Mode: 1
         m_Arguments:
@@ -16799,7 +16824,7 @@ MonoBehaviour:
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
-          m_BoolArgument: 1
+          m_BoolArgument: 0
         m_CallState: 2
 --- !u!114 &2016780954
 MonoBehaviour:
@@ -17327,8 +17352,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 583.3333, y: -25}
-  m_SizeDelta: {x: 233.33333, y: 50}
+  m_AnchoredPosition: {x: 500, y: -25}
+  m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2115303941
 MonoBehaviour:
@@ -17630,8 +17655,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 375, y: -25}
-  m_SizeDelta: {x: 250, y: 50}
+  m_AnchoredPosition: {x: 300, y: -25}
+  m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2145751132
 MonoBehaviour:
