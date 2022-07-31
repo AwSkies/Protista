@@ -143,6 +143,7 @@ public class MainMenu : MonoBehaviour
         layoutButtons = new List<GameObject>();
     }
 
+    /// <summary>Process the information from the selected layout and displays it in the window</summary>
     public void DisplayInformation(LayoutPath path)
     {
         // Read json from file
@@ -168,6 +169,15 @@ public class MainMenu : MonoBehaviour
             author.SetText("By " + layout.Author);
             description.SetText(layout.Description);
 
+            // Set default row and columns if not set
+            if (layout.Rows == null)
+            {
+                layout.Rows = Layout.standard.Rows;
+            }
+            if (layout.Columns == null)
+            {
+                layout.Columns = Layout.standard.Columns;
+            }
             // Set board sizes
             rowCount.SetText(layout.Rows.ToString());
             columnCount.SetText(layout.Columns.ToString());
@@ -205,7 +215,7 @@ public class MainMenu : MonoBehaviour
             // If the default amount of pieces is wanted
             else
             {
-                pieceEachNum.SetText(15.ToString());
+                pieceEachNum.SetText(Layout.standard.PieceNum.ToString());
             }
             // Set correct set of information groups active
             pieceEachGroup.SetActive(!piecesSpecified);
@@ -245,7 +255,7 @@ public class MainMenu : MonoBehaviour
             // If the default amount of objectiveHexes is wanted
             else
             {
-                objectiveHexEachNum.SetText(3.ToString());
+                objectiveHexEachNum.SetText(Layout.standard.ObjectiveHexNum.ToString());
             }
             // Set correct set of information groups active
             objectiveHexEachGroup.SetActive(!objectiveHexesSpecified);

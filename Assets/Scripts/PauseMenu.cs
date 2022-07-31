@@ -45,7 +45,9 @@ public class PauseMenu : MonoBehaviour
                 }
             }
         }
+        // Set piece and objective hex numbers (redundantly, but it looks cool)
         board.layout.PieceNum = board.layout.Pieces.Count;
+        board.layout.ObjectiveHexNum = board.layout.ObjectiveHexes.Length;
         // Serialize layout to json
         string json = JsonConvert.SerializeObject(board.layout, Formatting.Indented);
         // Write to file

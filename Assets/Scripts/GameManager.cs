@@ -73,25 +73,21 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     // The maximum number of extra moves that can be gained from completing loops in one movemovemovemove
     private int maxExtraMovesPerMove;
-    [SerializeField]
     // Number of objective hexes for each player
     private int objHexNum;
-    [SerializeField]
     // Hexes between each player's side
-    private int rows;
+    private int rows = (int) Layout.standard.Rows;
     [SerializeField]
     // The way/distance hexes are tiled from left to right
     private Vector3 rowSpace;
-    [SerializeField]
     // Hexes to the right and left of player
-    private int columns;
+    private int columns = (int) Layout.standard.Columns;
     [SerializeField]
     // The horizontal/z offset when hexes are tiled from top to bottom
     private Vector3 columnSpace;
     [SerializeField]
     // The offset of every other row
     private Vector3 rowOffset;
-    [SerializeField]
     // Number of pieces for each player
     private int pieceNum;
     [SerializeField]
@@ -173,6 +169,7 @@ public class GameManager : MonoBehaviour
 
     // Dictionary containing whether or not each piece in a wave movement that was going to damage another piece has completed its movement 
     public Dictionary<GameObject, bool> waveDamageCompleted = new Dictionary<GameObject, bool>();
+    [NonSerialized]
     // Whether or not the wave should continue through or bounce off
     public bool waveBouncingOff;
     #endregion
@@ -209,8 +206,9 @@ public class GameManager : MonoBehaviour
         }
 
         // Set board size based on layout
-        rows = board.layout.Rows;
-        columns = board.layout.Columns;
+        // Row and columns were set to defaults if not specified during the display in the main menu
+        rows = (int) board.layout.Rows;
+        columns = (int) board.layout.Columns;
         // Initialize hexDex as 2D array with size of rows and columns specified
         board.hexDex = new GameObject[rows, columns];
 
@@ -226,7 +224,7 @@ public class GameManager : MonoBehaviour
         if (board.layout.ObjectiveHexes == null)
         {
             // Set the new objective hex num if it is specified
-            objHexNum = board.layout.ObjectiveHexNum == null ? objHexNum : (int)board.layout.ObjectiveHexNum;
+            objHexNum = board.layout.ObjectiveHexNum == null ? (int) Layout.standard.ObjectiveHexNum : (int) board.layout.ObjectiveHexNum;
             board.layout.ObjectiveHexNum = objHexNum;
             // Set size of objective hex list to be twice the size of the objective hex num set in the editor to account for both sides
             board.layout.ObjectiveHexes = new int[2 * objHexNum][];
@@ -272,7 +270,7 @@ public class GameManager : MonoBehaviour
             // Initalize pieces
             pieces = new List<PieceInfo>();
             // Set the new piece num if it is specified
-            pieceNum = board.layout.PieceNum == null ? pieceNum : (int)board.layout.PieceNum;
+            pieceNum = board.layout.PieceNum == null ? (int) Layout.standard.PieceNum : (int)board.layout.PieceNum;
             // Generates the needed number of pieces on each side
             for (int i = 0; i < pieceNum; i++)
             {
