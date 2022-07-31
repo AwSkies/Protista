@@ -82,6 +82,13 @@ public class MainMenu : MonoBehaviour
     private TMP_Text objectiveHexBlackNum;
     #endregion
 
+    #region Seed information
+    [SerializeField]
+    private GameObject seedGroup;
+    [SerializeField]
+    private TMP_Text seedVal;
+    #endregion
+
     [SerializeField]
     private GameObject playButton;
     #endregion
@@ -262,6 +269,9 @@ public class MainMenu : MonoBehaviour
             objectiveHexWhiteGroup.SetActive(objectiveHexesSpecified);
             objectiveHexBlackGroup.SetActive(objectiveHexesSpecified);
             #endregion
+
+            // Set seed
+            seedVal.SetText(layout.Seed != null ? layout.Seed.ToString() : "None");
         }
         else
         {
@@ -274,6 +284,8 @@ public class MainMenu : MonoBehaviour
         sizeGroup.SetActive(valid);
         pieceGroup.SetActive(valid);
         objectiveHexGroup.SetActive(valid);
+        // Set seedGroup active only if the file is valid and there is a random element
+        seedGroup.SetActive(valid && (layout.Pieces == null || layout.ObjectiveHexes == null));
     }
 
     /// <summary>Sets game type to corresponding enum based on a string</summary>
