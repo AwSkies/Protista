@@ -32,7 +32,7 @@ public class GameManager : MonoBehaviour
 
     [Header("Icons")]
     [SerializeField]
-    private GameObject curledMovementArrow;
+    private GameObject movementArrow;
     [SerializeField]
     private GameObject attackIcon;
     [SerializeField]
@@ -101,8 +101,12 @@ public class GameManager : MonoBehaviour
     // The height of a piece, how high each piece should stack
     public Vector3 stackingHeight;
     [SerializeField]
-    // Vertical offset of the movement arrows
+    // Vertical offset of the movement icons
     private Vector3 movementIconVertical;
+    [SerializeField]
+    // Vertical offset of the movement arrows
+    private Vector3 movementArrowVertical;
+
     #endregion
 
     #region Variables for use during generation and gameplay
@@ -841,13 +845,13 @@ public class GameManager : MonoBehaviour
     {
         // Get the position the arrow will be in
         // Average position of the two hexes plus the vertical offset
-        Vector3 iconPosition = ((hex1.transform.position + hex2.transform.position) / 2) + movementIconVertical;
+        Vector3 iconPosition = ((hex1.transform.position + hex2.transform.position) / 2) + movementArrowVertical;
         // Calculate relative position
         Vector3 relativePosition = hex2.transform.position - hex1.transform.position;
         // Calculate relative angle
         float angle = - (float) (Math.Atan2(relativePosition.z, relativePosition.x) * (180/Math.PI));
         // Spawn movement arrow
-        movementIcons["arrows"].Add(Instantiate(curledMovementArrow, iconPosition, Quaternion.Euler(-90f, 0f, angle)));
+        movementIcons["arrows"].Add(Instantiate(movementArrow, iconPosition, Quaternion.Euler(-90f, 0f, angle)));
     }
 
     /// <summary>Places a movement icon above a hex</summary>

@@ -3660,7 +3660,7 @@ MonoBehaviour:
     type: 3}
   blackPiecePrefab: {fileID: 8913953455632071212, guid: f648bf6a8ceb9b4429f89ea1ca13fd62,
     type: 3}
-  curledMovementArrow: {fileID: 5140502486064010207, guid: 81980a41d0ec3e6418940f6d31bf1970,
+  movementArrow: {fileID: 933994563180713749, guid: 8022784b898be2448bd25020def7ed58,
     type: 3}
   attackIcon: {fileID: 8515493351659104270, guid: dae0084cecd32314abf3c23205ddf8d3,
     type: 3}
