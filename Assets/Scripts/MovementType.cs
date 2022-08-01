@@ -5,5 +5,6 @@ public enum MovementType
     Contiguous,
     Cannon,
     V,
-    Wave
+    Wave,
+    RandomGeneration
 }

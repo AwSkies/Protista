@@ -73,6 +73,12 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     // The maximum number of extra moves that can be gained from completing loops in one movemovemovemove
     private int maxExtraMovesPerMove;
+    [SerializeField]
+    // The number of pieces to generate during the random generation move
+    private int randomPieceNum;
+    [SerializeField]
+    // The number of seconds between generating new pieces and switching moves
+    private float randomGenerationWaitTime;
     // Number of objective hexes for each player
     private int objHexNum;
     // Hexes between each player's side
@@ -1829,6 +1835,83 @@ public class GameManager : MonoBehaviour
                 DisplayMessage("Select a stack");
             }
         }
+    }
+    
+    public void RandomGeneration()
+    {
+        // If the process of generating pieces has not already started
+        if (!selectedMoving)
+        {    
+            // The number of empty hexes found
+            int empty = 0;
+            // Loop through each hex but break if there are enough empty hexes to spawn
+            for (int i = 0; i < rows * columns && empty < randomPieceNum; i++)
+            {
+                if (board.hexDex[i % rows, i / rows].GetComponent<Hex>().piece == null)
+                {
+                    empty++;
+                }
+            }
+            
+            // If there aren't enough empty spaces
+            if (empty < randomPieceNum)
+            {
+                DisplayMessage("There are not enough empty hexes");
+            }
+            else
+            {
+                // Init random
+                System.Random random = new System.Random();
+                // Generate the specified number of pieces
+                for (int i = 0; i < randomPieceNum; i++)
+                {
+                    int z, x;
+                    do
+                    {
+                        // Generate random positions
+                        z = random.Next(0, rows);
+                        x = random.Next(0, columns);
+                    } 
+                    // If there is a piece on the chosen position, choose again
+                    // Breaks when there is no piece on the chosen position
+                    while (board.hexDex[z, x].GetComponent<Hex>().piece != null);
+
+                    // Choose which color piece to place based on turn color
+                    GameObject pieceToPlace;
+                    if (turnColor == "white")
+                    {
+                        pieceToPlace = whitePiecePrefab;
+                    }
+                    else
+                    {
+                        pieceToPlace = blackPiecePrefab;
+                    }
+
+                    // Cache hex and component
+                    GameObject hex = board.hexDex[z, x];
+                    Hex hexComponent = hex.GetComponent<Hex>();
+                    // Spawn piece
+                    GameObject piece = Instantiate(pieceToPlace, hex.transform.position + pieceVertical, Quaternion.identity);
+                    // Instantiate new piece and add to hex
+                    hexComponent.piece = piece;
+                    // Cache BoardPosition
+                    BoardPosition boardPosition = piece.GetComponent<BoardPosition>();
+                    boardPosition.z = z;
+                    boardPosition.x = x;
+                }
+                StartSelection(MovementType.RandomGeneration);
+                // End this move in a specified amount of time
+                Invoke("EndRandomGenerationWait", randomGenerationWaitTime);
+            }
+        }
+    }
+
+    /// <summary>Ends the wait time between pieces being randomly generated and beginning the next turn.
+    /// This is to prevent being able to hit the button to rapidly spawn pieces.</summary>
+    private void EndRandomGenerationWait()
+    {
+        EndSelection();
+        EndMove();
     }
     #endregion
     #endregion
