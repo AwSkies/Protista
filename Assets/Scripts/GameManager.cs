@@ -1044,9 +1044,9 @@ public class GameManager : MonoBehaviour
     #endregion
 
     #region Functions for moving
-    /// <summary>Displays text when a movement option is invalid.</summary>
-    /// <param name = "text">The text (which should be a description of the error) to display; default value is <c>"Invalid Movement Option"</c>.</param>
-    private void InvalidMovementOptionDisplay(string text = "Invalid Movement Option")
+    /// <summary>Displays a short message.</summary>
+    /// <param name = "text">The text to display; default value is <c>"Invalid Movement Option"</c>.</param>
+    public void DisplayMessage(string text = "Invalid Movement Option")
     {
         invalidMovementOptionText.SetText(text);
         invalidMovementOptionAnimator.Play("InvalidMovementOption");
@@ -1081,7 +1081,7 @@ public class GameManager : MonoBehaviour
     {
         if (selected.Count == 0)
         {
-            InvalidMovementOptionDisplay("No pieces selected");
+            DisplayMessage("No pieces selected");
             return true;
         }
         else
@@ -1100,7 +1100,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            InvalidMovementOptionDisplay("Select only one piece");
+            DisplayMessage("Select only one piece");
             return false;
         }
     }
@@ -1225,7 +1225,7 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        InvalidMovementOptionDisplay("Select a wave");
+                        DisplayMessage("Select a wave");
                         return;
                     }
 
@@ -1332,17 +1332,17 @@ public class GameManager : MonoBehaviour
                     }
                     else
                     {
-                        InvalidMovementOptionDisplay("Select only a wave");
+                        DisplayMessage("Select only a wave");
                     }
                 }
                 else
                 {
-                    InvalidMovementOptionDisplay("Select a wave");
+                    DisplayMessage("Select a wave");
                 }
             }
             else
             {
-                InvalidMovementOptionDisplay("Select at least three pieces");
+                DisplayMessage("Select at least three pieces");
             }
         }
     }
@@ -1461,7 +1461,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                InvalidMovementOptionDisplay("Piece must be at the end of a line");
+                DisplayMessage("Piece must be at the end of a line");
             }
         }
     }
@@ -1599,12 +1599,12 @@ public class GameManager : MonoBehaviour
                 }
                 else
                 {
-                    InvalidMovementOptionDisplay("Directions of a V must be consecutive");
+                    DisplayMessage("Directions of a V must be consecutive");
                 }
             }
             else
             {
-                InvalidMovementOptionDisplay("Select a piece at the end of a V");
+                DisplayMessage("Select a piece at the end of a V");
             }
         }
     }
@@ -1644,7 +1644,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                InvalidMovementOptionDisplay("Piece has no contiguous pieces");
+                DisplayMessage("Piece has no contiguous pieces");
             }
         }
     }
@@ -1826,7 +1826,7 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                InvalidMovementOptionDisplay("Select a stack");
+                DisplayMessage("Select a stack");
             }
         }
     }
