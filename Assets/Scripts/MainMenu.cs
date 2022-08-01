@@ -150,7 +150,7 @@ public class MainMenu : MonoBehaviour
         layoutButtons = new List<GameObject>();
     }
 
-    /// <summary>Process the information from the selected layout and displays it in the window</summary>
+    /// <summary>Process the information from the selected layout and displays it in the window.</summary>
     public void DisplayInformation(LayoutPath path)
     {
         // Read json from file
@@ -158,13 +158,15 @@ public class MainMenu : MonoBehaviour
         // Whether or not the file is valid
         bool valid = true;
         // Record if there is an error parsing
+        string errorMessage = null;
         try
         {
             layout = JsonConvert.DeserializeObject<Layout>(json);
         }
-        catch (JsonException)
+        catch (JsonException exception)
         {
             valid = false;
+            errorMessage = exception.Message;
         }
 
         // Set title to file name
@@ -275,7 +277,7 @@ public class MainMenu : MonoBehaviour
         }
         else
         {
-            description.SetText("There is an error with this layout file. Check the formatting and try again.");
+            description.SetText("There is an error with this layout file:\n" + errorMessage);
         }
 
         // Set everything active or inactive based on validity
