@@ -276,35 +276,35 @@ public class GameManager : MonoBehaviour
             {
                 // Chooses the rows that belong to each player
                 // If the position is already occupied by a previously generated piece, it will go through the do while loop again
-                int xPos, zPos;
-                PieceInfo[] samePositions;
+                int xPos, zPos, samePositions;
                 do
                 {
                     // Choose position on one half of the board
                     xPos = random.Next(0, columns);
                     zPos = random.Next(0, halfBoard);
-                    // Add piece at chosen position
-                    pieces.Add(new PieceInfo {
-                        Position = new int[] {zPos, xPos},
-                        Stacked = 0,
-                        White = true
-                    });
-                    // Mirror pieces across board
-                    zPos = (rows - 1) - zPos;
-                    // Add piece at mirrored position
-                    pieces.Add(new PieceInfo {
-                        Position = new int[] {zPos, xPos},
-                        Stacked = 0,
-                        White = false
-                    });
                     // Get list of pieces that have the same position as the selected one to make sure that two pieces aren't generated on top of each other
                     samePositions =
                         (from piece in pieces 
                         where piece.Position[0] == zPos && piece.Position[1] == xPos
-                        select piece).ToArray();
+                        select piece).Count();
                 }
-                // There should only be one piece with the same position as the one we just placed
-                while (samePositions.Length > 1);
+                // There should only be one piece with the same position as the one we just chose
+                while (samePositions > 0);
+
+                // Add piece at chosen position
+                pieces.Add(new PieceInfo {
+                    Position = new int[] {zPos, xPos},
+                    Stacked = 0,
+                    White = true
+                });
+                // Mirror pieces across board
+                zPos = (rows - 1) - zPos;
+                // Add piece at mirrored position
+                pieces.Add(new PieceInfo {
+                    Position = new int[] {zPos, xPos},
+                    Stacked = 0,
+                    White = false
+                });
             }
         }
         else
