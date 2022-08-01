@@ -66,9 +66,9 @@ public class PauseMenu : MonoBehaviour
                     }
                 }
             }
-            // Set piece and objective hex numbers (redundantly, but it looks cool)
-            board.layout.PieceNum = board.layout.Pieces.Count;
-            board.layout.ObjectiveHexNum = board.layout.ObjectiveHexes.Length;
+            // Clear piece and objective hex numbers since the numbers cannot be found reliably
+            board.layout.PieceNum = null;
+            board.layout.ObjectiveHexNum = null;
 
             // Set author and description
             board.layout.Author = author;
