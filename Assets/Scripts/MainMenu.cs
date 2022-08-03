@@ -19,6 +19,7 @@ public class MainMenu : MonoBehaviour
 
     #region Main menu scene objects
     #region Layout list
+    [Header("Layout List")]
     [SerializeField]
     private GameObject noLayoutsText;
     [SerializeField]
@@ -30,7 +31,12 @@ public class MainMenu : MonoBehaviour
     #endregion
 
     #region Layout information window
+    [Header("Layout Information Window")]
+    [SerializeField]
+    private GameObject playButton;
+
     #region Basic information
+    [Header("Basic Information")]
     [SerializeField]
     private TMP_Text title;
     [SerializeField]
@@ -40,6 +46,7 @@ public class MainMenu : MonoBehaviour
     #endregion
 
     #region Size information
+    [Header("Size Information")]
     [SerializeField]
     private GameObject sizeGroup;
     [SerializeField]
@@ -49,6 +56,7 @@ public class MainMenu : MonoBehaviour
     #endregion
 
     #region Piece information
+    [Header("Piece Information")]
     [SerializeField]
     private GameObject pieceGroup;
     [SerializeField]
@@ -66,6 +74,7 @@ public class MainMenu : MonoBehaviour
     #endregion
 
     #region Objective hex information
+    [Header("Objective Hex Information")]
     [SerializeField]
     private GameObject objectiveHexGroup;
     [SerializeField]
@@ -83,18 +92,31 @@ public class MainMenu : MonoBehaviour
     #endregion
 
     #region Seed information
+    [Header("Seed Information")]
     [SerializeField]
     private GameObject seedGroup;
     [SerializeField]
     private TMP_Text seedVal;
     #endregion
-
-    [SerializeField]
-    private GameObject playButton;
     #endregion
+    
+    [Header("Other")]
+    [SerializeField]
+    private TMP_Text standardLayoutDescription;
     #endregion
 
     private List<GameObject> layoutButtons = new List<GameObject>();
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        // Format the description of the play standard button to show the default piece and objective hex numbers
+        standardLayoutDescription.SetText(string.Format(
+            standardLayoutDescription.text,
+            Layout.standard.ObjectiveHexNum,
+            Layout.standard.PieceNum
+        ));
+    }
 
     /// <summary>Loads the GameBoard scene containing the actual game board.
     /// The static fields layout and gameType will be processed by the board GameManager script and be handled accordingly.</summary>
