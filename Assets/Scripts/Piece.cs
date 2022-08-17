@@ -143,8 +143,19 @@ public class Piece : MonoBehaviour
                 // Set pieceToDestroy
                 pieceToDestroy = otherObj.gameObject;
             }
+
             // Destroy piece
             Destroy(pieceToDestroy);
+            // Add statistics 
+            if (tag == "white")
+            {
+                Results.whiteStats.PiecesTaken++;
+            }
+            else
+            {
+                Results.blackStats.PiecesTaken++;
+            }
+
             // Updates stack count for one less piece (only if the bottom piece still exists since it was a stack)
             if (otherPiece != null)
             {
@@ -198,8 +209,7 @@ public class Piece : MonoBehaviour
 
         // Reassign the pieces on the hexes if the piece is not stacking
         // Stacking case
-        if
-        (
+        if (
             // If it's single movement
             movementType == MovementType.Single
             // and there's a piece on the hex
@@ -286,6 +296,16 @@ public class Piece : MonoBehaviour
             {
                 targets[i] += stackOffset;
             }
+        }
+
+        // Add the number of targets to the amount of hexes moved
+        if (tag == "white")
+        {
+            Results.whiteStats.HexesTraveled += targets.Count;
+        }
+        else
+        {
+            Results.blackStats.HexesTraveled += targets.Count;
         }
 
         // Calculate a speed for this movement

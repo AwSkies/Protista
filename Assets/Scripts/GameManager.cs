@@ -944,6 +944,14 @@ public class GameManager : MonoBehaviour
     {
         // Increment move counter
         movesTaken++;
+        if (turnColor == "white")
+        {
+            Results.whiteStats.MovesTaken++;
+        }
+        else
+        {
+            Results.blackStats.MovesTaken++;
+        }
 
         // Checks if this move has won the game
         // The integer number of hexes needed for this color to win
@@ -968,23 +976,23 @@ public class GameManager : MonoBehaviour
             TimeSpan elapsed = stopwatch.Elapsed;
             Results.matchDuration = String.Format("{0:00}:{1:00}:{2:00}", elapsed.Hours, elapsed.Minutes, elapsed.Seconds);
 
-            // Set statistics
             #region Objective hex statistics
             int whiteOccupied = 0;
             foreach (GameObject hex in objectiveHexes["white"])
             {
-                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag == turnColor)
+                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag == "white")
                 {
-                    occupied++;
+                    whiteOccupied++;
                 }
             }
             Results.whiteStats.ObjectiveHexesOccupied = whiteOccupied;
+
             int blackOccupied = 0;
             foreach (GameObject hex in objectiveHexes["black"])
             {
-                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag == turnColor)
+                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag == "black")
                 {
-                    occupied++;
+                    blackOccupied++;
                 }
             }
             Results.blackStats.ObjectiveHexesOccupied = blackOccupied;
