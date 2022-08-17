@@ -953,9 +953,14 @@ public class GameManager : MonoBehaviour
             Results.blackStats.MovesTaken++;
         }
 
-        // Checks if this move has won the game
+        #region End the game if someone has won
         // The integer number of hexes needed for this color to win
         int hexesNeeded = (int) (objHexRatio * objectiveHexes[turnColor].Count);
+        // Make sure you need to occupy at least one objective hex so the game won't end immediately
+        if (hexesNeeded == 0)
+        {
+            hexesNeeded = 1;
+        }
         // Count the number of occupied hexes this color has
         int occupied = 0;
         foreach (GameObject hex in objectiveHexes[turnColor])
@@ -1001,6 +1006,7 @@ public class GameManager : MonoBehaviour
             // Load results screen
             SceneManager.LoadScene("Results");
         }
+        #endregion
 
         // The loops in this color on the board after this move
         Dictionary<string, int> loops = new Dictionary<string, int> {
