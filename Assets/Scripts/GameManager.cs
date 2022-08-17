@@ -543,7 +543,7 @@ public class GameManager : MonoBehaviour
         #endregion
 
         // Centers camera with generated board by positioning the camera above the centerpoint of the board
-        cam.transform.position += rowSpace * ((float)(columns - 1) / 2) + columnSpace * ((float)(rows - 1) / 2);
+        cam.transform.position += /* The middle point of the rows */ (rowOffset / 2) + rowSpace * ((float)(columns - 1) / 2) + /* The middle point of the colums */ columnSpace * ((float)(rows - 1) / 2);
 
         // Start the first turn
         StartNewTurn();
