@@ -3345,11 +3345,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0, y: -0.7071068, z: 0.7071068, w: 0}
-  m_LocalPosition: {x: 0, y: 75.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1.0000001, z: 1.0000001}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 90, y: 0, z: 180}
 --- !u!114 &963194229
 MonoBehaviour:
@@ -4946,7 +4946,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: d6ab8bf4cd8645e4e850e67187dac519,
         type: 3}
       propertyPath: m_RootOrder
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d6ab8bf4cd8645e4e850e67187dac519,
         type: 3}
@@ -5147,6 +5147,7 @@ MonoBehaviour:
   stackingHeight: {x: 0, y: 0.4, z: 0}
   movementIconVertical: {x: 0, y: 3.33, z: 0}
   movementArrowVertical: {x: 0, y: 1, z: 0}
+  cameraVerticalMultiplier: 4.2
   turnColor: black
 --- !u!4 &1568063594
 Transform:

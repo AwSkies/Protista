@@ -118,6 +118,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     // Vertical offset of the movement arrows
     private Vector3 movementArrowVertical;
+    [SerializeField]
+    // The amount that the amount of rows or columns are multiplied to get the vertical position of the camera
+    private float cameraVerticalMultiplier;
 
     #endregion
 
@@ -542,8 +545,15 @@ public class GameManager : MonoBehaviour
         }
         #endregion
 
-        // Centers camera with generated board by positioning the camera above the centerpoint of the board
-        cam.transform.position += /* The middle point of the rows */ (rowOffset / 2) + rowSpace * ((float)(columns - 1) / 2) + /* The middle point of the colums */ columnSpace * ((float)(rows - 1) / 2);
+        // Centers camera with generated board
+        cam.transform.position += 
+            // The middle point of the rows
+            (rowOffset / 2) + rowSpace * ((float)(columns - 1) / 2) + 
+            // The middle point of the colums 
+            columnSpace * ((float)(rows - 1) / 2) + 
+            // The vertical position of the camera based on board size
+            new Vector3(0, (float) Math.Max(rows, columns * 1.1) * cameraVerticalMultiplier, 0);
+            // new Vector3(0, Math.Max(rows, columns) * cameraVerticalMultiplier + (float) Math.Pow(1.15, -2.5 * (Math.Max(rows, columns) - 15)), 0);
 
         // Start the first turn
         StartNewTurn();
