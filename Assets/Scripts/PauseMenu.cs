@@ -85,6 +85,8 @@ public class PauseMenu : MonoBehaviour
 
     public void QuitToTitle()
     {
+        // Clear the layout
+        MainMenu.layout = null;
         SceneManager.LoadScene("MainMenu");
     }
 }
