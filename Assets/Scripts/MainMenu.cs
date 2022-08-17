@@ -343,6 +343,6 @@ public class MainMenu : MonoBehaviour
     public void Quit()
     {
         Application.Quit();
-        UnityEngine.Debug.Log("Qutting application...");
+        UnityEngine.Debug.Log("Quitting application...");
     }
 }
