@@ -5139,6 +5139,7 @@ MonoBehaviour:
   maxExtraMovesPerMove: 2
   randomPieceNum: 3
   randomGenerationWaitTime: 1
+  objHexRatio: 0.6666667
   rowSpace: {x: 5, y: 0, z: 0}
   columnSpace: {x: 0, y: 0, z: 4.5}
   rowOffset: {x: 2.5, y: 0, z: 0}

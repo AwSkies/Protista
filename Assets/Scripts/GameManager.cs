@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class GameManager : MonoBehaviour
@@ -81,6 +83,14 @@ public class GameManager : MonoBehaviour
     private float randomGenerationWaitTime;
     // Number of objective hexes for each player
     private int objHexNum;
+    // Objective hexes in the board
+    private Dictionary<string, List<GameObject>> objectiveHexes = new Dictionary<string, List<GameObject>> {
+        {"white", new List<GameObject>()},
+        {"black", new List<GameObject>()}
+    };
+    [SerializeField]
+    // The ratio of objective hexes that need to be occupied to win
+    private float objHexRatio;
     // Hexes between each player's side
     private int rows = (int) Layout.standard.Rows;
     [SerializeField]
@@ -127,6 +137,8 @@ public class GameManager : MonoBehaviour
     [NonSerialized]
     // The pieces that are moving
     public List<Piece> movingPieces = new List<Piece>();
+    // The elapsed time of the match
+    private Stopwatch stopwatch = new Stopwatch();
 
     #region Variables for finding loops at the end of each turn
     // The pieces that have been examined on the whole board over this floodfill iteration
@@ -191,6 +203,9 @@ public class GameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Start stopwatch
+        stopwatch.Start();
+
         // Decide variables based on whether a custom layout was provided or not
         if (MainMenu.layout != null)
         {
@@ -386,6 +401,11 @@ public class GameManager : MonoBehaviour
                 #region Spawn hexes
                 // Spawn hex, add correct board position, and add to Hex object
                 GameObject hexSpawned = Instantiate(hexToPlace, lastPosition, Quaternion.Euler(0f, 30f, 0f));
+                // Add hex to list of objective hexes if it is one
+                if (type == 1)
+                {
+                    objectiveHexes[color == 0 ? "black" : "white"].Add(hexSpawned);
+                }
                 // Cache board position
                 BoardPosition hexPosition = hexSpawned.GetComponent<BoardPosition>();
                 hexPosition.x = x;
@@ -919,11 +939,60 @@ public class GameManager : MonoBehaviour
         UpdateMoveCounter();
     }
 
-    /// <summary>Ends the current move and switches turn if no extra moves have been garnered</summary>
+    /// <summary>Ends the current move, switches turn if no extra moves have been garnered, and ends the game if enough objective hexes are occupied</summary>
     public void EndMove()
     {
         // Increment move counter
         movesTaken++;
+
+        // Checks if this move has won the game
+        // The integer number of hexes needed for this color to win
+        int hexesNeeded = (int) (objHexRatio * objectiveHexes[turnColor].Count);
+        // Count the number of occupied hexes this color has
+        int occupied = 0;
+        foreach (GameObject hex in objectiveHexes[turnColor])
+        {
+            if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag == turnColor)
+            {
+                occupied++;
+            }
+        }
+        // If this color has won
+        if (occupied >= hexesNeeded)
+        {
+            // Set results
+            Results.whiteWinner = turnColor == "white";
+            Results.turns = turnCount;
+            // Get elapsed time
+            stopwatch.Stop();
+            TimeSpan elapsed = stopwatch.Elapsed;
+            Results.matchDuration = String.Format("{0:00}:{1:00}:{2:00}", elapsed.Hours, elapsed.Minutes, elapsed.Seconds);
+
+            // Set statistics
+            #region Objective hex statistics
+            int whiteOccupied = 0;
+            foreach (GameObject hex in objectiveHexes["white"])
+            {
+                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag == turnColor)
+                {
+                    occupied++;
+                }
+            }
+            Results.whiteStats.ObjectiveHexesOccupied = whiteOccupied;
+            int blackOccupied = 0;
+            foreach (GameObject hex in objectiveHexes["black"])
+            {
+                if (hex.GetComponent<Hex>().piece != null && hex.GetComponent<Hex>().piece.tag == turnColor)
+                {
+                    occupied++;
+                }
+            }
+            Results.blackStats.ObjectiveHexesOccupied = blackOccupied;
+            #endregion
+            
+            // Load results screen
+            SceneManager.LoadScene("Results");
+        }
 
         // The loops in this color on the board after this move
         Dictionary<string, int> loops = new Dictionary<string, int> {
