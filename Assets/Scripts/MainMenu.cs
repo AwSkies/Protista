@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -100,9 +101,21 @@ public class MainMenu : MonoBehaviour
     #endregion
     #endregion
     
+    #region Graphics settings
+    [Header("Graphics Settings")]
+    [SerializeField]
+    private Toggle fullscreen;
+    [SerializeField]
+    private Toggle vSync;
+    [SerializeField]
+    private TMP_Dropdown resolutionDropDown;
+    #endregion
+
+    #region Other
     [Header("Other")]
     [SerializeField]
     private TMP_Text standardLayoutDescription;
+    #endregion
     #endregion
 
     private List<GameObject> layoutButtons = new List<GameObject>();
@@ -116,6 +129,27 @@ public class MainMenu : MonoBehaviour
             Layout.standard.ObjectiveHexNum,
             Layout.standard.PieceNum
         ));
+
+        // Make sure the graphic settings reflect the current settings
+        fullscreen.isOn = Screen.fullScreen;
+        vSync.isOn = QualitySettings.vSyncCount != 0;
+        // Find correct resolution
+        // Find current resolution
+        string curentResolution = Screen.width + "×" + Screen.height;
+        // Get string list of all listed resolutions
+        List<string> resolutions = (from resolution in resolutionDropDown.options select resolution.text).ToList<string>();
+        // If the resolution is in our list
+        if (resolutions.Contains<string>(curentResolution))
+        {
+            // Set the dropdown to the correct resolution
+            resolutionDropDown.value = resolutions.IndexOf(curentResolution);
+        }
+        else
+        {
+            // Add a new resolution at stop 0 and set it to that
+            resolutionDropDown.options.Insert(0, new TMP_Dropdown.OptionData(curentResolution));
+            resolutionDropDown.value = 0;
+        }
     }
 
     /// <summary>Loads the GameBoard scene containing the actual game board.
@@ -125,6 +159,7 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene("GameBoard");
     }
 
+    #region Json layouts
     /// <summary>Displays in the UI the json layouts appearing in the player's data directory. Creates a button for each one.</summary>
     public void DisplayJsonLayouts()
     {
@@ -311,6 +346,7 @@ public class MainMenu : MonoBehaviour
         // Set seedGroup active only if the file is valid and there is a random element
         seedGroup.SetActive(valid && (layout.Pieces == null || layout.ObjectiveHexes == null));
     }
+    #endregion
 
     /// <summary>Sets game type to corresponding enum based on a string</summary>
     public void SetGameType(string gt)
@@ -344,5 +380,15 @@ public class MainMenu : MonoBehaviour
     {
         Application.Quit();
         UnityEngine.Debug.Log("Quitting application...");
+    }
+
+    public void ApplyGraphicsChanges()
+    {
+        string[] resolutionText = resolutionDropDown.options[resolutionDropDown.value].text.Split(new char[] {'×'});
+        // Parse resolution
+        (int width, int height) resolution = (int.Parse(resolutionText[0]), int.Parse(resolutionText[1]));
+
+        Screen.SetResolution(resolution.width, resolution.height, fullscreen.isOn);
+        QualitySettings.vSyncCount = vSync.isOn ? 1 : 0;
     }
 }
