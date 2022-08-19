@@ -36,7 +36,7 @@ public class AudioEditor : MonoBehaviour
             value -= 80;
             // Update the slider value and volume
             slider.value = value;
-            mixer.SetFloat(track, value);
+            SetVolume(track, value);
         }
     }
 
@@ -46,12 +46,18 @@ public class AudioEditor : MonoBehaviour
         float value = slider.value;
         // Update the input field and volume
         input.text = FormatText(value);
-        mixer.SetFloat(track, value);
+        SetVolume(track, value);
     }
 
     /// <summary>Converts the float value of the volume into a string of an int from 0-100</summary>
-    public string FormatText(float value)
+    private string FormatText(float value)
     {
         return Mathf.RoundToInt(value + 80).ToString();
+    }
+
+    private void SetVolume(string track, float value)
+    {
+        mixer.SetFloat(track, value);
+        PlayerPrefs.SetFloat(track, value);
     }
 }
