@@ -179,11 +179,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8989328974455175655, guid: 7e9da8ac5e9c9bb4eb56e2526fed13d8,
         type: 3}
-      propertyPath: m_ReverseArrangement
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8989328974455175655, guid: 7e9da8ac5e9c9bb4eb56e2526fed13d8,
-        type: 3}
       propertyPath: m_ChildForceExpandWidth
       value: 1
       objectReference: {fileID: 0}
