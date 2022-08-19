@@ -33,8 +33,9 @@ public class AudioEditor : MonoBehaviour
         int value;
         if (int.TryParse(input.text, out value))
         {
+            value -= 80;
             // Update the slider value and volume
-            slider.value = value - 80;
+            slider.value = value;
             mixer.SetFloat(track, value);
         }
     }
