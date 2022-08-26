@@ -23,14 +23,9 @@ public class PauseMenu : MonoBehaviour
     [SerializeField]
     private GameObject menu;
 
-    // Update is called once per frame
-    public void Update()
+    public void OnPauseMenu()
     {
-        // Toggle menu on escape
-        if (Input.GetKeyDown("escape"))
-        {
-            menu.SetActive(!menu.activeSelf);
-        }
+        menu.SetActive(!menu.activeSelf);
     }
 
     public void SaveLayout()

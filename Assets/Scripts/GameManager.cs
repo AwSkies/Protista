@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using TMPro;
 
 public class GameManager : MonoBehaviour
@@ -16,6 +17,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     private Camera cam;
 
+    #region Game pieces
     [Header("Game Pieces")]
     [SerializeField]
     private GameObject whiteHexPrefab;
@@ -31,7 +33,9 @@ public class GameManager : MonoBehaviour
     private GameObject whitePiecePrefab;
     [SerializeField]
     private GameObject blackPiecePrefab;
+    #endregion
 
+    #region Icons
     [Header("Icons")]
     [SerializeField]
     private GameObject movementArrow;
@@ -41,7 +45,9 @@ public class GameManager : MonoBehaviour
     private GameObject stackIcon;
     [SerializeField]
     private GameObject hoveringPrism;
+    #endregion
 
+    #region UI
     [Header("UI")]
     [SerializeField]
     private TextMeshProUGUI invalidMovementOptionText;
@@ -67,7 +73,9 @@ public class GameManager : MonoBehaviour
     private Animator maxMoveCounterAnimator;
     [SerializeField]
     private GameObject[] buttons;
+    #endregion
 
+    #region Game behavior variables for tweaking
     [Header("Game behavior variables for tweaking")]
     [SerializeField]
     // The number of max moves that a turn starts with
@@ -121,7 +129,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     // The amount that the amount of rows or columns are multiplied to get the vertical position of the camera
     private float cameraVerticalMultiplier;
-
+    #endregion
     #endregion
 
     #region Variables for use during generation and gameplay
@@ -152,11 +160,6 @@ public class GameManager : MonoBehaviour
         {"black", 0}
     };
     #endregion
-
-    // The hex hit with a raycast on the previous frame
-    private GameObject previousHexHit;
-    // The hexes that have been selected on this click
-    private List<GameObject> clickSelected = new List<GameObject>();
 
     // Movement arrow object currently in use
     private Dictionary<string, List<GameObject>> movementIcons;
@@ -559,292 +562,291 @@ public class GameManager : MonoBehaviour
         StartNewTurn();
     }
 
-    // Update is called once per frame
-    void Update()
+    #region Input listeners
+    public void OnSelect()
     {
-        // Casts the ray and get the first game object hit
-        // This required colliders since it's a physics action
-        // Since everything was made with Maya they won't have colliders already
-        // So make sure that everything we need to click on is set to have a collider
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        Physics.Raycast(ray, out hit);
-
-        // If something was hit
-        if (hit.collider != null)
+        GameObject hexSelected = hoveringPrism.GetComponent<HoveringPrism>().hoveringOver;
+        if (hexSelected != null && hoveringPrism.activeSelf == true)
         {
-            // Cache board position
-            BoardPosition hexPos = hit.transform.gameObject.GetComponent<BoardPosition>();
-            // Get hex hit
-            GameObject hexHit = board.hexDex[hexPos.z, hexPos.x];
-            // Cache color
-            int color = hexHit.GetComponent<cakeslice.Outline>().color;
-
-            // Movement icons
-            // If we're selecting a move and the hex hit is highlighted a valid color or there is already a movement icon
-            if (selectedMoving && (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2)))
+            int color = hexSelected.GetComponent<cakeslice.Outline>().color;
+            // If the player has not selected a movement option and there is a piece on the hex and no pieces are moving
+            if (!selectedMoving && hexSelected.GetComponent<Hex>().piece != null && hexSelected.GetComponent<Hex>().piece.tag == turnColor && movingPieces.Count == 0)
             {
-                // Only generate icons if there isn't one already or if the one hit this frame doesn't match the one from last frame
-                if (movementIcons == null || hexHit != previousHexHit)
+                // Makes sure outline color is selection color
+                hexSelected.GetComponent<cakeslice.Outline>().color = 0;
+                // Adds to list of selected if it's not selected, remove if it is
+                if (!selected.Contains(hexSelected))
                 {
-                    // Destroy old icons if hex hit this frame doesn't match last frame's
-                    if (hexHit != previousHexHit)
-                    {
-                        KillAllMovementIcons();
-                    }
-                    // Initialize movementIcons and keys
-                    movementIcons = emptyMovementIcons;
-
-                    if (movementType == MovementType.Single)
-                    {
-                        // If there's no piece on moused over hex 
-                        if (hexHit.GetComponent<Hex>().piece == null
-                            // Or if the piece on the moused over hex is the opposite color and not stacked
-                            || (hexHit.GetComponent<Hex>().piece.tag != turnColor
-                                && hexHit.GetComponent<Hex>().piece.transform.childCount <= 1)
-                            // Or if the piece on the moused over hex is the same color as the selected piece
-                            || hexHit.GetComponent<Hex>().piece.tag == turnColor)
-                        // Otherwise display only movement icon
-                        {
-                            // Place arrow
-                            PlaceArrow(selected[0], hexHit);
-
-                            // Spawn aditional icons
-                            // If there is a piece on the hex
-                            if (hexHit.GetComponent<Hex>().piece != null)
-                            {
-                                // Cache piece
-                                GameObject piece = hexHit.GetComponent<Hex>().piece;
-                                // Type of icon to choose
-                                string key;
-                                // If the piece moused over is the opposite color
-                                // (We shouldn't have to check for it being stacked since we did that already)
-                                if (piece.tag != turnColor)
-                                {
-                                    key = "attack";
-                                }
-                                // If the piece moused over is the same color
-                                else
-                                {
-                                    key = "stack";
-                                }
-                                PlaceIcon(hexHit, key);
-                            }
-                        }
-                        else
-                        {
-                            PlaceIcon(hexHit);
-                        }
-                    }
-                    else if (movementType == MovementType.Cannon || movementType == MovementType.V || movementType == MovementType.Unstack)
-                    {
-                        List<BoardPosition> steps = stepsTo[hexHit];
-                        // Place arrows up to hit hex
-                        for (int i = 0; i < steps.Count - 1; i++)
-                        {
-                            // Get hex
-                            GameObject hex = board.hexDex[steps[i + 1].z, steps[i + 1].x];
-                            // Cache hex component
-                            Hex hexComponent = hex.GetComponent<Hex>();
-                            // If there are pieces on this hex and it's not the selected hex
-                            if (hexComponent.piece != null)
-                            {
-                                // Add attack icon
-                                PlaceIcon(hex);
-                                // If the pieces on this hex are stacked then don't place arrow
-                                if (hexComponent.piece.transform.childCount > 1)
-                                {
-                                    break;
-                                }
-                            }
-                            // Place arrow between current and next hex
-                            PlaceArrow(board.hexDex[steps[i].z, steps[i].x], hex);
-                        }
-                    }
-                    else if (movementType == MovementType.Wave)
-                    {
-                        // Find which side of the wave this hex is on
-                        // The side of the wave this is on
-                        int direction = FindWaveDirection(hexHit);
-                        // The status on this side of the wave
-                        int status = worstStatuses[direction];
-                        // Place movement icons for each hex in the wave
-                        foreach (GameObject hex in wave)
-                        {
-                            // Get hex on the perpendicularDirection side of the wave
-                            GameObject perpendicularHex = hex.GetComponent<Hex>().neighbors[direction];
-                            // Make sure the hex on this side exists
-                            if (perpendicularHex != null)
-                            {
-                                // If there is a piece on the hex
-                                if (perpendicularHex.GetComponent<Hex>().piece != null)
-                                {
-                                    // Place attack icon
-                                    PlaceIcon(perpendicularHex);
-                                }
-                                // If the status is bouncing off, do not place movement arrows
-                                if (status != 1)
-                                {
-                                    // Place movement arrow between hex in the wave and perpendicular hex
-                                    PlaceArrow(hex, perpendicularHex);
-                                }
-                            }
-                        }
-                    }
-                    else if (movementType == MovementType.Contiguous)
-                    {
-                        // Get shortest list of directions
-                        List<int> directionList = GetDirectionsTo(hexHit);
-                        // Go through list of directions and place arrows
-                        // Start with selected hex
-                        GameObject hex = selected[0];
-                        // Do not place arrows if hitHex has a stack on it
-                        // Should only trigger for last hex in the list
-                        if (!(hexHit.GetComponent<Hex>().piece != null
-                            && hexHit.GetComponent<Hex>().piece.tag != turnColor
-                            && hexHit.GetComponent<Hex>().piece.transform.childCount > 1))
-                        {
-                            foreach (int direction in directionList)
-                            {
-                                // Place arrow
-                                PlaceArrow(hex, hex.GetComponent<Hex>().neighbors[direction]);
-                                // Update hex for next time through the loop
-                                hex = hex.GetComponent<Hex>().neighbors[direction];
-                            }
-                        }
-                        // Place attack icons
-                        // Because of our highlighting algorithm, hexes with pieces of the same color should not be highlighted so we don't need to worry
-                        if (hexHit.GetComponent<Hex>().piece != null)
-                        {
-                            PlaceIcon(hexHit);
-                        }
-                    }
+                    selected.Add(hexSelected);
                 }
-            }
-            else if (movementIcons != null)
-            {
-                KillAllMovementIcons();
-            }
-
-            // Place hovering prism if a different hex was hit than last frame or there is no current one
-            if (!hoveringPrism.activeSelf || hexHit != previousHexHit)
-            {
-                hoveringPrism.GetComponent<HoveringPrism>().SetPosition(hexPos);
-            }
-
-            // If clicked
-            if (Input.GetMouseButton(0))
-            {
-                // If not selected this hex yet on this click
-                if (!clickSelected.Contains(hexHit))
+                else
                 {
-                    // If the player has not selected a movement option and there is a piece on the hex and no pieces are moving
-                    if (!selectedMoving && hexHit.GetComponent<Hex>().piece != null && hexHit.GetComponent<Hex>().piece.tag == turnColor && movingPieces.Count == 0)
-                    {
-                        // Makes sure outline color is selection color
-                        hexHit.GetComponent<cakeslice.Outline>().color = 0;
-                        // Adds to list of selected if it's not selected, remove if it is
-                        if (!selected.Contains(hexHit))
-                        {
-                            selected.Add(hexHit);
-                        }
-                        else
-                        {
-                            selected.Remove(hexHit);
-                        }
-                        // Toggles outline
-                        hexHit.GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexHit);
-                        // Say that we have hit this hex on this click
-                        clickSelected.Add(hexHit);
-                    }
-                    else
-                    {
-                        // When you click the movement option button, the correct options are highlighted green
-                        // Checks if hex clicked is highlighted green which would mean that you can move there
-                        if (hexHit.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2))
-                        {
-                            // Checks movement option and executes proper move when clicked
-                            if 
-                            (
-                                movementType == MovementType.Single
-                                || movementType == MovementType.Cannon
-                                || movementType == MovementType.V
-                                || movementType == MovementType.Unstack
-                            ) 
-                            {
-                                // Move piece
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexHit], movementType);
-                            }
-                            else if (movementType == MovementType.Wave) 
-                            {
-                                // Get direction
-                                int direction = FindWaveDirection(hexHit);
-                                // Decide whether the wave is bouncing off or not
-                                waveBouncingOff = worstStatuses[direction] == 1;
-                                // Reset damage statuses
-                                waveDamageCompleted = new Dictionary<GameObject, bool>();
-                                // Go through every hex in the wave and move it
-                                foreach (GameObject hex in wave)
-                                {
-                                    // Cache piece GameObject
-                                    GameObject piece = hex.GetComponent<Hex>().piece;
-                                    // Move hex to board position one step in the direction
-                                    piece.GetComponent<Piece>().Move(
-                                        new List<BoardPosition> {hex.GetComponent<Hex>().neighbors[direction].GetComponent<BoardPosition>()},
-                                        movementType
-                                    );
-                                }
-                            }
-                            else if (movementType == MovementType.Contiguous) 
-                            {
-                                // Get smallest directions list
-                                List<int> directionList = GetDirectionsTo(hexHit);
-                                // Start with source hex
-                                GameObject hex = selected[0];
-                                // Initalize targets
-                                List<BoardPosition> targets = new List<BoardPosition>();
-                                foreach (int direction in directionList)
-                                {
-                                    hex = hex.GetComponent<Hex>().neighbors[direction];
-                                    targets.Add(hex.GetComponent<BoardPosition>());
-                                }
-                                // Move piece
-                                selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(targets, MovementType.Contiguous);
-                                // Reset variables
-                                contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
-                                contiguousVisits = new List<GameObject>();
-                                directionsList   = new List<int>();
-                            }
-                            EndSelection();
-                        }
-                    }
+                    selected.Remove(hexSelected);
                 }
+                // Toggles outline
+                hexSelected.GetComponent<cakeslice.Outline>().enabled = selected.Contains(hexSelected);
             }
             else
             {
-                // Reset clickSelected list for next click
-                clickSelected = new List<GameObject>();
+                // When you click the movement option button, the correct options are highlighted green
+                // Checks if hex clicked is highlighted green which would mean that you can move there
+                if (hexSelected.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2))
+                {
+                    // Checks movement option and executes proper move when clicked
+                    if 
+                    (
+                        movementType == MovementType.Single
+                        || movementType == MovementType.Cannon
+                        || movementType == MovementType.V
+                        || movementType == MovementType.Unstack
+                    ) 
+                    {
+                        // Move piece
+                        selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(stepsTo[hexSelected], movementType);
+                    }
+                    else if (movementType == MovementType.Wave) 
+                    {
+                        // Get direction
+                        int direction = FindWaveDirection(hexSelected);
+                        // Decide whether the wave is bouncing off or not
+                        waveBouncingOff = worstStatuses[direction] == 1;
+                        // Reset damage statuses
+                        waveDamageCompleted = new Dictionary<GameObject, bool>();
+                        // Go through every hex in the wave and move it
+                        foreach (GameObject hex in wave)
+                        {
+                            // Cache piece GameObject
+                            GameObject piece = hex.GetComponent<Hex>().piece;
+                            // Move hex to board position one step in the direction
+                            piece.GetComponent<Piece>().Move(
+                                new List<BoardPosition> {hex.GetComponent<Hex>().neighbors[direction].GetComponent<BoardPosition>()},
+                                movementType
+                            );
+                        }
+                    }
+                    else if (movementType == MovementType.Contiguous) 
+                    {
+                        // Get smallest directions list
+                        List<int> directionList = GetDirectionsTo(hexSelected);
+                        // Start with source hex
+                        GameObject hex = selected[0];
+                        // Initalize targets
+                        List<BoardPosition> targets = new List<BoardPosition>();
+                        foreach (int direction in directionList)
+                        {
+                            hex = hex.GetComponent<Hex>().neighbors[direction];
+                            targets.Add(hex.GetComponent<BoardPosition>());
+                        }
+                        // Move piece
+                        selected[0].GetComponent<Hex>().piece.GetComponent<Piece>().Move(targets, MovementType.Contiguous);
+                        // Reset variables
+                        contiguousHexes  = new Dictionary<GameObject, List<List<int>>>();
+                        contiguousVisits = new List<GameObject>();
+                        directionsList   = new List<int>();
+                    }
+                    EndSelection();
+                    KillAllMovementIcons();
+                }
             }
-            // Set hex hit this frame to hex hit previous frame
-            previousHexHit = hexHit;
-        }
-        // Get rid of icons if nothing is hit on this frame
-        else
-        {
-            KillAllMovementIcons();
-            hoveringPrism.SetActive(false);
-        }
-
-        // Deselect all hexes or movement option with right click
-        if (Input.GetMouseButton(1))
-        {
-            EndSelection();
         }
     }
 
+    public void OnDeselectAll()
+    {
+        EndSelection();
+    }
+
+    public void OnMoveHover(InputValue inputValue)
+    {
+        Vector2 change = (Vector2) inputValue.Get();
+        // Make sure we don't do anything if this is when the button is released
+        if (change.magnitude != 0)
+        {
+            // Get prism
+            HoveringPrism prism = hoveringPrism.GetComponent<HoveringPrism>();
+            // If this is the first time and nothing has been hovered over yet, start at the middle of the board
+            GameObject hoveringOver;
+            if (prism.hoveringOver == null)
+            {
+                hoveringOver = board.hexDex[rows / 2, columns / 2];
+            }
+            else
+            {
+                hoveringOver = prism.hoveringOver;
+            }
+
+            // Get angle
+            float angle = Vector2.Angle(new Vector2(1, 0), change);
+            // Get angle within the correct 0-360 range if it is below 0 degrees
+            if (change.y > 0)
+            {
+                angle = -angle + 360;
+            }
+            // Shift by 30 degrees because the right direction is split with 30 degrees above and 30 degrees below
+            angle += 30;
+            // Mod by 360 to ensure nothing is above 360
+            angle %= 360;
+            // Divide angle into 6 sectors and reverse sector because directions go clockwise
+            int sector = (int) (angle / 60);
+
+            // See if the hex in this direction exists
+            if (hoveringOver.GetComponent<Hex>().neighbors[sector] != null)
+            {
+                // Get new hex in the direction determined
+                GameObject newHex = hoveringOver.GetComponent<Hex>().neighbors[sector];
+                // Tell prism to hover over new hex
+                prism.HoverOver(newHex.GetComponent<BoardPosition>());
+            }
+        }
+    }
+    #endregion
+
     #region Functions for utility
+    public void PlaceMovementIcons(BoardPosition position)
+    {
+        // Get hex
+        GameObject hex = board.hexDex[position.z, position.x];
+
+        // Cache color
+        int color = hex.GetComponent<cakeslice.Outline>().color;
+
+        // Movement icons
+        // If we're selecting a move and the hex hit is highlighted a valid color or there is already a movement icon
+        if (selectedMoving && (hex.GetComponent<cakeslice.Outline>().enabled && (color == 1 || color == 2)))
+        {
+            // Initialize movementIcons and keys
+            movementIcons = emptyMovementIcons;
+
+            if (movementType == MovementType.Single)
+            {
+                // If there's no piece on moused over hex 
+                if (hex.GetComponent<Hex>().piece == null
+                    // Or if the piece on the moused over hex is the opposite color and not stacked
+                    || (hex.GetComponent<Hex>().piece.tag != turnColor
+                        && hex.GetComponent<Hex>().piece.transform.childCount <= 1)
+                    // Or if the piece on the moused over hex is the same color as the selected piece
+                    || hex.GetComponent<Hex>().piece.tag == turnColor)
+                // Otherwise display only movement icon
+                {
+                    // Place arrow
+                    PlaceArrow(selected[0], hex);
+
+                    // Spawn aditional icons
+                    // If there is a piece on the hex
+                    if (hex.GetComponent<Hex>().piece != null)
+                    {
+                        // Cache piece
+                        GameObject piece = hex.GetComponent<Hex>().piece;
+                        // Type of icon to choose
+                        string key;
+                        // If the piece moused over is the opposite color
+                        // (We shouldn't have to check for it being stacked since we did that already)
+                        if (piece.tag != turnColor)
+                        {
+                            key = "attack";
+                        }
+                        // If the piece moused over is the same color
+                        else
+                        {
+                            key = "stack";
+                        }
+                        PlaceIcon(hex, key);
+                    }
+                }
+                else
+                {
+                    PlaceIcon(hex);
+                }
+            }
+            else if (movementType == MovementType.Cannon || movementType == MovementType.V || movementType == MovementType.Unstack)
+            {
+                List<BoardPosition> steps = stepsTo[hex];
+                // Place arrows up to hit hex
+                for (int i = 0; i < steps.Count - 1; i++)
+                {
+                    // Get hex
+                    GameObject nextHex = board.hexDex[steps[i + 1].z, steps[i + 1].x];
+                    // Cache hex component
+                    Hex hexComponent = nextHex.GetComponent<Hex>();
+                    // If there are pieces on this hex and it's not the selected hex
+                    if (hexComponent.piece != null)
+                    {
+                        // Add attack icon
+                        PlaceIcon(nextHex);
+                        // If the pieces on this hex are stacked then don't place arrow
+                        if (hexComponent.piece.transform.childCount > 1)
+                        {
+                            break;
+                        }
+                    }
+                    // Place arrow between current and next hex
+                    PlaceArrow(board.hexDex[steps[i].z, steps[i].x], nextHex);
+                }
+            }
+            else if (movementType == MovementType.Wave)
+            {
+                // Find which side of the wave this hex is on
+                // The side of the wave this is on
+                int direction = FindWaveDirection(hex);
+                // The status on this side of the wave
+                int status = worstStatuses[direction];
+                // Place movement icons for each hex in the wave
+                foreach (GameObject waveHex in wave)
+                {
+                    // Get hex on the perpendicularDirection side of the wave
+                    GameObject perpendicularHex = waveHex.GetComponent<Hex>().neighbors[direction];
+                    // Make sure the hex on this side exists
+                    if (perpendicularHex != null)
+                    {
+                        // If there is a piece on the hex
+                        if (perpendicularHex.GetComponent<Hex>().piece != null)
+                        {
+                            // Place attack icon
+                            PlaceIcon(perpendicularHex);
+                        }
+                        // If the status is bouncing off, do not place movement arrows
+                        if (status != 1)
+                        {
+                            // Place movement arrow between hex in the wave and perpendicular hex
+                            PlaceArrow(waveHex, perpendicularHex);
+                        }
+                    }
+                }
+            }
+            else if (movementType == MovementType.Contiguous)
+            {
+                // Get shortest list of directions
+                List<int> directionList = GetDirectionsTo(hex);
+                // Go through list of directions and place arrows
+                // Start with selected hex
+                GameObject nextHex = selected[0];
+                // Do not place arrows if hitHex has a stack on it
+                // Should only trigger for last hex in the list
+                if (!(hex.GetComponent<Hex>().piece != null
+                    && hex.GetComponent<Hex>().piece.tag != turnColor
+                    && hex.GetComponent<Hex>().piece.transform.childCount > 1))
+                {
+                    foreach (int direction in directionList)
+                    {
+                        // Place arrow
+                        PlaceArrow(nextHex, nextHex.GetComponent<Hex>().neighbors[direction]);
+                        // Update hex for next time through the loop
+                        nextHex = nextHex.GetComponent<Hex>().neighbors[direction];
+                    }
+                }
+                // Place attack icons
+                // Because of our highlighting algorithm, hexes with pieces of the same color should not be highlighted so we don't need to worry
+                if (hex.GetComponent<Hex>().piece != null)
+                {
+                    PlaceIcon(hex);
+                }
+            }
+
+        }
+    }
+
     /// <summary>Destroys all movement icon <c>GameObject</c>s currently in scene</summary>
-    private void KillAllMovementIcons()
+    public void KillAllMovementIcons()
     {
         if (movementIcons != null)
         {
