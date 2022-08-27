@@ -59,14 +59,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -244,6 +244,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 2820017644675813285, guid: d5aae00aa6ed89a48ae293dc722a1173,
         type: 3}
+      propertyPath: m_Spacing
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2820017644675813285, guid: d5aae00aa6ed89a48ae293dc722a1173,
+        type: 3}
       propertyPath: m_ChildScaleWidth
       value: 0
       objectReference: {fileID: 0}
@@ -280,7 +285,7 @@ PrefabInstance:
     - target: {fileID: 4131307450605703389, guid: d5aae00aa6ed89a48ae293dc722a1173,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 250
+      value: 245
       objectReference: {fileID: 0}
     - target: {fileID: 4131307450605703389, guid: d5aae00aa6ed89a48ae293dc722a1173,
         type: 3}
@@ -296,6 +301,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4131307450605703395, guid: d5aae00aa6ed89a48ae293dc722a1173,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 4131307450605703395, guid: d5aae00aa6ed89a48ae293dc722a1173,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.78431374
+      objectReference: {fileID: 0}
+    - target: {fileID: 4131307450605703395, guid: d5aae00aa6ed89a48ae293dc722a1173,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.78431374
       objectReference: {fileID: 0}
     - target: {fileID: 4131307450795338035, guid: d5aae00aa6ed89a48ae293dc722a1173,
         type: 3}
