@@ -566,7 +566,7 @@ public class GameManager : MonoBehaviour
     public void OnSelect()
     {
         GameObject hexSelected = hoveringPrism.GetComponent<HoveringPrism>().hoveringOver;
-        if (hexSelected != null && hoveringPrism.activeSelf == true)
+        if (hexSelected != null && hoveringPrism.activeSelf == true && (Gamepad.current == null || (!Gamepad.current.leftShoulder.isPressed && !Gamepad.current.rightShoulder.isPressed)))
         {
             int color = hexSelected.GetComponent<cakeslice.Outline>().color;
             // If the player has not selected a movement option and there is a piece on the hex and no pieces are moving
@@ -658,7 +658,8 @@ public class GameManager : MonoBehaviour
 
     public void OnMoveHover(InputValue inputValue)
     {
-        Vector2 change = (Vector2) inputValue.Get();
+        // Get value and invert if board is turned
+        Vector2 change = (Vector2) inputValue.Get() * (turnColor == "white" ? 1 : -1);
         // Make sure we don't do anything if this is when the button is released
         if (change.magnitude != 0)
         {
@@ -696,6 +697,9 @@ public class GameManager : MonoBehaviour
                 GameObject newHex = hoveringOver.GetComponent<Hex>().neighbors[sector];
                 // Tell prism to hover over new hex
                 prism.HoverOver(newHex.GetComponent<BoardPosition>());
+                // Update movement icons on this hex
+                KillAllMovementIcons();
+                PlaceMovementIcons(newHex.GetComponent<BoardPosition>());
             }
         }
     }
@@ -1226,7 +1230,7 @@ public class GameManager : MonoBehaviour
 
     #region Functions attached to movement buttons
     // These functions check and highlight possible moves
-    public void SingleMovement()
+    public void OnSingle()
     {
         // Makes sure only one piece is selected and we aren't already trying to move
         if (!NothingSelected() && OnlyOneSelected() && NotMoving())
@@ -1254,7 +1258,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void WaveMovement()
+    public void OnWave()
     {
         // Makes sure pieces are selected and we aren't already trying to move
         if (!NothingSelected() && NotMoving())
@@ -1476,7 +1480,7 @@ public class GameManager : MonoBehaviour
         return -1;
     }
 
-    public void CannonMovement()
+    public void OnCannon()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
         if (!NothingSelected() && OnlyOneSelected() && NotMoving())
@@ -1567,7 +1571,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void VMovement()
+    public void OnV()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
         if (!NothingSelected() && OnlyOneSelected() && NotMoving())
@@ -1710,7 +1714,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void ContiguousMovement()
+    public void OnContiguous()
     {
         // Make sure that only one hex is selected and we aren't already trying to move
         if (!NothingSelected() && OnlyOneSelected() && NotMoving())
@@ -1826,7 +1830,7 @@ public class GameManager : MonoBehaviour
     }
     #endregion
     
-    public void UnstackMovement()
+    public void OnUnstack()
     {
         if (!NothingSelected() && OnlyOneSelected() && NotMoving())
         {
@@ -1932,7 +1936,7 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    public void RandomGeneration()
+    public void OnRandom()
     {
         // If the process of generating pieces has not already started
         if (!selectedMoving)
