@@ -2064,6 +2064,46 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1071901210}
     m_Modifications:
+    - target: {fileID: 1199945928178108061, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_text
+      value: Black's Turn
+      objectReference: {fileID: 0}
+    - target: {fileID: 1199945928178108061, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_fontColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1199945928178108061, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_fontColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1199945928178108061, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_fontColor.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1199945928178108061, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4278190080
+      objectReference: {fileID: 0}
+    - target: {fileID: 2268939894724673429, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 2268939894724673429, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -268.86493
+      objectReference: {fileID: 0}
+    - target: {fileID: 4027615090104837413, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_Name
+      value: BlackTurnText
+      objectReference: {fileID: 0}
     - target: {fileID: 5447985316582430264, guid: 8ae303354eafed1439aad6d3c9789412,
         type: 3}
       propertyPath: m_text
@@ -2199,8 +2239,35 @@ PrefabInstance:
       propertyPath: m_Name
       value: BlackTurnText
       objectReference: {fileID: 0}
+    - target: {fileID: 6224649599487321273, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6224649599487321273, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6224649599487321273, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ae303354eafed1439aad6d3c9789412, type: 3}
+--- !u!224 &609100828 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2268939894724673429, guid: 8ae303354eafed1439aad6d3c9789412,
+    type: 3}
+  m_PrefabInstance: {fileID: 609100827}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &609100829 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 6018682360339606956, guid: 8ae303354eafed1439aad6d3c9789412,
+    type: 3}
+  m_PrefabInstance: {fileID: 609100827}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &639594252
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3500,18 +3567,6 @@ MonoBehaviour:
   m_DefaultActionMap: GameBoard
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
---- !u!224 &932930847 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 5447985316582430265, guid: 8ae303354eafed1439aad6d3c9789412,
-    type: 3}
-  m_PrefabInstance: {fileID: 609100827}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &932930848 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 8778119317529191559, guid: 8ae303354eafed1439aad6d3c9789412,
-    type: 3}
-  m_PrefabInstance: {fileID: 609100827}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &948784705
 GameObject:
   m_ObjectHideFlags: 0
@@ -4129,8 +4184,8 @@ RectTransform:
   - {fileID: 281737770}
   - {fileID: 839945584}
   - {fileID: 371448032}
-  - {fileID: 1584680322}
-  - {fileID: 932930847}
+  - {fileID: 1771938870}
+  - {fileID: 609100828}
   - {fileID: 522366097}
   - {fileID: 921929654}
   m_Father: {fileID: 0}
@@ -5772,8 +5827,8 @@ MonoBehaviour:
   maxMoveCounterText: {fileID: 828665407}
   cameraAnimator: {fileID: 963194230}
   invalidMovementOptionAnimator: {fileID: 839945587}
-  whiteTurnAnimator: {fileID: 1584680323}
-  blackTurnAnimator: {fileID: 932930848}
+  whiteTurnAnimator: {fileID: 1771938871}
+  blackTurnAnimator: {fileID: 609100829}
   turnCounterAnimator: {fileID: 371448035}
   moveCounterAnimator: {fileID: 1105113555}
   maxMoveCounterAnimator: {fileID: 828665406}
@@ -6013,18 +6068,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1572978786}
   m_CullTransparentMesh: 0
---- !u!224 &1584680322 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 5447985316582430265, guid: 8ae303354eafed1439aad6d3c9789412,
-    type: 3}
-  m_PrefabInstance: {fileID: 1771938869}
-  m_PrefabAsset: {fileID: 0}
---- !u!95 &1584680323 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 8778119317529191559, guid: 8ae303354eafed1439aad6d3c9789412,
-    type: 3}
-  m_PrefabInstance: {fileID: 1771938869}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1671304190
 GameObject:
   m_ObjectHideFlags: 0
@@ -6241,6 +6284,26 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1071901210}
     m_Modifications:
+    - target: {fileID: 1199945928178108061, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_text
+      value: White's Turn
+      objectReference: {fileID: 0}
+    - target: {fileID: 2268939894724673429, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 2268939894724673429, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -268.86493
+      objectReference: {fileID: 0}
+    - target: {fileID: 4027615090104837413, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_Name
+      value: WhiteTurnText
+      objectReference: {fileID: 0}
     - target: {fileID: 5447985316582430264, guid: 8ae303354eafed1439aad6d3c9789412,
         type: 3}
       propertyPath: m_text
@@ -6356,8 +6419,35 @@ PrefabInstance:
       propertyPath: m_Name
       value: WhiteTurnText
       objectReference: {fileID: 0}
+    - target: {fileID: 6224649599487321273, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_Color.b
+      value: 0.2735849
+      objectReference: {fileID: 0}
+    - target: {fileID: 6224649599487321273, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_Color.g
+      value: 0.2735849
+      objectReference: {fileID: 0}
+    - target: {fileID: 6224649599487321273, guid: 8ae303354eafed1439aad6d3c9789412,
+        type: 3}
+      propertyPath: m_Color.r
+      value: 0.2735849
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8ae303354eafed1439aad6d3c9789412, type: 3}
+--- !u!224 &1771938870 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2268939894724673429, guid: 8ae303354eafed1439aad6d3c9789412,
+    type: 3}
+  m_PrefabInstance: {fileID: 1771938869}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &1771938871 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 6018682360339606956, guid: 8ae303354eafed1439aad6d3c9789412,
+    type: 3}
+  m_PrefabInstance: {fileID: 1771938869}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1872925436 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 4757419627870318915, guid: 6feff7c3b1387c847b5d2500dcfd76f2,
